@@ -316,15 +316,15 @@ body {
   z-index: 2;
 }
 
-/* Compact cartella for gameplay */
 .cartella-card--compact {
   padding: 4px;
   border-radius: var(--radius-md);
-  height: 100%;
+  height: auto;
+  width: 100%;
 }
 
 .cartella-card--compact .cartella-header {
-  font-size: clamp(10px, 2.6vw, 13px);
+  font-size: clamp(9px, 2vw, 11px);
   margin-bottom: 2px;
 }
 
@@ -335,9 +335,11 @@ body {
 }
 
 .cartella-card--compact .cartella-cell {
-  font-size: clamp(10px, 2.8vw, 14px);
+  font-size: clamp(9px, 2vw, 12px);
   border-radius: 4px;
   aspect-ratio: 1;
+  min-height: 0;
+  height: auto;
 }
 
 .cartella-card--compact .cartella-cell.free {
@@ -443,7 +445,7 @@ body {
 }
 
 .gameplay-masterboard {
-  flex: 1 1 45%;
+  flex: 1 1 50%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -455,8 +457,10 @@ body {
 }
 
 .gameplay-cartella {
-  flex: 1 1 55%;
+  flex: 0 0 auto;
+  width: 50%;
   min-width: 0;
+  max-width: 320px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -585,16 +589,16 @@ body {
   .admin-sidebar { width: 100%; flex-direction: row; overflow-x: auto; white-space: nowrap; padding: 8px; }
 
   .gameplay-layout { gap: 4px; }
-  .gameplay-masterboard { flex: 1 1 45%; padding: 4px; }
-  .gameplay-cartella { flex: 1 1 55%; }
+  .gameplay-masterboard { flex: 1 1 50%; padding: 4px; }
+  .gameplay-cartella { flex: 0 0 auto; width: 48%; max-width: 220px; }
 }
 
 @media (min-width: 769px) {
   .gameplay-view { padding: 10px 12px 12px; }
   .gameplay-masterboard { flex: 1 1 50%; padding: 8px; }
-  .gameplay-cartella { flex: 1 1 50%; }
+  .gameplay-cartella { flex: 0 0 auto; width: 50%; max-width: 300px; }
   .master-board-header { font-size: 11px; }
   .master-board-cell { font-size: 9px; }
-  .cartella-card--compact .cartella-cell { font-size: 13px; }
-  .cartella-card--compact .cartella-header { font-size: 13px; }
+  .cartella-card--compact .cartella-cell { font-size: 12px; }
+  .cartella-card--compact .cartella-header { font-size: 12px; }
 }
