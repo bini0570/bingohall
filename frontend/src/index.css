@@ -430,11 +430,13 @@ body {
 .gameplay-view {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 6px 8px 8px;
-  min-height: calc(100dvh - 52px - 72px);
+  padding: 4px 6px 6px;
+  height: calc(100dvh - 52px - 68px);
+  max-height: calc(100dvh - 52px - 68px);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .gameplay-layout {
@@ -595,7 +597,11 @@ body {
 }
 
 @media (min-width: 769px) {
-  .gameplay-view { padding: 10px 12px 12px; }
+  .gameplay-view {
+    padding: 6px 12px 12px;
+    height: calc(100dvh - 64px);
+    max-height: calc(100dvh - 64px);
+  }
   .gameplay-masterboard { flex: 1 1 50%; padding: 8px; }
   .gameplay-cartella { flex: 0 0 auto; width: 50%; max-width: 300px; }
   .master-board-header { font-size: 11px; }
