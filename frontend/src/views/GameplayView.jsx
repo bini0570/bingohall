@@ -153,120 +153,100 @@ export default function GameplayView({
         flexDirection: 'column',
         minHeight: 'calc(100dvh - 56px - 68px)',
         boxSizing: 'border-box',
-        gap: '4px'
-      }}
-    >
-      {/* ─────────────────────────────────────────
-          TOP STATS BAR
-      ───────────────────────────────────────── */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '4px'
-        }}
-      >
-        {[
-          { label: 'ወርቅ / Wallet', value: `${(user?.balance || 0).toFixed(0)} ብር`, color: '#f59e0b' },
-          { label: 'Players', value: gameState?.totalTickets || 1, color: '#38bdf8' },
-          { label: 'ደራሽ / Prize', value: `${(gameState?.prizePool || 0).toFixed(0)} ብር`, color: '#10b981' },
-          { label: 'Round', value: winnerData ? 'ENDED' : '🔴 LIVE', color: winnerData ? '#ef4444' : '#10b981' },
-        ].map(({ label, value, color }) => (
-          <div
-            key={label}
-            style={{
-              background: 'rgba(13, 20, 38, 0.9)',
-              border: '1px solid rgba(255,255,255,0.07)',
-              borderRadius: '10px',
-              padding: '5px 3px',
-              textAlign: 'center'
-            }}
-          >
-            <div style={{ fontSize: '7.5px', color: '#475569', fontWeight: '700', letterSpacing: '0.3px', marginBottom: '1px' }}>
-              {label}
-            </div>
-            <div style={{ fontSize: '12px', fontWeight: '900', color }}>
-              {value}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ─────────────────────────────────────────
-          BALL CALL STRIP
+        gap: '4px'      {/* ─────────────────────────────────────────
+          SOLID COMPACT GAMEPLAY BANNER
       ───────────────────────────────────────── */}
       <div
         style={{
           background: 'rgba(8, 14, 28, 0.95)',
-          borderRadius: '12px',
-          padding: '6px 10px',
-          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '10px',
+          padding: '4px 8px',
+          border: '1px solid rgba(255,255,255,0.10)',
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          flexShrink: 0
+          flexShrink: 0,
+          boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
         }}
       >
-        {/* Current Ball */}
+        {/* Back to Lobby */}
+        <button
+          onClick={onBackToLobby}
+          style={{
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            borderRadius: '8px',
+            padding: '4px 8px',
+            color: '#94a3b8',
+            fontSize: '11px',
+            fontWeight: '800',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3px',
+            flexShrink: 0
+          }}
+        >
+          <ArrowLeft size={13} /> Lobby
+        </button>
+
+        {/* Current Ball Badge */}
         {lastBall ? (
           <div
             key={lastBall.number}
             style={{
-              width: '54px',
-              height: '54px',
+              width: '38px',
+              height: '38px',
               borderRadius: '50%',
               background: `radial-gradient(circle at 35% 30%, ${lastBallColor}cc 0%, ${lastBallColor}55 100%)`,
               border: `2px solid ${lastBallColor}`,
-              boxShadow: `0 0 16px ${lastBallColor}90, inset 0 2px 0 rgba(255,255,255,0.2)`,
+              boxShadow: `0 0 12px ${lastBallColor}90`,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: '900',
-              flexShrink: 0,
-              animation: 'popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+              flexShrink: 0
             }}
           >
-            <span style={{ fontSize: '9px', color: lastBallColor, lineHeight: 1, fontWeight: '800' }}>
+            <span style={{ fontSize: '7.5px', color: lastBallColor, lineHeight: 1, fontWeight: '800' }}>
               {lastBall.letter}
             </span>
-            <span style={{ fontSize: '18px', color: '#fff', lineHeight: 1.1, fontWeight: '900' }}>
+            <span style={{ fontSize: '14px', color: '#fff', lineHeight: 1, fontWeight: '900' }}>
               {lastBall.number}
             </span>
           </div>
         ) : (
           <div
             style={{
-              width: '54px',
-              height: '54px',
+              width: '38px',
+              height: '38px',
               borderRadius: '50%',
               background: 'rgba(255,255,255,0.04)',
-              border: '2px solid rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.1)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0
             }}
           >
-            <span style={{ fontSize: '9px', color: '#475569', fontWeight: '700' }}>Waiting</span>
+            <span style={{ fontSize: '8px', color: '#475569', fontWeight: '700' }}>Wait</span>
           </div>
         )}
 
-        {/* Called numbers scroll */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '9px', color: '#475569', fontWeight: '700', marginBottom: '4px', letterSpacing: '0.5px' }}>
-            CALLED: {calledNumbers.length} / 75
+        {/* Middle Stats & Called Balls */}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          {/* Stats inline */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '10px', fontWeight: '800' }}>
+            <span style={{ color: '#10b981' }}>🏆 {(gameState?.prizePool || 0).toFixed(0)} ETB</span>
+            <span style={{ color: '#38bdf8' }}>👥 {gameState?.totalTickets || 1}</span>
+            <span style={{ color: '#94a3b8', fontSize: '9px' }}>({calledNumbers.length}/75)</span>
           </div>
-          <div
-            style={{
-              display: 'flex',
-              gap: '3px',
-              overflowX: 'auto',
-              paddingBottom: '2px'
-            }}
-          >
+
+          {/* Called ball strip */}
+          <div style={{ display: 'flex', gap: '3px', overflowX: 'auto' }}>
             {calledNumbers.length === 0 ? (
-              <span style={{ fontSize: '11px', color: '#334155', fontWeight: '600' }}>Waiting for first ball...</span>
+              <span style={{ fontSize: '10px', color: '#475569', fontWeight: '600' }}>Waiting...</span>
             ) : (
               [...calledNumbers].reverse().map((n, i) => {
                 const letter = getBallLetter(n);
@@ -276,13 +256,11 @@ export default function GameplayView({
                     key={n}
                     style={{
                       flexShrink: 0,
-                      padding: '2px 6px',
-                      borderRadius: '5px',
+                      padding: '1px 5px',
+                      borderRadius: '4px',
                       fontSize: '9px',
                       fontWeight: '900',
-                      background: i === 0
-                        ? `linear-gradient(135deg, ${col} 0%, ${col}88 100%)`
-                        : 'rgba(255,255,255,0.07)',
+                      background: i === 0 ? col : 'rgba(255,255,255,0.07)',
                       color: i === 0 ? '#000' : col,
                       border: i === 0 ? 'none' : `1px solid ${col}44`
                     }}
@@ -295,34 +273,24 @@ export default function GameplayView({
           </div>
         </div>
 
-        {/* Controls */}
-        <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-          <button
-            onClick={() => setSoundOn(s => !s)}
-            style={{
-              background: soundOn ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
-              border: soundOn ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '10px',
-              padding: '6px 10px',
-              color: soundOn ? '#818cf8' : '#475569',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              fontSize: '11px',
-              fontWeight: '800'
-            }}
-          >
-            {soundOn ? <Volume2 size={14} /> : <VolumeX size={14} />}
-          </button>
-
-          <button
-            onClick={onBackToLobby}
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              borderRadius: '10px',
-              padding: '6px 10px',
+        {/* Sound toggle */}
+        <button
+          onClick={() => setSoundOn(s => !s)}
+          style={{
+            background: soundOn ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
+            border: soundOn ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '8px',
+            padding: '5px 8px',
+            color: soundOn ? '#818cf8' : '#475569',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            flexShrink: 0
+          }}
+        >
+          {soundOn ? <Volume2 size={13} /> : <VolumeX size={13} />}
+        </button>
+      </div>ding: '6px 10px',
               color: '#94a3b8',
               fontSize: '11px',
               fontWeight: '800',
