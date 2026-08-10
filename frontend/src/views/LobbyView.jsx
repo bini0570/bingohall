@@ -317,7 +317,7 @@ export default function LobbyView({
             Choose Your Cartella
           </div>
           <div style={{ fontSize: '11px', color: '#475569', fontWeight: '600', marginTop: '1px' }}>
-            Tap to select · Tap again to unselect · Max 4
+            <span style={{ color: '#f59e0b', fontWeight: '800' }}>{price} ETB</span>/cartella · Max 4 · {totalPlayers} purchased
           </div>
         </div>
         <div style={{ display: 'flex', gap: '12px', fontSize: '10px', fontWeight: '800' }}>
@@ -373,15 +373,7 @@ export default function LobbyView({
         </div>
       </div>
 
-      {/* Players online footer */}
-      <div style={{ textAlign: 'center', paddingBottom: '8px' }}>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#475569', fontWeight: '700' }}>
-          <Users size={13} />
-          {totalPlayers} ticket{totalPlayers !== 1 ? 's' : ''} purchased this round
-          {' · '}
-          <span style={{ color: '#f59e0b' }}>{price} ETB</span> per cartella
-        </div>
-      </div>
+
 
     </div>
   );
