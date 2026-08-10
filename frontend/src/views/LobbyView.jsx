@@ -124,18 +124,19 @@ export default function LobbyView({
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '6px 10px 4px', height: 'calc(100dvh - 56px - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
 
-      {/* ── SOLID COMPACT PROFESSIONAL LOBBY TOP BANNER ── */}
+      {/* ── SOLID FULL-WIDTH STATS BANNER ── */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr',
           gap: '6px',
-          marginBottom: '6px',
-          background: 'rgba(8, 14, 28, 0.95)',
-          border: '1px solid rgba(255,255,255,0.10)',
-          borderRadius: '10px',
-          padding: '4px 6px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.5)',
+          margin: '-6px -10px 6px -10px',
+          background: 'rgba(5, 8, 15, 0.97)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          padding: '6px 12px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
           flexShrink: 0
         }}
       >
