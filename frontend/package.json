@@ -1,0 +1,27 @@
+{
+  "name": "bingo-platform-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite build",
+    "preview": "vite preview",
+    "dev:admin": "cross-env BUILD_TARGET=admin vite",
+    "build:admin": "cross-env BUILD_TARGET=admin vite build",
+    "build:all": "vite build && cross-env BUILD_TARGET=admin vite build"
+  },
+  "dependencies": {
+    "canvas-confetti": "^1.9.3",
+    "lucide-react": "^0.380.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "socket.io-client": "^4.7.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.0",
+    "cross-env": "^7.0.3",
+    "vite": "^5.2.11"
+  }
+}

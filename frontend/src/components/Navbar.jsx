@@ -1,0 +1,361 @@
+import React, { useState } from 'react';
+import { Home, Wallet, User, Dices, Globe, Zap, Gift, HelpCircle, X, ShieldCheck, Trophy, PhoneCall } from 'lucide-react';
+import { translations } from '../i18n/i18n';
+
+export default function Navbar({
+  lang,
+  setLang,
+  user,
+  currentView,
+  setCurrentView,
+  onLogout
+}) {
+  const t = translations[lang] || {};
+  const [showHelpModal, setShowHelpModal] = useState(false);
+
+  const navItems = [
+    { id: 'lobby', label: 'Home', icon: Home, activeColor: '#f59e0b', activeBg: 'rgba(245,158,11,0.12)' },
+    { id: 'wallet', label: 'Wallet', icon: Wallet, activeColor: '#10b981', activeBg: 'rgba(16,185,129,0.12)' },
+    { id: 'referrals', label: 'Referrals', icon: Gift, activeColor: '#06b6d4', activeBg: 'rgba(6,182,212,0.12)' },
+    { id: 'profile', label: 'Profile', icon: User, activeColor: '#a78bfa', activeBg: 'rgba(139,92,246,0.12)' },
+  ];
+
+  return (
+    <>
+      {/* ── Top Header Bar ── */}
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 500,
+          background: 'rgba(5, 8, 15, 0.97)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          padding: '0 16px',
+          height: '56px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          boxShadow: '0 2px 20px rgba(0,0,0,0.4)'
+        }}
+      >
+        {/* Brand */}
+        <div
+          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          onClick={() => setCurrentView('lobby')}
+        >
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: '0 0 16px rgba(245,158,11,0.5)'
+            }}
+          >
+            <Dices size={20} color="#000" />
+          </div>
+          <span
+            style={{
+              fontSize: '18px',
+              fontWeight: '900',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '-0.3px'
+            }}
+          >
+            BodBingo
+          </span>
+        </div>
+
+        {/* Right side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Balance pill — clickable, goes to wallet */}
+          {user && (
+            <button
+              onClick={() => setCurrentView('wallet')}
+              style={{
+                background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.08) 100%)',
+                border: '1px solid rgba(16,185,129,0.3)',
+                borderRadius: '20px',
+                padding: '6px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <Zap size={13} color="#10b981" />
+              <span style={{ fontSize: '14px', fontWeight: '900', color: '#10b981' }}>
+                {(user.balance || 0).toFixed(0)} ብር
+              </span>
+            </button>
+          )}
+
+          {/* Help Button */}
+          <button
+            onClick={() => setShowHelpModal(true)}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              borderRadius: '8px',
+              padding: '6px 10px',
+              color: '#38bdf8',
+              fontSize: '11px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              letterSpacing: '0.5px'
+            }}
+            title="Help & Rules"
+          >
+            <HelpCircle size={13} color="#38bdf8" />
+            Help
+          </button>
+
+          {/* Language toggle */}
+          <button
+            onClick={() => setLang(lang === 'en' ? 'am' : 'en')}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              borderRadius: '8px',
+              padding: '6px 10px',
+              color: '#94a3b8',
+              fontSize: '11px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              letterSpacing: '0.5px'
+            }}
+            title="Switch Language"
+          >
+            <Globe size={12} />
+            {lang === 'en' ? 'AM' : 'EN'}
+          </button>
+
+        </div>
+      </header>
+
+      {/* ── Help Modal ── */}
+      {showHelpModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 10000,
+            background: 'rgba(0,0,0,0.85)',
+            backdropFilter: 'blur(16px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px'
+          }}
+        >
+          <div
+            style={{
+              background: '#0f172a',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: '24px',
+              padding: '24px',
+              maxWidth: '460px',
+              width: '100%',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              color: '#f1f5f9',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)',
+              position: 'relative'
+            }}
+          >
+            <button
+              onClick={() => setShowHelpModal(false)}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                color: '#fff',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <X size={18} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+              <div style={{ background: '#0284c7', borderRadius: '12px', padding: '8px', display: 'flex' }}>
+                <HelpCircle size={24} color="#fff" />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>BodBingo Guide & Help</h3>
+                <span style={{ fontSize: '12px', color: '#94a3b8' }}>How to play and win ETB</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '13px', lineHeight: 1.6, color: '#cbd5e1' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <strong style={{ color: '#f59e0b', fontSize: '14px' }}>🎰 1. How to Play Bingo</strong>
+                <p style={{ margin: '4px 0 0' }}>
+                  Pick 1 to 4 cartellas (tickets) before the timer runs out. Each cartella costs 10 ETB. Numbers 1–75 will be drawn automatically in real-time.
+                </p>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <strong style={{ color: '#10b981', fontSize: '14px' }}>🏆 2. Winning the Prize Pool</strong>
+                <p style={{ margin: '4px 0 0' }}>
+                  Complete any line (horizontal, vertical, diagonal, 4 corners, or Full House) on your cartella. Winners automatically share the round prize pool instantly credited to their wallet!
+                </p>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <strong style={{ color: '#38bdf8', fontSize: '14px' }}>💳 3. Deposits & Withdrawals</strong>
+                <p style={{ margin: '4px 0 0' }}>
+                  Deposit ETB instantly using Telebirr or CBE. Withdraw your winnings directly to your mobile money or bank account!
+                </p>
+              </div>
+
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                <strong style={{ color: '#a78bfa', fontSize: '14px' }}>👥 4. Invite & Earn</strong>
+                <p style={{ margin: '4px 0 0' }}>
+                  Share your referral link with friends. Earn 10 ETB bonus for every friend who registers and makes their first deposit!
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowHelpModal(false)}
+              style={{
+                width: '100%',
+                marginTop: '20px',
+                padding: '12px',
+                borderRadius: '12px',
+                border: 'none',
+                background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                color: '#fff',
+                fontWeight: '800',
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              Got It! Let's Play
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Premium Bottom Navigation Bar ── */}
+      {(!user || !user.isAdmin) && (
+        <nav
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 9999,
+            background: 'rgba(5, 8, 15, 0.98)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex',
+            alignItems: 'stretch',
+            height: '68px',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            boxShadow: '0 -8px 40px rgba(0,0,0,0.7)'
+          }}
+        >
+          {navItems.map(({ id, label, icon: Icon, activeColor, activeBg }) => {
+            const isActive = currentView === id;
+            return (
+              <button
+                key={id}
+                onClick={() => setCurrentView(id)}
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '3px',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  transition: 'all 0.2s ease',
+                  paddingBottom: '2px'
+                }}
+              >
+                {/* Active top indicator bar */}
+                {isActive && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: '36px',
+                      height: '2.5px',
+                      borderRadius: '0 0 6px 6px',
+                      background: activeColor,
+                      boxShadow: `0 0 10px ${activeColor}`,
+                    }}
+                  />
+                )}
+
+                {/* Icon wrapper */}
+                <div
+                  style={{
+                    width: '40px',
+                    height: '32px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: isActive ? activeBg : 'transparent',
+                    transition: 'all 0.2s ease',
+                    boxShadow: isActive ? `0 0 12px ${activeColor}30` : 'none'
+                  }}
+                >
+                  <Icon
+                    size={isActive ? 22 : 20}
+                    color={isActive ? activeColor : '#475569'}
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                </div>
+
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: isActive ? '800' : '600',
+                    color: isActive ? activeColor : '#475569',
+                    letterSpacing: '0.2px',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {label}
+                </span>
+              </button>
+            );
+          })}
+        </nav>
+      )}
+    </>
+  );
+}
