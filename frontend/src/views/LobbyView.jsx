@@ -370,10 +370,7 @@ export default function LobbyView({
               </button>
             );
           })}
-        </div>
       </div>
-
-
 
     </div>
   );
