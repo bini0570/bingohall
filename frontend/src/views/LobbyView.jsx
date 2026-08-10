@@ -125,7 +125,7 @@ export default function LobbyView({
   const cdColor = currentSec <= 10 ? '#ef4444' : currentSec <= 20 ? '#f59e0b' : '#06b6d4';
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '8px 10px 0' }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '6px 10px 4px', height: 'calc(100dvh - 56px - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
 
       {/* ── TOP STATS ROW ── */}
       <div
@@ -341,12 +341,16 @@ export default function LobbyView({
         style={{
           background: 'rgba(8,14,28,0.7)',
           borderRadius: '16px',
-          padding: '10px',
+          padding: '8px',
           border: '1px solid rgba(255,255,255,0.06)',
-          marginBottom: '16px'
+          flex: 1,
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          marginBottom: '4px'
         }}
       >
-        <div className="lobby-cartella-grid">
+        <div className="lobby-cartella-grid" style={{ flex: 1, minHeight: 0, maxHeight: 'none' }}>
           {Array.from({ length: 400 }, (_, i) => i + 1).map(id => {
             const ownerId = purchasedMap[id];
             const isMine = myCartellas.includes(id);
