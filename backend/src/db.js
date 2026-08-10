@@ -206,6 +206,13 @@ async function get(sql, params = []) {
       return { comm };
     }
 
+    if (sql.includes('FROM game_rounds WHERE status IN') || sql.includes('FROM game_rounds WHERE status =')) {
+      const { data } = await supabase.from('game_rounds').select('*')
+        .in('status', ['COUNTDOWN', 'DRAWING', 'WAITING'])
+        .order('id', { ascending: false }).limit(1);
+      return data?.[0] || null;
+    }
+
   } catch (err) {
     console.error('[DB] get() error:', err.message, '| SQL:', sql.slice(0, 80));
   }
@@ -293,6 +300,12 @@ async function all(sql, params = []) {
         };
       }));
       return result;
+    // ── TICKETS ──────────────────────────────────────────────
+    if (sql.includes('FROM tickets')) {
+      if (sql.includes('WHERE round_id = ?')) {
+        const { data } = await supabase.from('tickets').select('*').eq('round_id', params[0]);
+        return data || [];
+      }
     }
 
   } catch (err) {
@@ -432,6 +445,18 @@ async function run(sql, params = []) {
     if (sql.includes('UPDATE users SET is_admin = 1 WHERE id = ?')) {
       await supabase.from('users').update({ is_admin: 1 }).eq('id', params[0]);
       return { changes: 1 };
+    }
+
+    // ── UPDATE GAME ROUNDS ───────────────────────────────────
+    if (sql.includes('UPDATE game_rounds SET')) {
+      if (sql.includes('called_numbers_json = ?')) {
+        await supabase.from('game_rounds').update({ called_numbers_json: String(params[0]) }).eq('id', params[1]);
+        return { changes: 1 };
+      }
+      if (sql.includes('status = ?') && sql.includes('WHERE id = ?')) {
+        await supabase.from('game_rounds').update({ status: String(params[0]) }).eq('id', params[1]);
+        return { changes: 1 };
+      }
     }
 
     // ── BAN / UNBAN ──────────────────────────────────────────

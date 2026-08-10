@@ -25,6 +25,68 @@ class BingoEngine {
 
   async init() {
     await this.loadSettings();
+    await this.recoverOrStartRound();
+  }
+
+  async recoverOrStartRound() {
+    try {
+      const activeRound = await get(
+        `SELECT * FROM game_rounds WHERE status IN ('COUNTDOWN', 'DRAWING', 'WAITING') ORDER BY id DESC LIMIT 1`
+      );
+
+      if (activeRound) {
+        console.log(`[BingoEngine] Found active round #${activeRound.id} (${activeRound.status}). Recovering state from Supabase...`);
+        this.currentRoundId = activeRound.id;
+        this.status = activeRound.status;
+        if (activeRound.ticket_price) this.ticketPrice = parseFloat(activeRound.ticket_price);
+
+        this.generate400Cartellas();
+
+        const savedTickets = await all(`SELECT * FROM tickets WHERE round_id = ?`, [this.currentRoundId]);
+        this.purchasedTickets = (savedTickets || []).map(t => {
+          let grid = [];
+          try { grid = typeof t.numbers_json === 'string' ? JSON.parse(t.numbers_json) : t.numbers_json; } catch (e) {}
+
+          if (this.cartellas[t.cartella_index - 1]) {
+            this.cartellas[t.cartella_index - 1].isSold = true;
+            this.cartellas[t.cartella_index - 1].purchasedBy = t.username;
+          }
+
+          return {
+            userId: t.user_id,
+            username: t.username,
+            cartellaIndex: t.cartella_index,
+            grid
+          };
+        });
+
+        if (activeRound.called_numbers_json) {
+          try {
+            this.calledNumbers = JSON.parse(activeRound.called_numbers_json);
+            const calledSet = new Set(this.calledNumbers);
+            this.remainingBalls = this.allBalls.filter(b => !calledSet.has(b)).sort(() => Math.random() - 0.5);
+          } catch (e) {
+            this.calledNumbers = [];
+            this.remainingBalls = [...this.allBalls].sort(() => Math.random() - 0.5);
+          }
+        } else {
+          this.calledNumbers = [];
+          this.remainingBalls = [...this.allBalls].sort(() => Math.random() - 0.5);
+        }
+
+        console.log(`[BingoEngine] ✅ Recovered round #${this.currentRoundId}: ${this.purchasedTickets.length} tickets, ${this.calledNumbers.length} called balls.`);
+
+        if (this.status === 'DRAWING') {
+          this.startBallDraw();
+        } else {
+          this.startCountdown();
+        }
+        return;
+      }
+    } catch (e) {
+      console.error('[BingoEngine] State recovery error:', e.message);
+    }
+
     await this.startNewRound();
   }
 
@@ -292,6 +354,12 @@ class BingoEngine {
 
       const nextBall = this.remainingBalls.pop();
       this.calledNumbers.push(nextBall);
+
+      // Persist called numbers to Supabase for crash recovery
+      run(`UPDATE game_rounds SET called_numbers_json = ? WHERE id = ?`, [
+        JSON.stringify(this.calledNumbers),
+        this.currentRoundId
+      ]).catch(e => console.error('[BingoEngine] Failed to persist called numbers:', e.message));
       const letter = this.getBallLetter(nextBall);
 
       this.io.emit('ball_drawn', {
