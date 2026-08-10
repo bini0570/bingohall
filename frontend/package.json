@@ -13,15 +13,13 @@
     "build:all": "vite build && cross-env BUILD_TARGET=admin vite build"
   },
   "dependencies": {
+    "@vitejs/plugin-react": "^4.3.0",
     "canvas-confetti": "^1.9.3",
+    "cross-env": "^7.0.3",
     "lucide-react": "^0.380.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "socket.io-client": "^4.7.5"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.0",
-    "cross-env": "^7.0.3",
+    "socket.io-client": "^4.7.5",
     "vite": "^5.2.11"
   }
 }
