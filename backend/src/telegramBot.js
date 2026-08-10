@@ -457,6 +457,12 @@ function initTelegramBot(ioInstance) {
       if (text.startsWith('/')) return; // handled by onText commands
 
       // Persistent bottom keyboard button handlers
+      if (text.includes('PLAY') || text.includes('Play') || text.includes('bingo') || text.includes('Bingo')) {
+        delete userStates[chatId];
+        const user = await checkUserRegistered(chatId, telegramId);
+        if (user) sendPlayPrompt(chatId, user);
+        return;
+      }
       if (text.includes('Balance') || text.includes('balance')) {
         delete userStates[chatId];
         const user = await checkUserRegistered(chatId, telegramId);
@@ -587,7 +593,18 @@ const ADMIN_ACCOUNTS = {
 
 function sendPlayPrompt(chatId, user) {
   if (!bot) return;
-  sendMainMenu(chatId, user);
+  bot.sendMessage(
+    chatId,
+    `🎮 <b>Ready to Play Afla Bingo?</b> 🇪🇹\n\nTap the button below to launch the Mini App!`,
+    {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [getPlayButton()]
+        ]
+      }
+    }
+  );
 }
 
 function startDepositFlow(chatId) {
@@ -827,8 +844,13 @@ async function processWithdrawal(chatId, telegramId, amount, accountNum, method,
 }
 
 function getMainReplyKeyboard() {
+  const playBtn = isHttps
+    ? { text: '🎮 PLAY BINGO', web_app: { url: WEB_APP_URL } }
+    : { text: '🎮 PLAY BINGO' };
+
   return {
     keyboard: [
+      [playBtn],
       [
         { text: '💰 Balance' },
         { text: '📥 Deposit' }
