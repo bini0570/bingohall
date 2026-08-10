@@ -279,12 +279,10 @@ function initTelegramBot(ioInstance) {
             `👤 <b>Player:</b> <code>${escapeHTML(user.username)}</code>\n` +
             `📱 <b>Phone:</b> <code>${escapeHTML(phone)}</code>\n` +
             `💰 <b>Total Balance:</b> <code>${totalBalance} ETB</code>\n\n` +
-            `🎁 <b>Welcome Bonus:</b> +<b>20.00 ETB</b> has been credited to your wallet!\n\n` +
-            `Use the menu buttons at the bottom of your screen to manage your wallet! 🍀`
+            `🎁 <b>Welcome Bonus:</b> +<b>20.00 ETB</b> has been credited to your wallet!`
           : `🇪🇹 <b>Welcome back to Afla Bingo!</b> 🇪🇹\n\n` +
             `👤 <b>Player:</b> <code>${escapeHTML(user.username)}</code>\n` +
-            `💰 <b>Total Balance:</b> <code>${totalBalance} ETB</code>\n\n` +
-            `Use the menu buttons at the bottom of your screen to manage your wallet!`;
+            `💰 <b>Total Balance:</b> <code>${totalBalance} ETB</code>`;
 
         bot.sendMessage(chatId, homepageMsg, {
           parse_mode: 'HTML',
@@ -884,8 +882,7 @@ async function sendMainMenu(chatId, user) {
     `🇪🇹 <b>Welcome to Afla Bingo!</b> 🇪🇹\n\n` +
     `👤 <b>Player:</b> <code>${escapeHTML(user?.username || 'Player')}</code>\n` +
     `💰 <b>Total Balance:</b> <code>${totalBalance} ETB</code>\n` +
-    `🏆 <b>Withdrawable Winnings:</b> <code>${withdrawableBal} ETB</code>\n\n` +
-    `Use the menu buttons at the bottom of your screen to manage your wallet!`,
+    `🏆 <b>Withdrawable Winnings:</b> <code>${withdrawableBal} ETB</code>`,
     {
       parse_mode: 'HTML',
       reply_markup: getMainReplyKeyboard()
