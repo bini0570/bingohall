@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Trophy, Zap, AlertCircle, X, Users, Clock } from 'lucide-react';
+import { Wallet, Trophy, AlertCircle, X, Clock } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 import { apiFetch } from '../api';
 
@@ -119,28 +119,24 @@ export default function LobbyView({
     }
   };
 
-  // Countdown ring degrees
-  const cdMax = gameState?.secondsLeft ? Math.max(gameState.secondsLeft, currentSec) : 40;
-  const pct = Math.max(0, Math.min(1, currentSec / 40));
   const cdColor = currentSec <= 10 ? '#ef4444' : currentSec <= 20 ? '#f59e0b' : '#06b6d4';
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '6px 10px 4px', height: 'calc(100dvh - 56px - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
 
-      {/* ── TOP STATS ROW ── */}
+      {/* ── SOLID COMPACT PROFESSIONAL LOBBY TOP BANNER ── */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '8px',
-          marginBottom: '10px',
-          position: 'sticky',
-          top: '56px',
-          zIndex: 90,
-          paddingTop: '6px',
-          paddingBottom: '4px',
-          background: 'rgba(5, 8, 15, 0.9)',
-          backdropFilter: 'blur(16px)',
+          gap: '6px',
+          marginBottom: '6px',
+          background: 'rgba(8, 14, 28, 0.95)',
+          border: '1px solid rgba(255,255,255,0.10)',
+          borderRadius: '10px',
+          padding: '4px 6px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.5)',
+          flexShrink: 0
         }}
       >
         {/* Balance */}
@@ -151,20 +147,20 @@ export default function LobbyView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '10px 8px',
-            borderRadius: '14px',
-            background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.05) 100%)',
-            border: '1px solid rgba(16,185,129,0.25)',
-            gap: '2px',
+            padding: '4px 4px',
+            borderRadius: '6px',
+            background: 'rgba(16,185,129,0.08)',
+            border: '1px solid rgba(16,185,129,0.2)',
+            gap: '1px',
             cursor: 'pointer'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Wallet size={12} color="#10b981" />
-            <span style={{ fontSize: '9px', color: '#10b981', fontWeight: '700', letterSpacing: '0.5px' }}>BALANCE</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <Wallet size={11} color="#10b981" />
+            <span style={{ fontSize: '8px', color: '#10b981', fontWeight: '700', letterSpacing: '0.4px' }}>BALANCE</span>
           </div>
-          <span style={{ fontSize: '16px', fontWeight: '900', color: '#10b981', lineHeight: 1 }}>
-            {balance.toFixed(0)} <span style={{ fontSize: '10px', opacity: 0.8 }}>ETB</span>
+          <span style={{ fontSize: '12px', fontWeight: '900', color: '#10b981', lineHeight: 1 }}>
+            {balance.toFixed(0)} <span style={{ fontSize: '9px', opacity: 0.8 }}>ETB</span>
           </span>
         </div>
 
@@ -175,26 +171,24 @@ export default function LobbyView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '10px 8px',
-            borderRadius: '14px',
-            background: isDrawing
-              ? 'linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0.05) 100%)'
-              : `linear-gradient(135deg, rgba(6,182,212,0.15) 0%, rgba(6,182,212,0.04) 100%)`,
-            border: `1px solid ${isDrawing ? 'rgba(16,185,129,0.35)' : `rgba(6,182,212,0.3)`}`,
-            gap: '2px'
+            padding: '4px 4px',
+            borderRadius: '6px',
+            background: isDrawing ? 'rgba(16,185,129,0.12)' : 'rgba(6,182,212,0.08)',
+            border: `1px solid ${isDrawing ? 'rgba(16,185,129,0.3)' : 'rgba(6,182,212,0.2)'}`,
+            gap: '1px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Clock size={12} color={isDrawing ? '#10b981' : cdColor} />
-            <span style={{ fontSize: '9px', color: isDrawing ? '#10b981' : cdColor, fontWeight: '700', letterSpacing: '0.5px' }}>
-              {isDrawing ? 'GAME LIVE' : 'STARTS IN'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <Clock size={11} color={isDrawing ? '#10b981' : cdColor} />
+            <span style={{ fontSize: '8px', color: isDrawing ? '#10b981' : cdColor, fontWeight: '700', letterSpacing: '0.4px' }}>
+              {isDrawing ? 'LIVE' : 'STARTS IN'}
             </span>
           </div>
           {isDrawing ? (
-            <span style={{ fontSize: '16px', fontWeight: '900', color: '#10b981', lineHeight: 1 }}>▶ LIVE</span>
+            <span style={{ fontSize: '12px', fontWeight: '900', color: '#10b981', lineHeight: 1 }}>▶ LIVE</span>
           ) : (
-            <span style={{ fontSize: '20px', fontWeight: '900', color: cdColor, lineHeight: 1 }}>
-              {currentSec}<span style={{ fontSize: '11px', opacity: 0.8 }}>s</span>
+            <span style={{ fontSize: '13px', fontWeight: '900', color: cdColor, lineHeight: 1 }}>
+              {currentSec}<span style={{ fontSize: '9px', opacity: 0.8 }}>s</span>
             </span>
           )}
         </div>
@@ -206,19 +200,19 @@ export default function LobbyView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '10px 8px',
-            borderRadius: '14px',
-            background: 'linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(245,158,11,0.04) 100%)',
-            border: '1px solid rgba(245,158,11,0.28)',
-            gap: '2px'
+            padding: '4px 4px',
+            borderRadius: '6px',
+            background: 'rgba(245,158,11,0.08)',
+            border: '1px solid rgba(245,158,11,0.2)',
+            gap: '1px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Trophy size={12} color="#f59e0b" />
-            <span style={{ fontSize: '9px', color: '#f59e0b', fontWeight: '700', letterSpacing: '0.5px' }}>PRIZE</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <Trophy size={11} color="#f59e0b" />
+            <span style={{ fontSize: '8px', color: '#f59e0b', fontWeight: '700', letterSpacing: '0.4px' }}>PRIZE</span>
           </div>
-          <span style={{ fontSize: '16px', fontWeight: '900', color: '#f59e0b', lineHeight: 1 }}>
-            {totalPot.toFixed(0)} <span style={{ fontSize: '10px', opacity: 0.8 }}>ETB</span>
+          <span style={{ fontSize: '12px', fontWeight: '900', color: '#f59e0b', lineHeight: 1 }}>
+            {totalPot.toFixed(0)} <span style={{ fontSize: '9px', opacity: 0.8 }}>ETB</span>
           </span>
         </div>
       </div>
@@ -229,13 +223,14 @@ export default function LobbyView({
           style={{
             background: 'linear-gradient(135deg, rgba(6,182,212,0.18) 0%, rgba(5,8,15,0.95) 100%)',
             border: '1.5px solid rgba(6,182,212,0.4)',
-            borderRadius: '14px',
-            padding: '12px 14px',
-            marginBottom: '10px',
-            animation: 'fadeInUp 0.3s ease'
+            borderRadius: '12px',
+            padding: '6px 10px',
+            marginBottom: '6px',
+            animation: 'fadeInUp 0.3s ease',
+            flexShrink: 0
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
             <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '800', letterSpacing: '0.5px' }}>
               ✓ YOUR CARTELLAS ({myCartellas.length}/4)
             </span>
@@ -260,14 +255,14 @@ export default function LobbyView({
                   background: 'rgba(6,182,212,0.25)',
                   color: '#38bdf8',
                   fontWeight: '900',
-                  fontSize: '13px',
-                  padding: '5px 12px',
-                  borderRadius: '20px',
+                  fontSize: '12px',
+                  padding: '4px 10px',
+                  borderRadius: '16px',
                   border: '1px solid rgba(6,182,212,0.5)',
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '5px',
+                  gap: '4px',
                   transition: 'all 0.15s ease'
                 }}
                 title="Click to unselect"
@@ -290,14 +285,15 @@ export default function LobbyView({
             background: 'rgba(239,68,68,0.12)',
             border: '1px solid rgba(239,68,68,0.3)',
             color: '#fca5a5',
-            padding: '10px 14px',
-            borderRadius: '12px',
-            marginBottom: '10px',
-            fontSize: '13px',
-            fontWeight: '700'
+            padding: '8px 12px',
+            borderRadius: '10px',
+            marginBottom: '6px',
+            fontSize: '12px',
+            fontWeight: '700',
+            flexShrink: 0
           }}
         >
-          <AlertCircle size={15} />
+          <AlertCircle size={14} />
           {errMsg}
         </div>
       )}
@@ -308,29 +304,30 @@ export default function LobbyView({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: '8px',
-          padding: '0 2px'
+          marginBottom: '6px',
+          padding: '0 2px',
+          flexShrink: 0
         }}
       >
         <div>
-          <div style={{ fontSize: '13px', fontWeight: '900', color: '#f1f5f9' }}>
+          <div style={{ fontSize: '12px', fontWeight: '900', color: '#f1f5f9' }}>
             Choose Your Cartella
           </div>
-          <div style={{ fontSize: '11px', color: '#475569', fontWeight: '600', marginTop: '1px' }}>
+          <div style={{ fontSize: '10px', color: '#475569', fontWeight: '600', marginTop: '1px' }}>
             <span style={{ color: '#f59e0b', fontWeight: '800' }}>{price} ETB</span>/cartella · Max 4 · {totalPlayers} purchased
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '12px', fontSize: '10px', fontWeight: '800' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#38bdf8' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'rgba(6,182,212,0.5)', border: '1px solid #06b6d4', display: 'inline-block' }} />
+        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', fontWeight: '800' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#38bdf8' }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: 'rgba(6,182,212,0.5)', border: '1px solid #06b6d4', display: 'inline-block' }} />
             Mine
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#34d399' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'rgba(16,185,129,0.3)', border: '1px solid rgba(16,185,129,0.4)', display: 'inline-block' }} />
+          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#34d399' }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: 'rgba(16,185,129,0.3)', border: '1px solid rgba(16,185,129,0.4)', display: 'inline-block' }} />
             Taken
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#475569' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: 'rgba(13,20,38,0.9)', border: '1px solid rgba(255,255,255,0.06)', display: 'inline-block' }} />
+          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#475569' }}>
+            <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: 'rgba(13,20,38,0.9)', border: '1px solid rgba(255,255,255,0.06)', display: 'inline-block' }} />
             Free
           </span>
         </div>
@@ -340,14 +337,13 @@ export default function LobbyView({
       <div
         style={{
           background: 'rgba(8,14,28,0.7)',
-          borderRadius: '16px',
-          padding: '8px',
+          borderRadius: '14px',
+          padding: '6px',
           border: '1px solid rgba(255,255,255,0.06)',
           flex: 1,
           minHeight: 0,
           display: 'flex',
-          flexDirection: 'column',
-          marginBottom: '4px'
+          flexDirection: 'column'
         }}
       >
         <div className="lobby-cartella-grid" style={{ flex: 1, minHeight: 0, maxHeight: 'none' }}>
