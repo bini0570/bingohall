@@ -300,6 +300,8 @@ async function all(sql, params = []) {
         };
       }));
       return result;
+    }
+
     // ── TICKETS ──────────────────────────────────────────────
     if (sql.includes('FROM tickets')) {
       if (sql.includes('WHERE round_id = ?')) {
