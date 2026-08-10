@@ -80,8 +80,18 @@ function initTelegramBot(ioInstance) {
     // Do NOT register slash commands — inline buttons only
     // (bot.setMyCommands intentionally omitted)
 
-    // Chat menu button disabled for game — bot features menu inline buttons only
-    bot.setChatMenuButton({ menu_button: { type: 'default' } }).catch(() => {});
+    // Chat menu button: set to web_app if HTTPS URL configured
+    if (isHttps) {
+      bot.setChatMenuButton({
+        menu_button: {
+          type: 'web_app',
+          text: '🎮 Play Bingo',
+          web_app: { url: WEB_APP_URL }
+        }
+      }).catch(() => {});
+    } else {
+      bot.setChatMenuButton({ menu_button: { type: 'default' } }).catch(() => {});
+    }
 
     // Separate Admin Bot initialization if dedicated token provided
     if (ADMIN_BOT_TOKEN && ADMIN_BOT_TOKEN !== BOT_TOKEN) {
