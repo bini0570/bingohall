@@ -153,7 +153,10 @@ export default function GameplayView({
         flexDirection: 'column',
         minHeight: 'calc(100dvh - 56px - 68px)',
         boxSizing: 'border-box',
-        gap: '4px'      {/* ─────────────────────────────────────────
+        gap: '4px'
+      }}
+    >
+      {/* ─────────────────────────────────────────
           SOLID COMPACT GAMEPLAY BANNER
       ───────────────────────────────────────── */}
       <div
