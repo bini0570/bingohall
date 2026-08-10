@@ -172,26 +172,7 @@ export default function GameplayView({
           boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
         }}
       >
-        {/* Back to Lobby */}
-        <button
-          onClick={onBackToLobby}
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.10)',
-            borderRadius: '8px',
-            padding: '4px 8px',
-            color: '#94a3b8',
-            fontSize: '11px',
-            fontWeight: '800',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '3px',
-            flexShrink: 0
-          }}
-        >
-          <ArrowLeft size={13} /> Lobby
-        </button>
+
 
         {/* Current Ball Badge */}
         {lastBall ? (
@@ -472,24 +453,6 @@ export default function GameplayView({
               </span>
             </div>
 
-            <button
-              onClick={() => { setWinnerData(null); onBackToLobby(); }}
-              style={{
-                width: '100%',
-                padding: '14px',
-                borderRadius: '14px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                color: '#000',
-                fontWeight: '900',
-                fontSize: '15px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(245,158,11,0.45)',
-                letterSpacing: '0.3px'
-              }}
-            >
-              → Return to Lobby
-            </button>
           </div>
         </div>
       )}
