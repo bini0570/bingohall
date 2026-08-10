@@ -36,20 +36,20 @@ export default function Navbar({
           height: '56px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           boxShadow: '0 2px 20px rgba(0,0,0,0.4)'
         }}
       >
-        {/* Brand */}
+        {/* Centered Brand */}
         <div
-          style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
           onClick={() => setCurrentView('lobby')}
         >
           <div
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '9px',
               background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
               display: 'flex',
               alignItems: 'center',
@@ -58,11 +58,11 @@ export default function Navbar({
               boxShadow: '0 0 16px rgba(245,158,11,0.5)'
             }}
           >
-            <Dices size={20} color="#000" />
+            <Dices size={18} color="#000" />
           </div>
           <span
             style={{
-              fontSize: '18px',
+              fontSize: '20px',
               fontWeight: '900',
               background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%)',
               backgroundClip: 'text',
@@ -71,81 +71,8 @@ export default function Navbar({
               letterSpacing: '-0.3px'
             }}
           >
-            BodBingo
+            Afla Bingo
           </span>
-        </div>
-
-        {/* Right side */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Balance pill — clickable, goes to wallet */}
-          {user && (
-            <button
-              onClick={() => setCurrentView('wallet')}
-              style={{
-                background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.08) 100%)',
-                border: '1px solid rgba(16,185,129,0.3)',
-                borderRadius: '20px',
-                padding: '6px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease'
-              }}
-            >
-              <Zap size={13} color="#10b981" />
-              <span style={{ fontSize: '14px', fontWeight: '900', color: '#10b981' }}>
-                {(user.balance || 0).toFixed(0)} ብር
-              </span>
-            </button>
-          )}
-
-          {/* Help Button */}
-          <button
-            onClick={() => setShowHelpModal(true)}
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              borderRadius: '8px',
-              padding: '6px 10px',
-              color: '#38bdf8',
-              fontSize: '11px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              letterSpacing: '0.5px'
-            }}
-            title="Help & Rules"
-          >
-            <HelpCircle size={13} color="#38bdf8" />
-            Help
-          </button>
-
-          {/* Language toggle */}
-          <button
-            onClick={() => setLang(lang === 'en' ? 'am' : 'en')}
-            style={{
-              background: 'rgba(255,255,255,0.06)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              borderRadius: '8px',
-              padding: '6px 10px',
-              color: '#94a3b8',
-              fontSize: '11px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              letterSpacing: '0.5px'
-            }}
-            title="Switch Language"
-          >
-            <Globe size={12} />
-            {lang === 'en' ? 'AM' : 'EN'}
-          </button>
-
         </div>
       </header>
 
