@@ -293,19 +293,6 @@ export default function GameplayView({
         >
           {soundOn ? <Volume2 size={13} /> : <VolumeX size={13} />}
         </button>
-      </div>ding: '6px 10px',
-              color: '#94a3b8',
-              fontSize: '11px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-          >
-            <ArrowLeft size={13} /> Lobby
-          </button>
-        </div>
       </div>
 
       {/* ─────────────────────────────────────────
