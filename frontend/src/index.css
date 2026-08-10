@@ -246,7 +246,7 @@ body {
   text-align: center;
   font-weight: 900;
   font-size: 14px;
-  margin-bottom: 4px;
+  margin-bottom: 0;
   text-shadow: 0 1px 4px rgba(0,0,0,0.5);
   flex-shrink: 0;
 }
@@ -262,12 +262,13 @@ body {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(5, minmax(0, 1fr));
-  gap: 3px;
+  gap: 0;
   background: rgba(0, 0, 0, 0.35);
-  padding: 4px;
+  padding: 0;
   border-radius: 8px;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 }
 
 .cartella-cell {
@@ -325,13 +326,14 @@ body {
 
 .cartella-card--compact .cartella-header {
   font-size: clamp(9px, 2vw, 11px);
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 
 .cartella-card--compact .cartella-grid {
-  gap: 2px;
-  padding: 3px;
+  gap: 0;
+  padding: 0;
   border-radius: 6px;
+  overflow: hidden;
 }
 
 .cartella-card--compact .cartella-cell {
