@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Trophy, AlertCircle, X, Clock } from 'lucide-react';
+import { Wallet, Trophy, AlertCircle, X, Clock, Zap } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 import { apiFetch } from '../api';
 
@@ -128,8 +128,8 @@ export default function LobbyView({
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr',
-          gap: '6px',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr',
+          gap: '5px',
           margin: '-6px -10px 6px -10px',
           background: 'rgba(5, 8, 15, 0.97)',
           backdropFilter: 'blur(24px)',
@@ -214,6 +214,29 @@ export default function LobbyView({
           </div>
           <span style={{ fontSize: '12px', fontWeight: '900', color: '#f59e0b', lineHeight: 1 }}>
             {totalPot.toFixed(0)} <span style={{ fontSize: '9px', opacity: 0.8 }}>ETB</span>
+          </span>
+        </div>
+
+        {/* Stake / Ticket Price */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '4px 4px',
+            borderRadius: '6px',
+            background: 'rgba(139,92,246,0.08)',
+            border: '1px solid rgba(139,92,246,0.2)',
+            gap: '1px'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <Zap size={11} color="#a78bfa" />
+            <span style={{ fontSize: '8px', color: '#a78bfa', fontWeight: '700', letterSpacing: '0.4px' }}>STAKE</span>
+          </div>
+          <span style={{ fontSize: '12px', fontWeight: '900', color: '#a78bfa', lineHeight: 1 }}>
+            {(gameState?.ticketPrice || 10).toFixed(0)} <span style={{ fontSize: '9px', opacity: 0.8 }}>ETB</span>
           </span>
         </div>
       </div>
