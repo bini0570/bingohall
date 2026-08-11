@@ -122,9 +122,9 @@ export default function LobbyView({
   const cdColor = currentSec <= 10 ? '#ef4444' : currentSec <= 20 ? '#f59e0b' : '#06b6d4';
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '6px 10px 4px', height: 'calc(100dvh - 56px - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '6px 10px 4px', height: 'calc(100dvh - 48px - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
 
-      {/* ── SOLID FULL-WIDTH STATS BANNER ── */}
+      {/* ── SOLID FULL-WIDTH STATS BANNER (fused with top Navbar into one banner) ── */}
       <div
         style={{
           display: 'grid',
@@ -134,9 +134,9 @@ export default function LobbyView({
           background: 'rgba(5, 8, 15, 0.97)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
-          padding: '6px 12px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
+          borderBottom: '2px solid rgba(245,158,11,0.25)',
+          padding: '5px 12px 8px 12px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
           flexShrink: 0
         }}
       >

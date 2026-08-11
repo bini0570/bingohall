@@ -31,13 +31,12 @@ export default function Navbar({
           background: 'rgba(5, 8, 15, 0.97)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: 'none',
           padding: '0 16px',
-          height: '56px',
+          height: '48px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 2px 20px rgba(0,0,0,0.4)'
         }}
       >
         {/* Centered Brand */}
