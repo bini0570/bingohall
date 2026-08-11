@@ -195,19 +195,44 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
         </div>
       )}
 
-      {/* Balance Card */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(15,35,75,0.95) 0%, rgba(5,8,15,0.98) 100%)',
-        borderRadius: '14px',
-        padding: '10px 14px',
-        marginBottom: '10px',
-        textAlign: 'center',
-        border: '1px solid rgba(59,130,246,0.2)',
-        boxShadow: '0 2px 12px rgba(0,0,0,0.3)'
-      }}>
-        <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '2px', fontWeight: '700', letterSpacing: '0.8px', textTransform: 'uppercase' }}>WALLET BALANCE</div>
-        <div style={{ fontSize: '22px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
-          {balance.toFixed(2)} <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>ETB</span>
+      {/* Balance Cards Grid (Total & Withdrawable) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+        {/* Total Balance */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(15,35,75,0.95) 0%, rgba(5,8,15,0.98) 100%)',
+            borderRadius: '12px',
+            padding: '10px 12px',
+            border: '1px solid rgba(59,130,246,0.25)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+            textAlign: 'center'
+          }}
+        >
+          <div style={{ fontSize: '10px', color: '#38bdf8', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            TOTAL BALANCE
+          </div>
+          <div style={{ fontSize: '18px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
+            {(user?.balance || 0).toFixed(2)} <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '700' }}>ETB</span>
+          </div>
+        </div>
+
+        {/* Withdrawable Balance */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(5,8,15,0.98) 100%)',
+            borderRadius: '12px',
+            padding: '10px 12px',
+            border: '1px solid rgba(16,185,129,0.3)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+            textAlign: 'center'
+          }}
+        >
+          <div style={{ fontSize: '10px', color: '#10b981', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            WITHDRAWABLE
+          </div>
+          <div style={{ fontSize: '18px', fontWeight: '900', color: '#10b981', lineHeight: 1.1 }}>
+            {(user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0).toFixed(2)} <span style={{ fontSize: '10px', color: '#10b981', opacity: 0.8, fontWeight: '700' }}>ETB</span>
+          </div>
         </div>
       </div>
 
