@@ -156,124 +156,65 @@ export default function GameplayView({
         gap: '4px'
       }}
     >
-      {/* ─────────────────────────────────────────
-          SOLID COMPACT GAMEPLAY BANNER
-      ───────────────────────────────────────── */}
+      {/* ── SOLID FULL-WIDTH GAMEPLAY BANNER ── */}
       <div
         style={{
-          background: 'rgba(8, 14, 28, 0.95)',
-          borderRadius: '10px',
-          padding: '4px 8px',
-          border: '1px solid rgba(255,255,255,0.10)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          flexShrink: 0,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.5)'
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr 1fr 1fr',
+          gap: '5px',
+          margin: '-4px -6px 4px -6px',
+          background: 'rgba(5, 8, 15, 0.97)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderBottom: '2px solid rgba(245,158,11,0.25)',
+          padding: '5px 12px 8px 12px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          flexShrink: 0
         }}
       >
-
-
-        {/* Current Ball Badge */}
-        {lastBall ? (
-          <div
-            key={lastBall.number}
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '50%',
-              background: `radial-gradient(circle at 35% 30%, ${lastBallColor}cc 0%, ${lastBallColor}55 100%)`,
-              border: `2px solid ${lastBallColor}`,
-              boxShadow: `0 0 12px ${lastBallColor}90`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: '900',
-              flexShrink: 0
-            }}
-          >
-            <span style={{ fontSize: '7.5px', color: lastBallColor, lineHeight: 1, fontWeight: '800' }}>
-              {lastBall.letter}
-            </span>
-            <span style={{ fontSize: '14px', color: '#fff', lineHeight: 1, fontWeight: '900' }}>
-              {lastBall.number}
-            </span>
+        {/* Prize */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px 4px', borderRadius: '6px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', gap: '1px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <Trophy size={11} color="#f59e0b" />
+            <span style={{ fontSize: '8px', color: '#f59e0b', fontWeight: '700', letterSpacing: '0.4px' }}>PRIZE</span>
           </div>
-        ) : (
-          <div
-            style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}
-          >
-            <span style={{ fontSize: '8px', color: '#475569', fontWeight: '700' }}>Wait</span>
-          </div>
-        )}
-
-        {/* Middle Stats & Called Balls */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          {/* Stats inline */}
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '10px', fontWeight: '800' }}>
-            <span style={{ color: '#10b981' }}>🏆 {(gameState?.prizePool || 0).toFixed(0)} ETB</span>
-            <span style={{ color: '#38bdf8' }}>👥 {gameState?.totalTickets || 1}</span>
-            <span style={{ color: '#94a3b8', fontSize: '9px' }}>({calledNumbers.length}/75)</span>
-          </div>
-
-          {/* Called ball strip */}
-          <div style={{ display: 'flex', gap: '3px', overflowX: 'auto' }}>
-            {calledNumbers.length === 0 ? (
-              <span style={{ fontSize: '10px', color: '#475569', fontWeight: '600' }}>Waiting...</span>
-            ) : (
-              [...calledNumbers].reverse().map((n, i) => {
-                const letter = getBallLetter(n);
-                const col = LETTER_COLORS[letter];
-                return (
-                  <span
-                    key={n}
-                    style={{
-                      flexShrink: 0,
-                      padding: '1px 5px',
-                      borderRadius: '4px',
-                      fontSize: '9px',
-                      fontWeight: '900',
-                      background: i === 0 ? col : 'rgba(255,255,255,0.07)',
-                      color: i === 0 ? '#000' : col,
-                      border: i === 0 ? 'none' : `1px solid ${col}44`
-                    }}
-                  >
-                    {letter}{n}
-                  </span>
-                );
-              })
-            )}
-          </div>
+          <span style={{ fontSize: '12px', fontWeight: '900', color: '#f59e0b', lineHeight: 1 }}>
+            {(gameState?.prizePool || 0).toFixed(0)} <span style={{ fontSize: '9px', opacity: 0.8 }}>ETB</span>
+          </span>
         </div>
 
-        {/* Sound toggle */}
-        <button
-          onClick={() => setSoundOn(s => !s)}
-          style={{
-            background: soundOn ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
-            border: soundOn ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '8px',
-            padding: '5px 8px',
-            color: soundOn ? '#818cf8' : '#475569',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            flexShrink: 0
-          }}
-        >
-          {soundOn ? <Volume2 size={13} /> : <VolumeX size={13} />}
-        </button>
+        {/* Players */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px 4px', borderRadius: '6px', background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.2)', gap: '1px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <span style={{ fontSize: '9px' }}>👥</span>
+            <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: '700', letterSpacing: '0.4px' }}>PLAYERS</span>
+          </div>
+          <span style={{ fontSize: '12px', fontWeight: '900', color: '#38bdf8', lineHeight: 1 }}>
+            {gameState?.totalTickets || 1}
+          </span>
+        </div>
+
+        {/* Stake */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px 4px', borderRadius: '6px', background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', gap: '1px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <span style={{ fontSize: '9px' }}>⚡</span>
+            <span style={{ fontSize: '8px', color: '#a78bfa', fontWeight: '700', letterSpacing: '0.4px' }}>STAKE</span>
+          </div>
+          <span style={{ fontSize: '12px', fontWeight: '900', color: '#a78bfa', lineHeight: 1 }}>
+            {(gameState?.ticketPrice || 10).toFixed(0)} <span style={{ fontSize: '9px', opacity: 0.8 }}>ETB</span>
+          </span>
+        </div>
+
+        {/* Called Count */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px 4px', borderRadius: '6px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', gap: '1px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+            <span style={{ fontSize: '9px' }}>🎱</span>
+            <span style={{ fontSize: '8px', color: '#10b981', fontWeight: '700', letterSpacing: '0.4px' }}>CALLED</span>
+          </div>
+          <span style={{ fontSize: '12px', fontWeight: '900', color: '#10b981', lineHeight: 1 }}>
+            {calledNumbers.length} <span style={{ fontSize: '9px', opacity: 0.7 }}>/75</span>
+          </span>
+        </div>
       </div>
 
       {/* ─────────────────────────────────────────
@@ -292,7 +233,119 @@ export default function GameplayView({
 
         {/* RIGHT: Cartella display + switcher */}
         <div className="gameplay-cartella">
-          {/* Cartella selector pills (only if multiple) */}
+          {/* ── BIG DRAWING BALL + RECENT NUMBERS CONTAINER ── */}
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(8,14,28,0.98) 100%)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              borderRadius: '12px',
+              padding: '8px 12px',
+              marginBottom: '6px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+              flexShrink: 0
+            }}
+          >
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+              <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '800', letterSpacing: '0.8px' }}>
+                CURRENT DRAWING BALL
+              </span>
+              <button
+                onClick={() => setSoundOn(s => !s)}
+                style={{
+                  background: soundOn ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
+                  border: soundOn ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '6px',
+                  padding: '3px 7px',
+                  color: soundOn ? '#818cf8' : '#475569',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  fontSize: '10px',
+                  fontWeight: '700'
+                }}
+              >
+                {soundOn ? <Volume2 size={12} /> : <VolumeX size={12} />}
+                {soundOn ? 'Sound' : 'Muted'}
+              </button>
+            </div>
+
+            {/* Big Ball */}
+            {lastBall ? (
+              <div
+                key={lastBall.number}
+                style={{
+                  width: '54px',
+                  height: '54px',
+                  borderRadius: '50%',
+                  background: `radial-gradient(circle at 35% 30%, ${lastBallColor}ff 0%, ${lastBallColor}66 100%)`,
+                  border: `3px solid ${lastBallColor}`,
+                  boxShadow: `0 0 20px ${lastBallColor}b0, inset 0 0 8px rgba(255,255,255,0.5)`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '2px 0 6px'
+                }}
+              >
+                <span style={{ fontSize: '10px', color: '#000', lineHeight: 1, fontWeight: '900' }}>
+                  {lastBall.letter}
+                </span>
+                <span style={{ fontSize: '19px', color: '#fff', lineHeight: 1, fontWeight: '900', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                  {lastBall.number}
+                </span>
+              </div>
+            ) : (
+              <div
+                style={{
+                  width: '54px',
+                  height: '54px',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px dashed rgba(255,255,255,0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '2px 0 6px'
+                }}
+              >
+                <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '700' }}>Wait...</span>
+              </div>
+            )}
+
+            {/* ── RECENT CALLED NUMBERS ROW ── */}
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <span style={{ fontSize: '8px', color: '#64748b', fontWeight: '800', flexShrink: 0, marginRight: '2px' }}>RECENT:</span>
+              {calledNumbers.length === 0 ? (
+                <span style={{ fontSize: '9px', color: '#475569', fontWeight: '600' }}>Waiting for first ball...</span>
+              ) : (
+                [...calledNumbers].reverse().map((n, i) => {
+                  const letter = getBallLetter(n);
+                  const col = LETTER_COLORS[letter];
+                  return (
+                    <span
+                      key={n}
+                      style={{
+                        flexShrink: 0,
+                        padding: '1px 5px',
+                        borderRadius: '5px',
+                        fontSize: '9px',
+                        fontWeight: '900',
+                        background: i === 0 ? col : 'rgba(255,255,255,0.07)',
+                        color: i === 0 ? '#000' : col,
+                        border: i === 0 ? 'none' : `1px solid ${col}44`
+                      }}
+                    >
+                      {letter}{n}
+                    </span>
+                  );
+                })
+              )}
+            </div>
+          </div>
           {userTickets.length > 1 && (
             <div
               style={{
