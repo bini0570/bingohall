@@ -148,10 +148,10 @@ export default function GameplayView({
       style={{
         maxWidth: '1100px',
         margin: '0 auto',
-        padding: '4px 6px',
+        padding: '0 6px 4px',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 'calc(100dvh - 56px - 68px)',
+        minHeight: 'calc(100dvh - 48px - 68px)',
         boxSizing: 'border-box',
         gap: '4px'
       }}
@@ -165,7 +165,7 @@ export default function GameplayView({
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr 1fr',
           gap: '5px',
-          margin: '-4px -6px 4px -6px',
+          margin: '0 -6px 4px -6px',
           background: 'rgba(5, 8, 15, 0.97)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',

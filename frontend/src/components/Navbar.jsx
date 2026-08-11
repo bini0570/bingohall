@@ -70,7 +70,7 @@ export default function Navbar({
               letterSpacing: '-0.3px'
             }}
           >
-            Afla Bingo
+            አፍላ BINGO
           </span>
         </div>
       </header>
