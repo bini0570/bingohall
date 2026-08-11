@@ -25,8 +25,10 @@ export default function Navbar({
       {/* ── Top Header Bar ── */}
       <header
         style={{
-          position: 'sticky',
+          position: 'fixed',
           top: 0,
+          left: 0,
+          right: 0,
           zIndex: 500,
           background: 'rgba(5, 8, 15, 0.97)',
           backdropFilter: 'blur(24px)',

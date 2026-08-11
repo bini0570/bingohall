@@ -148,24 +148,25 @@ export default function GameplayView({
       style={{
         maxWidth: '1100px',
         margin: '0 auto',
-        padding: '0 6px 4px',
+        padding: '90px 6px 4px',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 'calc(100dvh - 48px - 68px)',
+        minHeight: 'calc(100dvh - 68px)',
         boxSizing: 'border-box',
         gap: '4px'
       }}
     >
-      {/* ── SOLID FULL-WIDTH GAMEPLAY BANNER ── */}
+      {/* ── SOLID FIXED FULL-WIDTH GAMEPLAY BANNER (completely unmovable) ── */}
       <div
         style={{
-          position: 'sticky',
+          position: 'fixed',
           top: '48px',
+          left: 0,
+          right: 0,
           zIndex: 499,
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr 1fr',
           gap: '5px',
-          margin: '0 -6px 4px -6px',
           background: 'rgba(5, 8, 15, 0.97)',
           backdropFilter: 'blur(24px)',
           WebkitBackdropFilter: 'blur(24px)',
