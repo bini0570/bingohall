@@ -10,21 +10,21 @@ const PAYMENT_ACCOUNTS = {
   Telebirr: {
     name: 'Biniyam Eyoel',
     number: '0993994168',
-    icon: '📱',
+    logo: '/images/telebirr.jpg',
     label: 'Telebirr',
     color: '#f59e0b'
   },
   CBE: {
     name: 'Biniyam Eyoel',
     number: '1000483719853',
-    icon: '🏦',
+    logo: '/images/cbe.jpg',
     label: 'CBE',
     color: '#3b82f6'
   },
   CBEBirr: {
     name: 'Biniyam Eyoel',
     number: '0993994168',
-    icon: '🏧',
+    logo: '/images/cbe_birr.jpg',
     label: 'CBE Birr',
     color: '#10b981'
   }
@@ -312,12 +312,14 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
           {depStep === 1 && (
             <div>
               <div style={{ textAlign: 'center', marginBottom: '12px', fontWeight: '800', color: '#fff', fontSize: '14px' }}>Select Deposit Method</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                 {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
                   <button key={key} onClick={() => { setDepMethod(key); setDepStep(2); }}
-                    style={{ padding: '12px 10px', borderRadius: '12px', border: `1px solid ${acc.color}40`, background: `${acc.color}12`, color: '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
-                    <span style={{ fontSize: '20px' }}>{acc.icon}</span>
-                    <span style={{ fontWeight: '800', fontSize: '13px', color: acc.color }}>{acc.label}</span>
+                    style={{ padding: '10px 4px', borderRadius: '14px', border: `1.5px solid ${acc.color}40`, background: `${acc.color}12`, color: '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <div style={{ background: '#fff', padding: '4px 6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40px', width: '100%', boxSizing: 'border-box' }}>
+                      <img src={acc.logo} alt={acc.label} style={{ maxHeight: '32px', maxWidth: '100%', objectFit: 'contain' }} />
+                    </div>
+                    <span style={{ fontWeight: '800', fontSize: '11px', color: acc.color }}>{acc.label}</span>
                   </button>
                 ))}
               </div>
@@ -332,7 +334,9 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                 <h3 style={{ fontWeight: '800', color: '#fff', margin: 0 }}>Enter Deposit Amount</h3>
               </div>
               <div style={{ ...panelStyle, textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '10px' }}>Selected: {PAYMENT_ACCOUNTS[depMethod]?.icon} <strong style={{ color: PAYMENT_ACCOUNTS[depMethod]?.color }}>{depMethod}</strong></div>
+                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  Selected: <img src={PAYMENT_ACCOUNTS[depMethod]?.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> <strong style={{ color: PAYMENT_ACCOUNTS[depMethod]?.color }}>{depMethod}</strong>
+                </div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Amount (ETB)</div>
                 <input type="number" style={{ ...inputStyle, fontSize: '28px', textAlign: 'center', fontWeight: '900' }} placeholder="100" value={depAmount} onChange={e => setDepAmount(e.target.value)} min="10" />
                 <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
@@ -369,8 +373,8 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
 
                 {/* Bank details to send TO */}
                 <div style={{ ...panelStyle, border: `1.5px solid ${acc.color}40` }}>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '14px' }}>
-                    {acc.icon} Send to this {acc.label} Account:
+                  <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img src={acc.logo} alt="" style={{ height: '22px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> Send to this {acc.label} Account:
                   </div>
                   <div style={{ marginBottom: '12px' }}>
                     <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>ACCOUNT NAME</div>
@@ -491,17 +495,17 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                 <button onClick={() => setWithStep(1)} style={btnGhost}><ChevronLeft size={16} /></button>
                 <h3 style={{ fontWeight: '800', color: '#fff', margin: 0 }}>Choose Withdrawal Method</h3>
               </div>
-              {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
-                <button key={key} onClick={() => { setWithMethod(key); setWithStep(3); }}
-                  style={{ width: '100%', padding: '18px', borderRadius: '16px', border: `2px solid ${acc.color}30`, background: `${acc.color}10`, color: '#fff', cursor: 'pointer', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <span style={{ fontSize: '32px' }}>{acc.icon}</span>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontWeight: '900', fontSize: '16px', color: acc.color }}>{acc.label}</div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>Withdraw to {acc.label} account</div>
-                  </div>
-                  <ChevronRight size={20} style={{ marginLeft: 'auto', color: '#64748b' }} />
-                </button>
-              ))}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
+                  <button key={key} onClick={() => { setWithMethod(key); setWithStep(3); }}
+                    style={{ padding: '10px 4px', borderRadius: '14px', border: `1.5px solid ${acc.color}40`, background: `${acc.color}12`, color: '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s' }}>
+                    <div style={{ background: '#fff', padding: '4px 6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40px', width: '100%', boxSizing: 'border-box' }}>
+                      <img src={acc.logo} alt={acc.label} style={{ maxHeight: '32px', maxWidth: '100%', objectFit: 'contain' }} />
+                    </div>
+                    <span style={{ fontWeight: '800', fontSize: '11px', color: acc.color }}>{acc.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -516,7 +520,9 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
               <div style={{ background: 'rgba(99,102,241,0.12)', border: '1.5px solid rgba(99,102,241,0.3)', borderRadius: '16px', padding: '14px', marginBottom: '14px', textAlign: 'center' }}>
                 <div style={{ fontSize: '13px', color: '#94a3b8' }}>Withdrawing</div>
                 <div style={{ fontSize: '28px', fontWeight: '900', color: '#818cf8' }}>{parseFloat(withAmount).toFixed(2)} ETB</div>
-                <div style={{ fontSize: '12px', color: '#64748b' }}>via {PAYMENT_ACCOUNTS[withMethod]?.icon} {withMethod}</div>
+                <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '4px' }}>
+                  via <img src={PAYMENT_ACCOUNTS[withMethod]?.logo} alt="" style={{ height: '18px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> {withMethod}
+                </div>
               </div>
 
               <div style={panelStyle}>
