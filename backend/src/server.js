@@ -386,11 +386,16 @@ app.post('/api/wallet/withdraw', authenticateToken, async (req, res) => {
 
     const user = await get(`SELECT * FROM users WHERE id = ?`, [req.user.id]);
 
-    // Rule 1: Must have made at least one deposit first
-    if (!user.has_deposited) {
+    // Rule 1: Must have made at least one deposit first (check flag or deposits table)
+    const depCheck = await get(`SELECT COUNT(*) as count FROM deposits WHERE user_id = ? AND status = 'approved'`, [req.user.id]);
+    const hasApprovedDeposit = depCheck && depCheck.count > 0;
+    if (!user.has_deposited && !hasApprovedDeposit) {
       return res.status(400).json({
         error: 'You must make at least one deposit before you can withdraw. This is a one-time requirement to verify your account.'
       });
+    }
+    if (hasApprovedDeposit && !user.has_deposited) {
+      await run(`UPDATE users SET has_deposited = 1 WHERE id = ?`, [req.user.id]).catch(() => {});
     }
 
     // Rule 2: Only withdrawable_balance (winnings) can be withdrawn

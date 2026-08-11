@@ -171,6 +171,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   };
 
   const balance = user?.balance || 0;
+  const withdrawableBal = user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0;
   const panelStyle = { background: 'rgba(13,20,38,0.8)', borderRadius: '16px', padding: '16px', marginBottom: '12px', border: '1px solid rgba(255,255,255,0.07)' };
   const btnPrimary = { width: '100%', padding: '13px', borderRadius: '13px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer', marginTop: '8px', minHeight: '48px' };
   const btnGhost = { padding: '9px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: '#94a3b8', fontWeight: '700', cursor: 'pointer', fontSize: '13px' };
@@ -318,9 +319,9 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                   Selected: <img src={PAYMENT_ACCOUNTS[depMethod]?.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> <strong style={{ color: PAYMENT_ACCOUNTS[depMethod]?.color }}>{depMethod}</strong>
                 </div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Amount (ETB)</div>
-                <input type="number" style={{ ...inputStyle, fontSize: '28px', textAlign: 'center', fontWeight: '900' }} placeholder="100" value={depAmount} onChange={e => setDepAmount(e.target.value)} min="10" />
+                <input type="number" style={{ ...inputStyle, fontSize: '24px', textAlign: 'center', fontWeight: '900' }} placeholder="Enter Amount" value={depAmount} onChange={e => setDepAmount(e.target.value)} min="10" />
                 <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
-                  {['50','100','200','500','1000'].map(a => (
+                  {['200','500','1000'].map(a => (
                     <button key={a} onClick={() => setDepAmount(a)}
                       style={{ flex: '1 1 auto', padding: '8px', borderRadius: '10px', border: '1px solid rgba(245,158,11,0.3)', background: depAmount === a ? 'rgba(245,158,11,0.2)' : 'transparent', color: '#f59e0b', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
                       {a} ETB
@@ -384,12 +385,10 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                   <textarea
                     rows={3}
                     style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
-                    placeholder="e.g. Telebirr transaction 9AB4857 confirmed for 100 ETB..."
+                    placeholder="e.g. Telebirr transaction 9AB4857 confirmed for 200 ETB..."
                     value={receiptSms}
                     onChange={e => setReceiptSms(e.target.value)}
                   />
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px' }}>You can also upload a screenshot (optional)</div>
-                  <input type="file" accept="image/*" style={{ marginTop: '8px', color: '#94a3b8', fontSize: '12px' }} onChange={e => setProofFile(e.target.files[0])} />
                 </div>
 
                 <button onClick={handleDepositSubmit} disabled={loading || !token}
@@ -440,11 +439,11 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
             <div>
               <h3 style={{ textAlign: 'center', marginBottom: '18px', fontWeight: '800', color: '#fff' }}>Enter Withdrawal Amount</h3>
               <div style={{ ...panelStyle, textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>Available Balance</div>
-                <div style={{ fontSize: '22px', fontWeight: '900', color: '#10b981', marginBottom: '16px' }}>{balance.toFixed(2)} ETB</div>
+                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>Available Withdrawable Winnings</div>
+                <div style={{ fontSize: '22px', fontWeight: '900', color: '#10b981', marginBottom: '16px' }}>{withdrawableBal.toFixed(2)} ETB</div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Amount to Withdraw (ETB)</div>
                 <input type="number" style={{ ...inputStyle, fontSize: '28px', textAlign: 'center', fontWeight: '900' }}
-                  placeholder="100" value={withAmount} onChange={e => setWithAmount(e.target.value)} min="10" max={balance} />
+                  placeholder="100" value={withAmount} onChange={e => setWithAmount(e.target.value)} min="10" max={withdrawableBal} />
                 <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
                   {['50','100','200','500'].map(a => (
                     <button key={a} onClick={() => setWithAmount(a)}
@@ -452,7 +451,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                       {a} ETB
                     </button>
                   ))}
-                  <button onClick={() => setWithAmount(String(Math.floor(balance)))}
+                  <button onClick={() => setWithAmount(String(Math.floor(withdrawableBal)))}
                     style={{ flex: '1 1 auto', padding: '8px', borderRadius: '10px', border: '1px solid rgba(99,102,241,0.3)', background: 'transparent', color: '#818cf8', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
                     All
                   </button>
@@ -460,7 +459,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
               </div>
               <button onClick={() => {
                 if (!withAmount || parseFloat(withAmount) < 10) { setMsg({ error: 'Minimum withdrawal is 10 ETB', success: '' }); return; }
-                if (parseFloat(withAmount) > balance) { setMsg({ error: 'Insufficient balance', success: '' }); return; }
+                if (parseFloat(withAmount) > withdrawableBal) { setMsg({ error: `Insufficient withdrawable balance. Your withdrawable balance is ${withdrawableBal.toFixed(2)} ETB.`, success: '' }); return; }
                 setMsg({ error:'', success:'' }); setWithStep(2);
               }} style={{ ...btnPrimary, background: 'linear-gradient(135deg,#6366f1,#4f46e5)', color: '#fff' }}>
                 Continue →
