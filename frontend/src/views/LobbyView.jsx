@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Wallet, Trophy, AlertCircle, X, Clock, Zap } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Wallet, Trophy, AlertCircle, Clock, Zap } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 import { apiFetch } from '../api';
 
@@ -16,6 +16,8 @@ export default function LobbyView({
   const t = translations[lang];
   const [errMsg, setErrMsg] = useState('');
   const [localMyCartellas, setLocalMyCartellas] = useState(null);
+  // Track in-flight purchases to prevent race-condition bypass of the 4-cartella limit
+  const purchasingRef = useRef(new Set());
 
   // Build a map of purchased tickets: { cartellaIndex -> userId }
   const purchasedMap = {};
@@ -85,8 +87,12 @@ export default function LobbyView({
       return;
     }
 
-    // Max cartellas check
-    if (myCartellas.length >= 4) {
+    // Block if this cartella is already being purchased (in-flight)
+    if (purchasingRef.current.has(index)) return;
+
+    // Max cartellas check — count includes in-flight purchases to prevent race bypass
+    const effectiveCount = myCartellas.length + purchasingRef.current.size;
+    if (effectiveCount >= 4) {
       setErrMsg('Maximum 4 cartellas per round.');
       setTimeout(() => setErrMsg(''), 2500);
       return;
@@ -99,7 +105,8 @@ export default function LobbyView({
       return;
     }
 
-    // SELECT
+    // SELECT — mark as in-flight immediately before any await
+    purchasingRef.current.add(index);
     const updated = [...myCartellas, index];
     setLocalMyCartellas(updated);
     if (onTicketPurchased) onTicketPurchased(Math.max(0, balance - price));
@@ -116,13 +123,15 @@ export default function LobbyView({
     } catch (err) {
       setErrMsg(err.message);
       setLocalMyCartellas(myCartellas); // rollback
+    } finally {
+      purchasingRef.current.delete(index); // always release the lock
     }
   };
 
   const cdColor = currentSec <= 10 ? '#ef4444' : currentSec <= 20 ? '#f59e0b' : '#06b6d4';
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '86px 10px 4px', height: 'calc(100dvh - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '90px 10px 4px', height: 'calc(100dvh - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
 
       {/* ── SOLID FIXED FULL-WIDTH STATS BANNER (completely unmovable) ── */}
       <div
@@ -245,63 +254,6 @@ export default function LobbyView({
         </div>
       </div>
 
-      {/* ── MY CHOSEN CARTELLAS BANNER ── */}
-      {myCartellas.length > 0 && (
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(6,182,212,0.18) 0%, rgba(5,8,15,0.95) 100%)',
-            border: '1.5px solid rgba(6,182,212,0.4)',
-            borderRadius: '12px',
-            padding: '6px 10px',
-            marginBottom: '6px',
-            animation: 'fadeInUp 0.3s ease',
-            flexShrink: 0
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-            <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: '800', letterSpacing: '0.5px' }}>
-              ✓ YOUR CARTELLAS ({myCartellas.length}/4)
-            </span>
-            {isCountdown && (
-              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700' }}>
-                ⏳ Game starts in {currentSec}s
-              </span>
-            )}
-            {isDrawing && (
-              <span style={{ fontSize: '11px', color: '#10b981', fontWeight: '800' }}>
-                🎮 Game is LIVE!
-              </span>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-            {myCartellas.map(idx => (
-              <button
-                key={idx}
-                onClick={() => handleCartellaClick(idx)}
-                style={{
-                  background: 'rgba(6,182,212,0.25)',
-                  color: '#38bdf8',
-                  fontWeight: '900',
-                  fontSize: '12px',
-                  padding: '4px 10px',
-                  borderRadius: '16px',
-                  border: '1px solid rgba(6,182,212,0.5)',
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  transition: 'all 0.15s ease'
-                }}
-                title="Click to unselect"
-              >
-                #{idx}
-                <X size={11} />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ── ERROR MSG ── */}
       {errMsg && (
