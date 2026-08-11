@@ -402,8 +402,16 @@ export default function App() {
     window.location.reload();
   };
 
-  const handleBalanceUpdate = newBalance => {
-    setUser(prev => prev ? { ...prev, balance: newBalance } : prev);
+  const handleBalanceUpdate = (newBalance, withdrawableBal) => {
+    setUser(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, balance: newBalance };
+      if (withdrawableBal !== undefined) {
+        updated.withdrawableBalance = withdrawableBal;
+        updated.withdrawable_balance = withdrawableBal;
+      }
+      return updated;
+    });
   };
 
   const handleWebLoginSuccess = (userObj, userToken) => {

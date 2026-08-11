@@ -202,75 +202,55 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
         </div>
       )}
 
-      {/* ── 4-WAY BALANCE BREAKDOWN ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '7px', marginBottom: '10px' }}>
+      {/* ── 3-WAY CLEAN BALANCE BREAKDOWN ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '10px' }}>
 
         {/* 1. TOTAL BALANCE */}
         <div style={{
           background: 'linear-gradient(135deg, rgba(15,35,75,0.95) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '12px', padding: '10px 12px',
+          borderRadius: '12px', padding: '10px 8px',
           border: '1px solid rgba(59,130,246,0.25)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
         }}>
-          <div style={{ fontSize: '9px', color: '#38bdf8', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '8.5px', color: '#38bdf8', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             💰 TOTAL
           </div>
-          <div style={{ fontSize: '17px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '15px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
             {(user?.balance || 0).toFixed(2)}
-            <span style={{ fontSize: '9px', color: '#64748b', fontWeight: '700' }}> ETB</span>
           </div>
-          <div style={{ fontSize: '9px', color: '#475569', marginTop: '2px' }}>All funds combined</div>
+          <div style={{ fontSize: '8.5px', color: '#64748b', fontWeight: '700', marginTop: '2px' }}>ETB</div>
         </div>
 
-        {/* 2. WITHDRAWABLE (Winnings only) */}
+        {/* 2. WITHDRAWABLE (Winnings) */}
         <div style={{
           background: 'linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '12px', padding: '10px 12px',
+          borderRadius: '12px', padding: '10px 8px',
           border: '1px solid rgba(16,185,129,0.35)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
         }}>
-          <div style={{ fontSize: '9px', color: '#10b981', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '8.5px', color: '#10b981', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             🏆 WITHDRAWABLE
           </div>
-          <div style={{ fontSize: '17px', fontWeight: '900', color: '#10b981', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '15px', fontWeight: '900', color: '#10b981', lineHeight: 1.1 }}>
             {(user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0).toFixed(2)}
-            <span style={{ fontSize: '9px', color: '#10b981', opacity: 0.7, fontWeight: '700' }}> ETB</span>
           </div>
-          <div style={{ fontSize: '9px', color: '#475569', marginTop: '2px' }}>Winnings — cashable</div>
+          <div style={{ fontSize: '8.5px', color: '#10b981', opacity: 0.8, fontWeight: '700', marginTop: '2px' }}>ETB Winnings</div>
         </div>
 
-        {/* 3. BONUS (Referral & registration rewards) */}
+        {/* 3. BONUS (Rewards) */}
         <div style={{
           background: 'linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '12px', padding: '10px 12px',
+          borderRadius: '12px', padding: '10px 8px',
           border: '1px solid rgba(245,158,11,0.3)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
         }}>
-          <div style={{ fontSize: '9px', color: '#f59e0b', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '8.5px', color: '#f59e0b', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             🎁 BONUS
           </div>
-          <div style={{ fontSize: '17px', fontWeight: '900', color: '#f59e0b', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '15px', fontWeight: '900', color: '#f59e0b', lineHeight: 1.1 }}>
             {(user?.bonusBalance ?? user?.referralEarnings ?? 0).toFixed(2)}
-            <span style={{ fontSize: '9px', color: '#f59e0b', opacity: 0.7, fontWeight: '700' }}> ETB</span>
           </div>
-          <div style={{ fontSize: '9px', color: '#475569', marginTop: '2px' }}>Reg & referral rewards</div>
-        </div>
-
-        {/* 4. NON-WITHDRAWABLE (Deposits + bonuses — play only) */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(139,92,246,0.12) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '12px', padding: '10px 12px',
-          border: '1px solid rgba(139,92,246,0.3)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '9px', color: '#a78bfa', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.6px', textTransform: 'uppercase' }}>
-            🎮 PLAY ONLY
-          </div>
-          <div style={{ fontSize: '17px', fontWeight: '900', color: '#a78bfa', lineHeight: 1.1 }}>
-            {Math.max(0, (user?.balance || 0) - (user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0)).toFixed(2)}
-            <span style={{ fontSize: '9px', color: '#a78bfa', opacity: 0.7, fontWeight: '700' }}> ETB</span>
-          </div>
-          <div style={{ fontSize: '9px', color: '#475569', marginTop: '2px' }}>Deposits — not cashable</div>
+          <div style={{ fontSize: '8.5px', color: '#f59e0b', opacity: 0.8, fontWeight: '700', marginTop: '2px' }}>ETB Rewards</div>
         </div>
 
       </div>

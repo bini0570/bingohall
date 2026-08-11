@@ -481,9 +481,13 @@ class BingoEngine {
         // Also add to total balance so user can see total and buy tickets
         await run(`UPDATE users SET balance = balance + ? WHERE id = ?`, [splitPrizePerWinner, w.userId]);
         // Fetch fresh balance and emit to winner's client immediately
-        const freshUser = await get(`SELECT balance FROM users WHERE id = ?`, [w.userId]);
+        const freshUser = await get(`SELECT balance, withdrawable_balance FROM users WHERE id = ?`, [w.userId]);
         if (freshUser) {
-          this.io.emit('balance_updated', { userId: String(w.userId), newBalance: freshUser.balance });
+          this.io.emit('balance_updated', {
+            userId: String(w.userId),
+            newBalance: freshUser.balance,
+            withdrawableBalance: parseFloat(freshUser.withdrawable_balance) || 0
+          });
         }
       }
     }
