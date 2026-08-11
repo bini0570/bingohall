@@ -127,6 +127,9 @@ export default function LobbyView({
       {/* ── SOLID FULL-WIDTH STATS BANNER (fused with top Navbar into one banner) ── */}
       <div
         style={{
+          position: 'sticky',
+          top: '48px',
+          zIndex: 499,
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr 1fr',
           gap: '5px',
