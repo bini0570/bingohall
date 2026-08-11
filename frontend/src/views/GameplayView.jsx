@@ -151,9 +151,11 @@ export default function GameplayView({
         padding: '90px 6px 4px',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 'calc(100dvh - 68px)',
+        height: 'calc(100dvh - 68px)',
+        maxHeight: 'calc(100dvh - 68px)',
         boxSizing: 'border-box',
-        gap: '4px'
+        gap: '4px',
+        overflow: 'hidden'
       }}
     >
       {/* ── SOLID FIXED FULL-WIDTH GAMEPLAY BANNER (completely unmovable) ── */}

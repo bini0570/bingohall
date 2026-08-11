@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, Gift, Copy, Share2, ShieldCheck, Check, Phone, User, Link as LinkIcon } from 'lucide-react';
+import { Wallet, Gift, Copy, Share2, ShieldCheck, Check, Phone } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 import { apiFetch } from '../api';
 
@@ -18,7 +18,6 @@ export default function ProfileView({ lang, user, token }) {
       .then(d => setProfile(d.user))
       .catch(e => console.error(e));
 
-    // Fetch correct referral link from the API
     apiFetch('/api/referrals', {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -31,12 +30,7 @@ export default function ProfileView({ lang, user, token }) {
 
   const p = profile || user;
   const refCode = p?.referralCode || p?.referral_code || '';
-  // Use Telegram bot link (set by API), fallback to bot link built from refCode
   const telegramRefLink = refLink || `https://t.me/aflabingo_bot?start=${refCode}`;
-  // Display a short version of the username (max 14 chars)
-  const displayName = (p?.username || 'Player').length > 14
-    ? (p?.username || 'Player').substring(0, 14) + '…'
-    : (p?.username || 'Player');
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(telegramRefLink).then(() => {
@@ -48,7 +42,7 @@ export default function ProfileView({ lang, user, token }) {
   const shareLink = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'AflaFit Bingo - Join & Win!',
+        title: 'አፍላ BINGO - Join & Win!',
         text: `Play Ethiopian Multiplayer Bingo using my referral code ${refCode}!`,
         url: telegramRefLink
       }).catch(() => {});
@@ -58,7 +52,7 @@ export default function ProfileView({ lang, user, token }) {
   };
 
   return (
-    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '10px 12px' }}>
+    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '60px 12px 10px' }}>
 
       {/* ── COMPACT USER PROFILE CARD ── */}
       <div

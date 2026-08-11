@@ -34,7 +34,7 @@ export default function ReferralView({ lang, user, token }) {
   const refLink = data?.referralLink || `https://t.me/aflabingo_bot?start=${refCode}`;
 
   return (
-    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '10px 12px' }}>
+    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '60px 12px 10px' }}>
 
       {/* ── STATS SUMMARY ROW ── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>

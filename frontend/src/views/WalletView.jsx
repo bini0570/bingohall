@@ -184,7 +184,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   };
 
   return (
-    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '10px 12px' }}>
+    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '60px 12px 10px' }}>
 
       {/* No token guard */}
       {!token && (

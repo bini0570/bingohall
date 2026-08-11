@@ -122,7 +122,7 @@ export default function LobbyView({
   const cdColor = currentSec <= 10 ? '#ef4444' : currentSec <= 20 ? '#f59e0b' : '#06b6d4';
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '90px 10px 4px', height: 'calc(100dvh - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '86px 10px 4px', height: 'calc(100dvh - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
 
       {/* ── SOLID FIXED FULL-WIDTH STATS BANNER (completely unmovable) ── */}
       <div
@@ -326,40 +326,7 @@ export default function LobbyView({
         </div>
       )}
 
-      {/* ── SECTION HEADER ── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '6px',
-          padding: '0 2px',
-          flexShrink: 0
-        }}
-      >
-        <div>
-          <div style={{ fontSize: '12px', fontWeight: '900', color: '#f1f5f9' }}>
-            Choose Your Cartella
-          </div>
-          <div style={{ fontSize: '10px', color: '#475569', fontWeight: '600', marginTop: '1px' }}>
-            <span style={{ color: '#f59e0b', fontWeight: '800' }}>{price} ETB</span>/cartella · Max 4 · {totalPlayers} purchased
-          </div>
-        </div>
-        <div style={{ display: 'flex', gap: '10px', fontSize: '9px', fontWeight: '800' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#38bdf8' }}>
-            <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: 'rgba(6,182,212,0.5)', border: '1px solid #06b6d4', display: 'inline-block' }} />
-            Mine
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#34d399' }}>
-            <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: 'rgba(16,185,129,0.3)', border: '1px solid rgba(16,185,129,0.4)', display: 'inline-block' }} />
-            Taken
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#475569' }}>
-            <span style={{ width: '7px', height: '7px', borderRadius: '2px', background: 'rgba(13,20,38,0.9)', border: '1px solid rgba(255,255,255,0.06)', display: 'inline-block' }} />
-            Free
-          </span>
-        </div>
-      </div>
+
 
       {/* ── 400 CARTELLAS GRID ── */}
       <div
