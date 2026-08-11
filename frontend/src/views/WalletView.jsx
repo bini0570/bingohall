@@ -20,6 +20,13 @@ const PAYMENT_ACCOUNTS = {
     icon: '🏦',
     label: 'CBE',
     color: '#3b82f6'
+  },
+  CBEBirr: {
+    name: 'Biniyam Eyoel',
+    number: '0993994168',
+    icon: '🏧',
+    label: 'CBE Birr',
+    color: '#10b981'
   }
 };
 
