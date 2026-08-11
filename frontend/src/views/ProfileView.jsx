@@ -58,182 +58,133 @@ export default function ProfileView({ lang, user, token }) {
   };
 
   return (
-    <div style={{ maxWidth: '650px', margin: '16px auto', padding: '0 16px' }}>
+    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '10px 12px' }}>
 
-      {/* ── USER ACCOUNT HEADER CARD (NO AVATAR PICTURE) ── */}
+      {/* ── COMPACT USER PROFILE CARD ── */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%)',
-          borderRadius: '20px',
-          padding: '24px',
+          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)',
+          borderRadius: '14px',
+          padding: '14px 16px',
           border: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-          marginBottom: '16px'
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          marginBottom: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#000',
+              fontWeight: '900',
+              fontSize: '16px'
+            }}
+          >
+            {(p?.username || 'P').charAt(0).toUpperCase()}
+          </div>
           <div>
-            <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
-              ACCOUNT PROFILE
-            </div>
-            <h2 style={{ fontSize: '24px', fontWeight: '900', color: '#fff', margin: '4px 0 2px' }}>
+            <div style={{ fontSize: '15px', fontWeight: '800', color: '#fff', lineHeight: 1.2 }}>
               {p?.username || 'Player'}
-            </h2>
-            <div style={{ fontSize: '13px', color: '#38bdf8', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Phone size={14} /> {p?.phone || 'N/A'}
+            </div>
+            <div style={{ fontSize: '12px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+              <Phone size={11} color="#38bdf8" /> {p?.phone || 'N/A'}
             </div>
           </div>
-
-          {p?.isAdmin && (
-            <div
-              style={{
-                background: 'rgba(139, 92, 246, 0.15)',
-                border: '1px solid rgba(139, 92, 246, 0.35)',
-                color: '#a78bfa',
-                padding: '6px 14px',
-                borderRadius: '20px',
-                fontSize: '12px',
-                fontWeight: '900',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px'
-              }}
-            >
-              <ShieldCheck size={16} /> Administrator
-            </div>
-          )}
         </div>
+
+        {p?.isAdmin && (
+          <div
+            style={{
+              background: 'rgba(139, 92, 246, 0.15)',
+              border: '1px solid rgba(139, 92, 246, 0.3)',
+              color: '#a78bfa',
+              padding: '4px 10px',
+              borderRadius: '12px',
+              fontSize: '11px',
+              fontWeight: '800',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <ShieldCheck size={13} /> Admin
+          </div>
+        )}
       </div>
 
-      {/* ── WALLET & REFERRAL EARNINGS 2-CARD GRID ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+      {/* ── STATS ROW ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
         {/* Wallet Balance */}
         <div
           style={{
-            background: 'rgba(16, 185, 129, 0.08)',
-            border: '1.5px solid rgba(16, 185, 129, 0.25)',
-            borderRadius: '16px',
-            padding: '18px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+            background: 'rgba(16, 185, 129, 0.06)',
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            borderRadius: '12px',
+            padding: '10px 12px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>
-            <Wallet size={15} color="#10b981" /> Wallet Balance
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#94a3b8', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>
+            <Wallet size={12} color="#10b981" /> Balance
           </div>
-          <div style={{ fontSize: '24px', fontWeight: '900', color: '#10b981', marginTop: '6px' }}>
-            {(p?.balance || 0).toFixed(2)} <span style={{ fontSize: '12px' }}>ETB</span>
+          <div style={{ fontSize: '17px', fontWeight: '900', color: '#10b981', marginTop: '2px' }}>
+            {(p?.balance || 0).toFixed(2)} <span style={{ fontSize: '10px', opacity: 0.8 }}>ETB</span>
           </div>
         </div>
 
         {/* Referral Earnings */}
         <div
           style={{
-            background: 'rgba(139, 92, 246, 0.08)',
-            border: '1.5px solid rgba(139, 92, 246, 0.25)',
-            borderRadius: '16px',
-            padding: '18px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+            background: 'rgba(139, 92, 246, 0.06)',
+            border: '1px solid rgba(139, 92, 246, 0.2)',
+            borderRadius: '12px',
+            padding: '10px 12px'
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase' }}>
-            <Gift size={15} color="#a78bfa" /> Referral Rewards
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#94a3b8', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase' }}>
+            <Gift size={12} color="#a78bfa" /> Rewards
           </div>
-          <div style={{ fontSize: '24px', fontWeight: '900', color: '#a78bfa', marginTop: '6px' }}>
-            {(p?.referralEarnings || 0).toFixed(2)} <span style={{ fontSize: '12px' }}>ETB</span>
+          <div style={{ fontSize: '17px', fontWeight: '900', color: '#a78bfa', marginTop: '2px' }}>
+            {(p?.referralEarnings || 0).toFixed(2)} <span style={{ fontSize: '10px', opacity: 0.8 }}>ETB</span>
           </div>
         </div>
       </div>
 
-      {/* ── REFERRAL PROGRAM & SHARE LINK CARD ── */}
+      {/* ── REFERRAL CARD ── */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%)',
-          borderRadius: '20px',
-          padding: '22px',
-          border: '1.5px solid rgba(6, 182, 212, 0.3)',
-          boxShadow: '0 8px 32px rgba(6, 182, 212, 0.15)'
+          background: 'rgba(15, 23, 42, 0.95)',
+          borderRadius: '14px',
+          padding: '14px',
+          border: '1px solid rgba(6, 182, 212, 0.25)',
+          marginBottom: '10px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-          <div
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#fff'
-            }}
-          >
-            <LinkIcon size={20} />
-          </div>
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: '900', color: '#fff', margin: 0 }}>
-              Your Referral Link
-            </h3>
-            <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
-              Earn 10 ETB bonus for every friend who signs up & deposits!
-            </p>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700' }}>REFERRAL CODE</span>
+          <span style={{ fontSize: '14px', fontWeight: '900', color: '#f59e0b', letterSpacing: '0.5px' }}>{refCode}</span>
         </div>
 
-        {/* Code & Link display */}
-        <div
-          style={{
-            background: 'rgba(3, 7, 18, 0.7)',
-            borderRadius: '12px',
-            padding: '12px',
-            border: '1px solid rgba(255,255,255,0.08)',
-            marginBottom: '14px',
-            wordBreak: 'break-all'
-          }}
-        >
-          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', marginBottom: '4px' }}>
-            REFERRAL CODE: <strong style={{ color: '#f59e0b', fontSize: '13px' }}>{refCode}</strong>
-          </div>
-          <div style={{ fontSize: '13px', color: '#38bdf8', fontWeight: '700' }}>
-            {telegramRefLink}
-          </div>
-        </div>
-
-        {/* Copy & Share Buttons */}
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={copyToClipboard}
             style={{
               flex: 1,
-              padding: '12px',
-              borderRadius: '12px',
-              border: 'none',
-              background: copied ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-              color: '#fff',
-              fontWeight: '900',
-              fontSize: '13px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 14px rgba(6, 182, 212, 0.3)'
-            }}
-          >
-            {copied ? <Check size={16} /> : <Copy size={16} />}
-            {copied ? 'Copied Link!' : 'Copy Link'}
-          </button>
-
-          <button
-            onClick={shareLink}
-            style={{
-              flex: 1,
-              padding: '12px',
-              borderRadius: '12px',
-              border: '1px solid rgba(255,255,255,0.15)',
-              background: 'rgba(255,255,255,0.08)',
-              color: '#fff',
-              fontWeight: '900',
-              fontSize: '13px',
+              padding: '9px 12px',
+              borderRadius: '10px',
+              background: copied ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.08)',
+              border: `1px solid ${copied ? '#10b981' : 'rgba(255,255,255,0.12)'}`,
+              color: copied ? '#10b981' : '#fff',
+              fontSize: '12px',
+              fontWeight: '800',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
@@ -241,7 +192,29 @@ export default function ProfileView({ lang, user, token }) {
               gap: '6px'
             }}
           >
-            <Share2 size={16} /> Share Link
+            {copied ? <Check size={14} /> : <Copy size={14} />}
+            {copied ? 'Copied!' : 'Copy Link'}
+          </button>
+
+          <button
+            onClick={shareLink}
+            style={{
+              flex: 1,
+              padding: '9px 12px',
+              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+              border: 'none',
+              color: '#fff',
+              fontSize: '12px',
+              fontWeight: '800',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px'
+            }}
+          >
+            <Share2 size={14} /> Share
           </button>
         </div>
       </div>

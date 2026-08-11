@@ -198,24 +198,24 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       {/* Balance Card */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(15,35,75,0.95) 0%, rgba(5,8,15,0.98) 100%)',
-        borderRadius: '20px',
-        padding: '18px 16px',
-        marginBottom: '14px',
+        borderRadius: '14px',
+        padding: '10px 14px',
+        marginBottom: '10px',
         textAlign: 'center',
         border: '1px solid rgba(59,130,246,0.2)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)'
+        boxShadow: '0 2px 12px rgba(0,0,0,0.3)'
       }}>
-        <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>💰 Wallet Balance</div>
-        <div style={{ fontSize: '34px', fontWeight: '900', color: '#fff', letterSpacing: '-1px', lineHeight: 1.1 }}>
-          {balance.toFixed(2)} <span style={{ fontSize: '16px', color: '#64748b', fontWeight: '700' }}>ETB</span>
+        <div style={{ fontSize: '10px', color: '#64748b', marginBottom: '2px', fontWeight: '700', letterSpacing: '0.8px', textTransform: 'uppercase' }}>WALLET BALANCE</div>
+        <div style={{ fontSize: '22px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
+          {balance.toFixed(2)} <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>ETB</span>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', background: 'rgba(8,14,28,0.8)', borderRadius: '14px', padding: '4px', marginBottom: '14px', gap: '3px', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ display: 'flex', background: 'rgba(8,14,28,0.8)', borderRadius: '10px', padding: '3px', marginBottom: '10px', gap: '3px', border: '1px solid rgba(255,255,255,0.06)' }}>
         {[['deposit','📥 Deposit'],['withdraw','📤 Withdraw'],['history','📋 History']].map(([key, label]) => (
           <button key={key} onClick={() => { setActiveTab(key); resetDeposit(); resetWithdraw(); setMsg({ error: '', success: '' }); }}
-            style={{ flex: 1, padding: '9px 4px', borderRadius: '10px', border: 'none', background: activeTab === key ? 'rgba(255,255,255,0.10)' : 'transparent', color: activeTab === key ? '#f1f5f9' : '#475569', fontWeight: activeTab === key ? '800' : '600', cursor: 'pointer', fontSize: '12px', transition: 'all 0.2s' }}>
+            style={{ flex: 1, padding: '7px 4px', borderRadius: '8px', border: 'none', background: activeTab === key ? 'rgba(255,255,255,0.10)' : 'transparent', color: activeTab === key ? '#f1f5f9' : '#475569', fontWeight: activeTab === key ? '800' : '600', cursor: 'pointer', fontSize: '11px', transition: 'all 0.2s' }}>
             {label}
           </button>
         ))}
@@ -247,18 +247,16 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
           {/* STEP 1: Choose Payment Method */}
           {depStep === 1 && (
             <div>
-              <h3 style={{ textAlign: 'center', marginBottom: '18px', fontWeight: '800', color: '#fff' }}>Choose Payment Method</h3>
-              {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
-                <button key={key} onClick={() => { setDepMethod(key); setDepStep(2); }}
-                  style={{ width: '100%', padding: '18px', borderRadius: '16px', border: `2px solid ${acc.color}30`, background: `${acc.color}10`, color: '#fff', cursor: 'pointer', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '14px', transition: 'all 0.2s' }}>
-                  <span style={{ fontSize: '32px' }}>{acc.icon}</span>
-                  <div style={{ textAlign: 'left' }}>
-                    <div style={{ fontWeight: '900', fontSize: '16px', color: acc.color }}>{acc.label}</div>
-                    <div style={{ fontSize: '12px', color: '#94a3b8' }}>Tap to deposit via {acc.label}</div>
-                  </div>
-                  <ChevronRight size={20} style={{ marginLeft: 'auto', color: '#64748b' }} />
-                </button>
-              ))}
+              <div style={{ textAlign: 'center', marginBottom: '12px', fontWeight: '800', color: '#fff', fontSize: '14px' }}>Select Deposit Method</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
+                  <button key={key} onClick={() => { setDepMethod(key); setDepStep(2); }}
+                    style={{ padding: '12px 10px', borderRadius: '12px', border: `1px solid ${acc.color}40`, background: `${acc.color}12`, color: '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', transition: 'all 0.2s' }}>
+                    <span style={{ fontSize: '20px' }}>{acc.icon}</span>
+                    <span style={{ fontWeight: '800', fontSize: '13px', color: acc.color }}>{acc.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -499,28 +497,28 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       {/* ==================== HISTORY ==================== */}
       {activeTab === 'history' && (
         <div>
-          <h4 style={{ fontWeight: '800', marginBottom: '14px', color: '#fff' }}>📥 Deposits</h4>
+          <div style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', color: '#94a3b8', textTransform: 'uppercase' }}>Deposits</div>
           {(transactions.deposits || []).length === 0
-            ? <div style={{ color: '#64748b', textAlign: 'center', padding: '20px', fontSize: '13px' }}>No deposits yet</div>
+            ? <div style={{ color: '#64748b', textAlign: 'center', padding: '14px', fontSize: '12px' }}>No deposits yet</div>
             : (transactions.deposits || []).slice().reverse().map(d => (
-              <div key={d.id} style={{ ...panelStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
+              <div key={d.id} style={{ background: 'rgba(13,20,38,0.8)', borderRadius: '10px', padding: '8px 12px', marginBottom: '6px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: '800', color: '#fff' }}>+{parseFloat(d.amount).toFixed(2)} ETB</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{d.method} · {new Date(d.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontWeight: '800', color: '#10b981', fontSize: '13px' }}>+{parseFloat(d.amount).toFixed(2)} ETB</div>
+                  <div style={{ fontSize: '10px', color: '#64748b' }}>{d.method} · {new Date(d.created_at).toLocaleDateString()}</div>
                 </div>
                 {renderStatusBadge(d.status)}
               </div>
             ))
           }
 
-          <h4 style={{ fontWeight: '800', margin: '20px 0 14px', color: '#fff' }}>📤 Withdrawals</h4>
+          <div style={{ fontSize: '11px', fontWeight: '800', margin: '14px 0 8px', color: '#94a3b8', textTransform: 'uppercase' }}>Withdrawals</div>
           {(transactions.withdrawals || []).length === 0
-            ? <div style={{ color: '#64748b', textAlign: 'center', padding: '20px', fontSize: '13px' }}>No withdrawals yet</div>
+            ? <div style={{ color: '#64748b', textAlign: 'center', padding: '14px', fontSize: '12px' }}>No withdrawals yet</div>
             : (transactions.withdrawals || []).slice().reverse().map(w => (
-              <div key={w.id} style={{ ...panelStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
+              <div key={w.id} style={{ background: 'rgba(13,20,38,0.8)', borderRadius: '10px', padding: '8px 12px', marginBottom: '6px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: '800', color: '#fff' }}>-{parseFloat(w.amount).toFixed(2)} ETB</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>{w.method} · {w.account_number} · {new Date(w.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontWeight: '800', color: '#ef4444', fontSize: '13px' }}>-{parseFloat(w.amount).toFixed(2)} ETB</div>
+                  <div style={{ fontSize: '10px', color: '#64748b' }}>{w.method} · {new Date(w.created_at).toLocaleDateString()}</div>
                 </div>
                 {renderStatusBadge(w.status)}
               </div>
