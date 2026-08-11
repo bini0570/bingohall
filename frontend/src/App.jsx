@@ -5,8 +5,6 @@ import Navbar from './components/Navbar';
 import LobbyView from './views/LobbyView';
 import GameplayView from './views/GameplayView';
 import WalletView from './views/WalletView';
-import ReferralView from './views/ReferralView';
-import ProfileView from './views/ProfileView';
 import AuthView from './views/AuthView';
 
 let socketRef = socket;
@@ -593,13 +591,6 @@ export default function App() {
         />
       )}
 
-      {currentView === 'referrals' && (
-        <ReferralView lang={lang} user={user} token={token} />
-      )}
-
-      {currentView === 'profile' && (
-        <ProfileView lang={lang} user={user} token={token} />
-      )}
     </div>
   );
 }

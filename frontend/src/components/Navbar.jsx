@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Wallet, User, Dices, Globe, Zap, Gift, HelpCircle, X, ShieldCheck, Trophy, PhoneCall } from 'lucide-react';
+import { Home, Wallet, Dices, HelpCircle, X } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 
 export default function Navbar({
@@ -16,8 +16,6 @@ export default function Navbar({
   const navItems = [
     { id: 'lobby', label: 'Home', icon: Home, activeColor: '#f59e0b', activeBg: 'rgba(245,158,11,0.12)' },
     { id: 'wallet', label: 'Wallet', icon: Wallet, activeColor: '#10b981', activeBg: 'rgba(16,185,129,0.12)' },
-    { id: 'referrals', label: 'Referrals', icon: Gift, activeColor: '#06b6d4', activeBg: 'rgba(6,182,212,0.12)' },
-    { id: 'profile', label: 'Profile', icon: User, activeColor: '#a78bfa', activeBg: 'rgba(139,92,246,0.12)' },
   ];
 
   return (

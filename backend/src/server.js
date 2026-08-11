@@ -307,19 +307,28 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
       [req.user.id]
     );
 
+    const referralEarnings = refEarnedRow && refEarnedRow.total ? parseFloat(refEarnedRow.total) : 0;
+    const totalBalance = parseFloat(user.balance) || 0;
+    const withdrawableBalance = parseFloat(user.withdrawable_balance) || 0;
+    // Bonus = referral rewards earned (tracked in referrals table)
+    // Non-withdrawable = everything except winnings (deposits + bonuses — playable only)
+    const nonWithdrawableBalance = Math.max(0, totalBalance - withdrawableBalance);
+
     res.json({
       user: {
         id: user.id,
         username: user.username,
         phone: user.phone,
-        balance: user.balance,
-        withdrawableBalance: parseFloat(user.withdrawable_balance) || 0,
+        balance: totalBalance,
+        withdrawableBalance,
+        bonusBalance: referralEarnings,
+        nonWithdrawableBalance,
         hasDeposited: !!(user.has_deposited),
         referralCode: user.referral_code,
         isAdmin: !!user.is_admin,
         gamesPlayed: gamesPlayedRow ? gamesPlayedRow.count : 0,
         gamesWon: gamesWonRow ? gamesWonRow.count : 0,
-        referralEarnings: refEarnedRow && refEarnedRow.total ? refEarnedRow.total : 0.0
+        referralEarnings
       }
     });
   } catch (err) {
