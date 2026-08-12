@@ -525,7 +525,7 @@ export default function App() {
   // MAIN GAME UI
   // ─────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: '74px', background: '#090d16', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', paddingBottom: currentView === 'admin' ? '0' : '74px', background: '#090d16', color: '#fff' }}>
       <Navbar
         lang={lang}
         setLang={setLang}

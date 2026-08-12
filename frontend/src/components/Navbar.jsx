@@ -18,6 +18,8 @@ export default function Navbar({
     { id: 'wallet', label: 'Wallet', icon: Wallet, activeColor: '#10b981', activeBg: 'rgba(16,185,129,0.12)' },
   ];
 
+  if (currentView === 'admin') return null;
+
   return (
     <>
       {/* ── Top Header Bar ── */}
