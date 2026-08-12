@@ -203,55 +203,39 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
         </div>
       )}
 
-      {/* ── 3-WAY CLEAN BALANCE BREAKDOWN ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', marginBottom: '10px' }}>
+      {/* ── 2-WAY BALANCE BREAKDOWN (Total & Withdrawable) ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
 
         {/* 1. TOTAL BALANCE */}
         <div style={{
           background: 'linear-gradient(135deg, rgba(15,35,75,0.95) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '12px', padding: '10px 8px',
+          borderRadius: '14px', padding: '12px 10px',
           border: '1px solid rgba(59,130,246,0.25)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
         }}>
-          <div style={{ fontSize: '8.5px', color: '#38bdf8', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            💰 TOTAL
+          <div style={{ fontSize: '9px', color: '#38bdf8', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            💰 TOTAL BALANCE
           </div>
-          <div style={{ fontSize: '15px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '18px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
             {(user?.balance || 0).toFixed(2)}
           </div>
-          <div style={{ fontSize: '8.5px', color: '#64748b', fontWeight: '700', marginTop: '2px' }}>ETB</div>
+          <div style={{ fontSize: '9px', color: '#64748b', fontWeight: '700', marginTop: '2px' }}>ETB</div>
         </div>
 
         {/* 2. WITHDRAWABLE (Winnings) */}
         <div style={{
           background: 'linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '12px', padding: '10px 8px',
+          borderRadius: '14px', padding: '12px 10px',
           border: '1px solid rgba(16,185,129,0.35)',
           boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
         }}>
-          <div style={{ fontSize: '8.5px', color: '#10b981', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: '9px', color: '#10b981', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             🏆 WITHDRAWABLE
           </div>
-          <div style={{ fontSize: '15px', fontWeight: '900', color: '#10b981', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '18px', fontWeight: '900', color: '#10b981', lineHeight: 1.1 }}>
             {(user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0).toFixed(2)}
           </div>
-          <div style={{ fontSize: '8.5px', color: '#10b981', opacity: 0.8, fontWeight: '700', marginTop: '2px' }}>ETB Winnings</div>
-        </div>
-
-        {/* 3. BONUS (Rewards) */}
-        <div style={{
-          background: 'linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '12px', padding: '10px 8px',
-          border: '1px solid rgba(245,158,11,0.3)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '8.5px', color: '#f59e0b', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            🎁 BONUS
-          </div>
-          <div style={{ fontSize: '15px', fontWeight: '900', color: '#f59e0b', lineHeight: 1.1 }}>
-            {(user?.bonusBalance ?? user?.referralEarnings ?? 0).toFixed(2)}
-          </div>
-          <div style={{ fontSize: '8.5px', color: '#f59e0b', opacity: 0.8, fontWeight: '700', marginTop: '2px' }}>ETB Rewards</div>
+          <div style={{ fontSize: '9px', color: '#10b981', opacity: 0.8, fontWeight: '700', marginTop: '2px' }}>ETB Winnings</div>
         </div>
 
       </div>
@@ -442,23 +426,17 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                 <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>Available Withdrawable Winnings</div>
                 <div style={{ fontSize: '22px', fontWeight: '900', color: '#10b981', marginBottom: '16px' }}>{withdrawableBal.toFixed(2)} ETB</div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Amount to Withdraw (ETB)</div>
-                <input type="number" style={{ ...inputStyle, fontSize: '28px', textAlign: 'center', fontWeight: '900' }}
-                  placeholder="100" value={withAmount} onChange={e => setWithAmount(e.target.value)} min="10" max={withdrawableBal} />
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
-                  {['50','100','200','500'].map(a => (
-                    <button key={a} onClick={() => setWithAmount(a)}
-                      style={{ flex: '1 1 auto', padding: '8px', borderRadius: '10px', border: '1px solid rgba(99,102,241,0.3)', background: withAmount === a ? 'rgba(99,102,241,0.2)' : 'transparent', color: '#818cf8', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
-                      {a} ETB
-                    </button>
-                  ))}
+                <input type="number" style={{ ...inputStyle, fontSize: '24px', textAlign: 'center', fontWeight: '900' }}
+                  placeholder="Enter Amount" value={withAmount} onChange={e => setWithAmount(e.target.value)} min="200" max={withdrawableBal} />
+                <div style={{ marginTop: '12px' }}>
                   <button onClick={() => setWithAmount(String(Math.floor(withdrawableBal)))}
-                    style={{ flex: '1 1 auto', padding: '8px', borderRadius: '10px', border: '1px solid rgba(99,102,241,0.3)', background: 'transparent', color: '#818cf8', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
-                    All
+                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.12)', color: '#818cf8', fontWeight: '800', cursor: 'pointer', fontSize: '13px' }}>
+                    Withdraw All ({Math.floor(withdrawableBal)} ETB)
                   </button>
                 </div>
               </div>
               <button onClick={() => {
-                if (!withAmount || parseFloat(withAmount) < 10) { setMsg({ error: 'Minimum withdrawal is 10 ETB', success: '' }); return; }
+                if (!withAmount || parseFloat(withAmount) < 200) { setMsg({ error: 'Minimum withdrawal is 200 ETB', success: '' }); return; }
                 if (parseFloat(withAmount) > withdrawableBal) { setMsg({ error: `Insufficient withdrawable balance. Your withdrawable balance is ${withdrawableBal.toFixed(2)} ETB.`, success: '' }); return; }
                 setMsg({ error:'', success:'' }); setWithStep(2);
               }} style={{ ...btnPrimary, background: 'linear-gradient(135deg,#6366f1,#4f46e5)', color: '#fff' }}>
