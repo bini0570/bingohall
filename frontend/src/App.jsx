@@ -443,6 +443,7 @@ export default function App() {
   const userTickets = getUserTickets();
 
   // Auto-switch to gameplay when drawing starts and user has tickets
+  // AND auto-switch back to lobby when round ends (status is COUNTDOWN or WAITING)
   useEffect(() => {
     if (
       gameState?.status === 'DRAWING' &&
@@ -451,8 +452,14 @@ export default function App() {
       !gameEndedRef.current
     ) {
       setCurrentView('gameplay');
+    } else if (
+      currentView === 'gameplay' &&
+      (gameState?.status === 'COUNTDOWN' || gameState?.status === 'WAITING' || userTickets.length === 0)
+    ) {
+      // Auto-return to lobby when game finishes or user has no active tickets
+      setCurrentView('lobby');
     }
-  }, [gameState?.status, userTickets.length]);
+  }, [gameState?.status, userTickets.length, currentView]);
 
   const handleBackToLobby = () => {
     gameEndedRef.current = true;
@@ -502,18 +509,15 @@ export default function App() {
     );
   }
 
-  // Not inside Telegram
-  if (authStatus === 'not_telegram') {
-    if (showWebAuth) {
-      return (
-        <AuthView
-          lang={lang}
-          onLoginSuccess={handleWebLoginSuccess}
-          onToggleLang={() => setLang(lang === 'en' ? 'am' : 'en')}
-        />
-      );
-    }
-    return <TelegramGate onPlayWeb={() => setShowWebAuth(true)} />;
+  // Not inside Telegram — allow direct access to LobbyView instead of blocking with gate
+  if (authStatus === 'not_telegram' && showWebAuth) {
+    return (
+      <AuthView
+        lang={lang}
+        onLoginSuccess={handleWebLoginSuccess}
+        onToggleLang={() => setLang(lang === 'en' ? 'am' : 'en')}
+      />
+    );
   }
 
   // Inside Telegram but phone not registered
@@ -580,27 +584,7 @@ export default function App() {
           onBackToLobby={handleBackToLobby}
         />
       )}
-      {currentView === 'gameplay' && userTickets.length === 0 && (
-        <div style={{
-          minHeight: '60vh', display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center', gap: '16px',
-          color: '#94a3b8', fontFamily: '"Outfit", system-ui, sans-serif', padding: '24px', textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '56px' }}>🎟️</div>
-          <h2 style={{ color: '#fff', fontSize: '20px', fontWeight: '800', margin: 0 }}>No Active Tickets</h2>
-          <p style={{ margin: 0, fontSize: '14px', maxWidth: '280px', lineHeight: '1.6' }}>
-            You don't have any cartellas for the current round. Go to the lobby to pick yours!
-          </p>
-          <button
-            onClick={() => setCurrentView('lobby')}
-            style={{
-              padding: '12px 28px', borderRadius: '50px', border: 'none',
-              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-              color: '#fff', fontWeight: '800', fontSize: '15px', cursor: 'pointer'
-            }}
-          >← Back to Lobby</button>
-        </div>
-      )}
+      {currentView === 'gameplay' && userTickets.length === 0 && null}
 
       {currentView === 'wallet' && (
         <WalletView
