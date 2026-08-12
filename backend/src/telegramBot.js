@@ -647,7 +647,8 @@ async function startWithdrawFlow(chatId, telegramId) {
   if (withdrawableBal < 200) {
     bot.sendMessage(
       chatId,
-      `🏆 <b>Withdrawable Winnings:</b> <code>${withdrawableBal.toFixed(2)} ETB</code>\n⚠️ Not enough to withdraw (Minimum is <b>200 ETB</b> from winnings).\n\n<i>Only winnings from Bingo rounds can be withdrawn.</i>`,
+      `🏆 <b>Withdrawable:</b> <code>${withdrawableBal.toFixed(2)} ETB</code>\n` +
+      `⚠️ <b>Minimum:</b> <code>200 ETB</code>`,
       {
         parse_mode: 'HTML',
         reply_markup: {
@@ -664,18 +665,14 @@ async function startWithdrawFlow(chatId, telegramId) {
 
   bot.sendMessage(
     chatId,
-    `📤 <b>Withdraw Funds:</b> <code>${userBal.toFixed(2)} ETB</code> available. Choose or type amount:`,
+    `🏆 <b>Withdrawable:</b> <code>${withdrawableBal.toFixed(2)} ETB</code>\n` +
+    `✏️ <b>Enter amount</b>:`,
     {
       parse_mode: 'HTML',
       reply_markup: {
         inline_keyboard: [
           [
-            { text: '200 ETB', callback_data: 'cb_with_preset_200' },
-            { text: '500 ETB', callback_data: 'cb_with_preset_500' }
-          ],
-          [
-            { text: '1000 ETB', callback_data: 'cb_with_preset_1000' },
-            { text: `All (${userBal.toFixed(0)} ETB)`, callback_data: `cb_with_preset_${userBal}` }
+            { text: `All (${Math.floor(withdrawableBal)} ETB)`, callback_data: `cb_with_preset_${Math.floor(withdrawableBal)}` }
           ]
         ]
       }
