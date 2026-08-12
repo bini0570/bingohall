@@ -347,9 +347,16 @@ export default function App() {
       setTimeout(() => setToastMessage(''), 8000);
     });
 
-    socket.on('balance_updated', ({ userId, newBalance }) => {
+    socket.on('balance_updated', ({ userId, newBalance, withdrawableBalance }) => {
       setUser(prev => {
-        if (prev && String(prev.id) === String(userId)) return { ...prev, balance: newBalance };
+        if (prev && String(prev.id) === String(userId)) {
+          const updated = { ...prev, balance: newBalance };
+          if (withdrawableBalance !== undefined) {
+            updated.withdrawableBalance = withdrawableBalance;
+            updated.withdrawable_balance = withdrawableBalance;
+          }
+          return updated;
+        }
         return prev;
       });
     });
@@ -360,7 +367,9 @@ export default function App() {
       if (storedToken) {
         apiFetch('/api/user/profile', { headers: { Authorization: `Bearer ${storedToken}` } })
           .then(r => r.json())
-          .then(d => { if (d.user) setUser(prev => prev ? { ...prev, balance: d.user.balance } : d.user); })
+          .then(d => {
+            if (d.user) setUser(d.user);
+          })
           .catch(() => {});
       }
     });

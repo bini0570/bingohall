@@ -77,7 +77,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       // Instantly update balance when admin approves
       const handleBalanceUpdated = data => {
         if (String(data.userId) === String(user?.id) && onBalanceUpdated) {
-          onBalanceUpdated(data.newBalance);
+          onBalanceUpdated(data.newBalance, data.withdrawableBalance);
         }
         fetchTransactions(); // also refresh transactions to show new status
       };
