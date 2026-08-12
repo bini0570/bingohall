@@ -903,8 +903,7 @@ async function sendBalance(chatId, telegramId) {
   bot.sendMessage(
     chatId,
     `💰 <b>Total Balance:</b> <code>${totalBalance} ETB</code>\n` +
-    `🏆 <b>Withdrawable Winnings:</b> <code>${withdrawableBal} ETB</code>\n\n` +
-    `<i>Only winnings can be withdrawn. Deposited funds are used to buy tickets.</i>`,
+    `🏆 <b>Withdrawable:</b> <code>${withdrawableBal} ETB</code>`,
     {
       parse_mode: 'HTML',
       reply_markup: {
