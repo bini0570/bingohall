@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  LayoutDashboard, ArrowDownLeft, ArrowUpRight, Send, BarChart3,
-  Users, CheckCircle2, XCircle, ShieldCheck, AlertCircle,
-  Eye, RefreshCw, Menu, X, TrendingUp, Clock, Wifi
+  ArrowDownLeft, ArrowUpRight, Send, ShieldCheck, AlertCircle,
+  Eye, CheckCircle2, RefreshCw, Menu, X
 } from 'lucide-react';
 import { apiFetch } from '../api';
 
@@ -496,8 +495,11 @@ function StatusBadge({ status }) {
   return <span className={`status-badge status-${cls}`}>{label}</span>;
 }
 
-export default function AdminView({ token, socket }) {
+export default function AdminView({ token: tokenProp, socket }) {
   injectStyles();
+
+  // Use prop first, fall back to localStorage (in case prop arrives after mount)
+  const token = tokenProp || localStorage.getItem('bingo_token') || null;
 
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -737,33 +739,6 @@ export default function AdminView({ token, socket }) {
                       {!withdrawals.length && <tr><td colSpan={4} className="empty-state">No withdrawals yet</td></tr>}
                     </tbody>
                   </table>
-                </div>
-              </div>
-
-              {/* Live game status */}
-              <div className="section-card">
-                <div className="section-card-header" style={{ color: '#f59e0b' }}>
-                  🎮 Live Game Status
-                </div>
-                <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <InfoRow label="Game Status"        value={<span style={{ color: '#10b981', fontWeight: 900 }}>{metrics?.gameStatus || 'COUNTDOWN'}</span>} />
-                  <InfoRow label="Tickets This Round" value={metrics?.cartellasSoldThisRound ?? 0} />
-                  <InfoRow label="Prize Pool"         value={<span style={{ color: '#f59e0b', fontWeight: 900 }}>{(metrics?.prizePool || 0).toFixed(2)} ETB</span>} />
-                </div>
-              </div>
-
-              {/* Online users */}
-              <div className="section-card">
-                <div className="section-card-header" style={{ color: '#c084fc' }}>
-                  <Wifi size={15} /> Online Users
-                </div>
-                <div style={{ padding: '24px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', fontWeight: 900, color: '#10b981', lineHeight: 1 }}>
-                    {metrics?.onlinePlayers ?? 1}
-                  </div>
-                  <div style={{ color: '#475569', fontSize: '12px', fontWeight: 700, marginTop: '6px' }}>
-                    Players Connected Right Now
-                  </div>
                 </div>
               </div>
             </div>
@@ -1032,15 +1007,6 @@ function ReportCard({ label, value, sub, color }) {
       <div style={{ fontSize: 10, fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 4 }}>{label}</div>
       <div style={{ fontSize: 20, fontWeight: 900, color, lineHeight: 1.1 }}>{value}</div>
       <div style={{ fontSize: 10, color: '#334155', marginTop: 3, fontWeight: 700 }}>{sub}</div>
-    </div>
-  );
-}
-
-function InfoRow({ label, value }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13 }}>
-      <span style={{ color: '#475569' }}>{label}</span>
-      <strong style={{ color: '#e2e8f0' }}>{value}</strong>
     </div>
   );
 }

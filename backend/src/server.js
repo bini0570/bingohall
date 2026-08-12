@@ -842,9 +842,14 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 
 app.post('/api/admin/broadcast', authenticateAdmin, async (req, res) => {
   try {
-    const { target, message } = req.body; // target: 'web', 'telegram', 'both'
+    const { target, message } = req.body; // target: 'web', 'telegram', 'both', 'online'
 
     if (target === 'web' || target === 'both') {
+      io.emit('broadcast_message', { message, timestamp: new Date() });
+    }
+
+    if (target === 'online') {
+      // Emit only to currently connected socket clients
       io.emit('broadcast_message', { message, timestamp: new Date() });
     }
 
@@ -860,6 +865,7 @@ app.post('/api/admin/broadcast', authenticateAdmin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // Player SPA catch-all — serves index.html for any non-API, non-admin route
 // Must be placed AFTER all API routes
