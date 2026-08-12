@@ -255,25 +255,31 @@ export default function LobbyView({
       </div>
 
 
-      {/* ── ERROR MSG ── */}
+      {/* ── FLOATING TOAST ERROR HIGHLIGHT (doesn't push or take space) ── */}
       {errMsg && (
         <div
           style={{
+            position: 'fixed',
+            top: '96px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 999,
             display: 'flex',
             alignItems: 'center',
             gap: '8px',
-            background: 'rgba(239,68,68,0.12)',
-            border: '1px solid rgba(239,68,68,0.3)',
-            color: '#fca5a5',
-            padding: '8px 12px',
-            borderRadius: '10px',
-            marginBottom: '6px',
+            background: 'linear-gradient(135deg, rgba(239,68,68,0.95), rgba(185,28,28,0.95))',
+            color: '#ffffff',
+            padding: '8px 16px',
+            borderRadius: '20px',
             fontSize: '12px',
-            fontWeight: '700',
-            flexShrink: 0
+            fontWeight: '800',
+            boxShadow: '0 4px 20px rgba(239,68,68,0.5), 0 8px 32px rgba(0,0,0,0.7)',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+            border: '1px solid rgba(255,255,255,0.2)'
           }}
         >
-          <AlertCircle size={14} />
+          <AlertCircle size={15} color="#fff" />
           {errMsg}
         </div>
       )}
