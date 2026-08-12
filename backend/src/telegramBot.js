@@ -785,9 +785,10 @@ async function processWithdrawal(chatId, telegramId, amount, accountNum, method,
   const user = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
   if (!user) { sendContactRequest(chatId); return; }
 
-  // Rule 1: Must have deposited at least once
+  // Rule 1: Must have deposited at least once (check has_deposited flag or approved deposits)
   const approvedDeposit = await get(`SELECT id FROM deposits WHERE user_id = ? AND status = 'approved'`, [user.id]);
-  if (!approvedDeposit) {
+  const hasDeposited = !!(user.has_deposited) || !!approvedDeposit;
+  if (!hasDeposited) {
     bot.sendMessage(
       chatId,
       `⛔ <b>Deposit Required:</b> You must make at least one approved deposit before submitting a withdrawal request. Please make a deposit first!`,
@@ -802,6 +803,9 @@ async function processWithdrawal(chatId, telegramId, amount, accountNum, method,
     );
     delete userStates[chatId];
     return;
+  }
+  if (approvedDeposit && !user.has_deposited) {
+    await run(`UPDATE users SET has_deposited = 1 WHERE id = ?`, [user.id]).catch(() => {});
   }
 
   // Rule 2: Minimum withdrawal threshold & withdrawable balance check
