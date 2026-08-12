@@ -427,7 +427,8 @@ function initTelegramBot(ioInstance) {
             reply_markup: {
               inline_keyboard: [
                 [{ text: '📱 Telebirr', callback_data: 'cb_with_method_Telebirr' }],
-                [{ text: '🏦 CBE Bank', callback_data: 'cb_with_method_CBE' }]
+                [{ text: '🏦 CBE Bank', callback_data: 'cb_with_method_CBE' }],
+                [{ text: '💳 CBE Birr', callback_data: 'cb_with_method_CBEBirr' }]
               ]
             }
           }
@@ -538,7 +539,8 @@ function initTelegramBot(ioInstance) {
             reply_markup: {
               inline_keyboard: [
                 [{ text: '📱 Telebirr', callback_data: 'cb_with_method_Telebirr' }],
-                [{ text: '🏦 CBE Bank', callback_data: 'cb_with_method_CBE' }]
+                [{ text: '🏦 CBE Bank', callback_data: 'cb_with_method_CBE' }],
+                [{ text: '💳 CBE Birr', callback_data: 'cb_with_method_CBEBirr' }]
               ]
             }
           }
@@ -596,7 +598,8 @@ async function checkUserRegistered(chatId, telegramId) {
 
 const ADMIN_ACCOUNTS = {
   Telebirr: { name: 'B. E.', number: '0993994168', icon: '📱' },
-  CBE:      { name: 'B. E.', number: '1000483719853', icon: '🏦' }
+  CBE:      { name: 'B. E.', number: '1000483719853', icon: '🏦' },
+  CBEBirr:  { name: 'B. E.', number: '0993994168', icon: '💳' }
 };
 
 function sendPlayPrompt(chatId, user) {
@@ -627,7 +630,8 @@ function startDepositFlow(chatId) {
       reply_markup: {
         inline_keyboard: [
           [{ text: '📱 Telebirr', callback_data: 'cb_dep_method_Telebirr' }],
-          [{ text: '🏦 CBE Bank', callback_data: 'cb_dep_method_CBE' }]
+          [{ text: '🏦 CBE Bank', callback_data: 'cb_dep_method_CBE' }],
+          [{ text: '💳 CBE Birr', callback_data: 'cb_dep_method_CBEBirr' }]
         ]
       }
     }
@@ -637,18 +641,18 @@ function startDepositFlow(chatId) {
 async function startWithdrawFlow(chatId, telegramId) {
   delete userStates[chatId];
   const user = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
-  const userBal = user ? (parseFloat(user.balance) || 0) : 0;
+  const withdrawableBal = user ? (parseFloat(user.withdrawable_balance) || 0) : 0;
 
-  // Rule 2: Minimum withdrawal is 200 ETB
-  if (userBal < 200) {
+  // Rule: Must have at least 200 ETB in withdrawable (winnings) balance
+  if (withdrawableBal < 200) {
     bot.sendMessage(
       chatId,
-      `💰 <b>Balance:</b> <code>${userBal.toFixed(2)} ETB</code>\n⚠️ Not enough to withdraw (Minimum is <b>200 ETB</b>).`,
+      `🏆 <b>Withdrawable Winnings:</b> <code>${withdrawableBal.toFixed(2)} ETB</code>\n⚠️ Not enough to withdraw (Minimum is <b>200 ETB</b> from winnings).\n\n<i>Only winnings from Bingo rounds can be withdrawn.</i>`,
       {
         parse_mode: 'HTML',
         reply_markup: {
           inline_keyboard: [
-            [{ text: '📥 Deposit', callback_data: 'cb_deposit' }]
+            [{ text: '🎮 Play to Win', callback_data: 'cb_play' }]
           ]
         }
       }
@@ -800,7 +804,7 @@ async function processWithdrawal(chatId, telegramId, amount, accountNum, method,
     return;
   }
 
-  // Rule 2: Minimum withdrawal threshold & balance check
+  // Rule 2: Minimum withdrawal threshold & withdrawable balance check
   const reqAmount = parseFloat(amount) || 0;
   if (reqAmount < 200) {
     bot.sendMessage(
@@ -811,11 +815,11 @@ async function processWithdrawal(chatId, telegramId, amount, accountNum, method,
     delete userStates[chatId];
     return;
   }
-  const userBal = parseFloat(user.balance) || 0;
-  if (userBal < reqAmount) {
+  const withdrawableBal = parseFloat(user.withdrawable_balance) || 0;
+  if (withdrawableBal < reqAmount) {
     bot.sendMessage(
       chatId,
-      `💰 <b>Balance:</b> <code>${userBal.toFixed(2)} ETB</code>\n⚠️ Insufficient balance to withdraw ${reqAmount.toFixed(2)} ETB.`,
+      `🏆 <b>Withdrawable Winnings:</b> <code>${withdrawableBal.toFixed(2)} ETB</code>\n⚠️ Insufficient withdrawable balance to withdraw ${reqAmount.toFixed(2)} ETB.\n\n<i>Only winnings from Bingo rounds can be withdrawn.</i>`,
       { parse_mode: 'HTML' }
     );
     delete userStates[chatId];
@@ -894,10 +898,13 @@ async function sendBalance(chatId, telegramId) {
   if (!bot) return;
   const user = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
   const totalBalance = user ? (parseFloat(user.balance) || 0).toFixed(2) : '0.00';
+  const withdrawableBal = user ? (parseFloat(user.withdrawable_balance) || 0).toFixed(2) : '0.00';
 
   bot.sendMessage(
     chatId,
-    `💰 <b>Wallet Balance:</b> <code>${totalBalance} ETB</code>`,
+    `💰 <b>Total Balance:</b> <code>${totalBalance} ETB</code>\n` +
+    `🏆 <b>Withdrawable Winnings:</b> <code>${withdrawableBal} ETB</code>\n\n` +
+    `<i>Only winnings can be withdrawn. Deposited funds are used to buy tickets.</i>`,
     {
       parse_mode: 'HTML',
       reply_markup: {
@@ -1098,16 +1105,17 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
     }
 
     const user = await get('SELECT * FROM users WHERE id = ?', [withdrawal.user_id]);
-    const userBal = parseFloat(user?.balance) || 0;
-    if (userBal < withdrawal.amount) {
-      try { activeBot.answerCallbackQuery(query.id, { text: '❌ User has insufficient wallet balance!', show_alert: true }); } catch (e) {}
+    const withdrawableBal = parseFloat(user?.withdrawable_balance) || 0;
+    if (withdrawableBal < withdrawal.amount) {
+      try { activeBot.answerCallbackQuery(query.id, { text: '❌ User has insufficient withdrawable balance!', show_alert: true }); } catch (e) {}
       return;
     }
 
     await run('UPDATE withdrawals SET status = ? WHERE id = ?', ['approved', wId]);
     await run('UPDATE users SET balance = balance - ? WHERE id = ?', [withdrawal.amount, withdrawal.user_id]);
+    await run('UPDATE users SET withdrawable_balance = withdrawable_balance - ? WHERE id = ?', [withdrawal.amount, withdrawal.user_id]);
 
-    const updatedUser = await get('SELECT balance FROM users WHERE id = ?', [withdrawal.user_id]);
+    const updatedUser = await get('SELECT balance, withdrawable_balance FROM users WHERE id = ?', [withdrawal.user_id]);
     if (user?.telegram_id) {
       sendTelegramNotification(
         user.telegram_id,
