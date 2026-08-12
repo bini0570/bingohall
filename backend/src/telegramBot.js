@@ -37,9 +37,8 @@ function getPlayButton() {
 
 function getAdminPanelButton() {
   const adminUrl = WEB_APP_URL.includes('?') ? `${WEB_APP_URL}&view=admin` : `${WEB_APP_URL}?view=admin`;
-  if (isHttps) {
-    return { text: '🌐 Open Admin Panel', web_app: { url: adminUrl } };
-  }
+  // Always use plain URL (never web_app) so admin bot's initData doesn't conflict
+  // with the player bot token validation on the backend.
   return { text: '🌐 Open Admin Panel', url: adminUrl };
 }
 
