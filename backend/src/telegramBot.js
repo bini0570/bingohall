@@ -35,6 +35,14 @@ function getPlayButton() {
   return { text: '🎮 PLAY BINGO', callback_data: 'cb_play' };
 }
 
+function getAdminPanelButton() {
+  const adminUrl = WEB_APP_URL.includes('?') ? `${WEB_APP_URL}&view=admin` : `${WEB_APP_URL}?view=admin`;
+  if (isHttps) {
+    return { text: '🌐 Open Admin Panel', web_app: { url: adminUrl } };
+  }
+  return { text: '🌐 Open Admin Panel', url: adminUrl };
+}
+
 let bot = null;
 let adminBotInstance = null;
 const userStates = {};
@@ -979,8 +987,16 @@ async function sendAdminDashboard(chatId, messageId = null, targetBot = bot) {
     chatId,
     `🔔 <b>Afla Bingo Admin Notification Center</b> 🇪🇹\n\n` +
     `🟢 <b>Status:</b> Active & Listening\n\n` +
-    `You will receive instant push notifications here whenever a player submits a deposit or withdrawal request.`,
-    { parse_mode: 'HTML' }
+    `You will receive instant push notifications here whenever a player submits a deposit or withdrawal request.\n\n` +
+    `Tap below to open the Web Admin Panel:`,
+    {
+      parse_mode: 'HTML',
+      reply_markup: {
+        inline_keyboard: [
+          [getAdminPanelButton()]
+        ]
+      }
+    }
   ).catch(() => {});
 }
 

@@ -6,6 +6,7 @@ import LobbyView from './views/LobbyView';
 import GameplayView from './views/GameplayView';
 import WalletView from './views/WalletView';
 import AuthView from './views/AuthView';
+import AdminView from './views/AdminView';
 
 let socketRef = socket;
 
@@ -223,7 +224,10 @@ export default function App() {
   const [lang, setLang] = useState('en');
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('bingo_token') || null);
-  const [currentView, setCurrentView] = useState('lobby');
+  const [currentView, setCurrentView] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('view') === 'admin' ? 'admin' : 'lobby';
+  });
 
   const [gameState, setGameState] = useState(null);
   const [countdown, setCountdown] = useState(null);
@@ -605,6 +609,15 @@ export default function App() {
           token={token}
           socket={socket}
           onBalanceUpdated={handleBalanceUpdate}
+        />
+      )}
+
+      {currentView === 'admin' && (
+        <AdminView
+          lang={lang}
+          token={token}
+          socket={socket}
+          onGoToLobby={() => setCurrentView('lobby')}
         />
       )}
 
