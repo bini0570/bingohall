@@ -361,6 +361,7 @@ async function run(sql, params = []) {
         referral_code,
         referred_by: referred_by || null,
         telegram_id: telegram_id ? String(telegram_id) : null,
+        first_name: username || 'User', // Fix for first_name not-null constraint
         balance: 20.0,
         is_admin: 0,
         is_banned: 0
