@@ -133,7 +133,7 @@ export default function Navbar({
                 <HelpCircle size={24} color="#fff" />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>BodBingo Guide & Help</h3>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800' }}>Bingo X Guide & Help</h3>
                 <span style={{ fontSize: '12px', color: '#94a3b8' }}>How to play and win ETB</span>
               </div>
             </div>

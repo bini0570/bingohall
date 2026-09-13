@@ -31,7 +31,7 @@ export default function ProfileView({ lang, user, token }) {
 
   const p = profile || user;
   const refCode = p?.referralCode || p?.referral_code || '';
-  const telegramRefLink = refLink || `https://t.me/aflabingo_bot?start=${refCode}`;
+  const telegramRefLink = refLink || `https://t.me/bingox2019_bot?start=${refCode}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(telegramRefLink).then(() => {

@@ -459,7 +459,7 @@ export default function AdminView({ token, onLogout }) {
             <div style={S.sidebarHeader}>
               <div style={S.logoBox}>🎰</div>
               <div>
-                <div style={S.logoText}>BodBingo</div>
+                <div style={S.logoText}>Bingo X</div>
                 <div style={S.logoSub}>Admin Portal</div>
               </div>
             </div>

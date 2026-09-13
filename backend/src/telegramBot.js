@@ -790,7 +790,7 @@ async function sendBalance(chatId, telegramId) {
 
 async function sendReferralInfo(chatId, telegramId) {
   if (!bot) return;
-  const activeBotUsername = (bot && bot.botUsername) ? bot.botUsername : 'aflabingo_bot';
+  const activeBotUsername = (bot && bot.botUsername) ? bot.botUsername : 'bingox2019_bot';
   const refLink = `https://t.me/${activeBotUsername}?start=${telegramId}`;
 
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent('Join Afla Bingo and play to win! 🎰')}`;

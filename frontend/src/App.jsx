@@ -103,7 +103,7 @@ function TelegramGate({ message, onPlayWeb }) {
 
         {/* Telegram Bot */}
         <a
-          href="https://t.me/aflabingo_bot"
+          href="https://t.me/bingox2019_bot"
           target="_blank"
           rel="noreferrer"
           style={{
@@ -122,7 +122,7 @@ function TelegramGate({ message, onPlayWeb }) {
             transition: 'transform 0.2s, box-shadow 0.2s'
           }}
         >
-          📱 Open @aflabingo_bot
+          📱 Open @bingox2019_bot
         </a>
       </div>
 
@@ -172,11 +172,11 @@ function PhoneRegistrationRequired({ message }) {
         lineHeight: '1.6',
         margin: '0 0 28px'
       }}>
-        {message || 'Please open @aflabingo_bot in Telegram and tap "Share Phone Number" to activate your account and claim your 🎁 20 ETB welcome bonus!'}
+        {message || 'Please open @bingox2019_bot in Telegram and tap "Share Phone Number" to activate your account and claim your 🎁 20 ETB welcome bonus!'}
       </p>
 
       <a
-        href="https://t.me/aflabingo_bot"
+        href="https://t.me/bingox2019_bot"
         target="_blank"
         rel="noreferrer"
         style={{

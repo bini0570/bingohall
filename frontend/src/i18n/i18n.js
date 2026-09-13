@@ -1,4 +1,4 @@
-export const translations = {
+﻿export const translations = {
   en: {
     // Navigation & General
     appName: "Bingo Platform",
@@ -16,13 +16,13 @@ export const translations = {
     webMode: "Standalone Web Mode",
 
     // Auth Screen
-    welcomeTitle: "Bod Bingo",
+    welcomeTitle: "Bingo X",
     welcomeSub: "Play live rounds with players across Telegram and Web. Deposit & withdraw via Telebirr or CBE.",
     telegramOnlySub: "Sign in with Telegram to play.",
     telegramOnlyHint: "",
     registrationRequired: "Registration Pending",
-    telegramRegisterSteps: "Share your phone number in @bodbingobot to activate.",
-    openBotToRegister: "Open @bodbingobot",
+    telegramRegisterSteps: "Share your phone number in @bingox2019_bot to activate.",
+    openBotToRegister: "Open @bingox2019_bot",
     connectingTelegram: "Connecting...",
     continueTelegram: "Open Telegram",
     loginBtn: "Log In to Account",
@@ -153,8 +153,8 @@ export const translations = {
     telegramOnlySub: "ለመጫወት በቴሌግራም ይግቡ።",
     telegramOnlyHint: "",
     registrationRequired: "መመዝገብ ያልተጠናቀቀ",
-    telegramRegisterSteps: "መለያዎን ለማግበር በ @bodbingobot ስልክ ቁጥርዎን ያጋሩ።",
-    openBotToRegister: "@bodbingobot ክፈት",
+    telegramRegisterSteps: "መለያዎን ለማግበር በ @bingox2019_bot ስልክ ቁጥርዎን ያጋሩ።",
+    openBotToRegister: "@bingox2019_bot ክፈት",
     connectingTelegram: "በመገናኘት ላይ...",
     continueTelegram: "ቴሌግራም ክፈት",
     loginBtn: "ወደ መለያ ግባ",

@@ -31,7 +31,7 @@ export default function ReferralView({ lang, user, token }) {
   };
 
   const refCode = data?.referralCode || user?.referralCode || 'BEN1234';
-  const refLink = data?.referralLink || `https://t.me/aflabingo_bot?start=${refCode}`;
+  const refLink = data?.referralLink || `https://t.me/bingox2019_bot?start=${refCode}`;
 
   return (
     <div style={{ maxWidth: '480px', margin: '0 auto', padding: '60px 12px 10px' }}>

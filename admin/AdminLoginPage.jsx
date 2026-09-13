@@ -79,7 +79,7 @@ export default function AdminLoginPage({ onLoginSuccess }) {
             Admin Portal
           </h1>
           <p style={{ color: '#64748b', fontSize: '13px', margin: 0, fontWeight: '500' }}>
-            BodBingo — Restricted Access
+            Bingo X — Restricted Access
           </p>
         </div>
 

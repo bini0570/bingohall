@@ -187,7 +187,7 @@ app.post('/api/auth/telegram-mini-app', async (req, res) => {
 
     if (!user || !user.phone || user.phone.startsWith('tg_')) {
       return res.status(400).json({
-        error: 'Phone Registration Required: Please open @aflabingo_bot in Telegram and tap "SHARE PHONE NUMBER TO REGISTER" to activate your account.'
+        error: 'Phone Registration Required: Please open @bingox2019_bot in Telegram and tap "SHARE PHONE NUMBER TO REGISTER" to activate your account.'
       });
     }
 
@@ -257,7 +257,7 @@ app.post('/api/auth/telegram-webapp', async (req, res) => {
         requiresPhoneRegistration: true,
         telegramId,
         username: tgUsername,
-        message: `Welcome ${tgUser.first_name}! Please open @aflabingo_bot in Telegram and share your phone number to complete registration and receive your 🎁 20 ETB welcome bonus.`
+        message: `Welcome ${tgUser.first_name}! Please open @bingox2019_bot in Telegram and share your phone number to complete registration and receive your 🎁 20 ETB welcome bonus.`
       });
     }
 
@@ -463,7 +463,7 @@ app.get('/api/referrals', authenticateToken, async (req, res) => {
 
     res.json({
       referralCode: user.referral_code,
-      referralLink: `https://t.me/aflabingo_bot?start=${user.referral_code}`,
+      referralLink: `https://t.me/bingox2019_bot?start=${user.referral_code}`,
       totalEarned: totalEarnedRow && totalEarnedRow.total ? totalEarnedRow.total : 0.0,
       referralsCount: referrals.length,
       referrals
