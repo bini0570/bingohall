@@ -109,6 +109,8 @@ function initTelegramBot(ioInstance) {
         userStates[chatId] = { referralCode: param };
       }
 
+      let user = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
+
       if (!user || !user.phone || user.phone.startsWith('tg_')) {
         sendContactRequest(chatId);
         return;
