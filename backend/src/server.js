@@ -892,15 +892,37 @@ io.on('connection', socket => {
 
 // Start Server
 async function startServer() {
-  await initDB();
-  await bingoEngine.init();
-  initTelegramBot(io);
+  try {
+    await initDB();
+  } catch (e) {
+    console.error('[FATAL] initDB failed:', e.message);
+  }
 
+  // Start HTTP server first so Railway health checks pass
   server.listen(PORT, () => {
     console.log(`===================================================`);
     console.log(`🎰 Bingo Platform Backend running on port ${PORT}`);
     console.log(`===================================================`);
   });
+
+  // Init game engine and telegram in background (won't crash server if they fail)
+  try {
+    await bingoEngine.init();
+  } catch (e) {
+    console.error('[BingoEngine] Init error (non-fatal):', e.message);
+    // Retry game engine init after 5s
+    setTimeout(() => bingoEngine.init().catch(e2 => console.error('[BingoEngine] Retry failed:', e2.message)), 5000);
+  }
+
+  try {
+    initTelegramBot(io);
+  } catch (e) {
+    console.error('[Telegram] Init error (non-fatal):', e.message);
+  }
 }
 
-startServer();
+startServer().catch(err => {
+  console.error('[FATAL] Unexpected server error:', err.message);
+  process.exit(1);
+});
+

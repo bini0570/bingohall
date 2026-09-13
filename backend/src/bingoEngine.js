@@ -169,7 +169,13 @@ class BingoEngine {
       `INSERT INTO game_rounds (status, ticket_price, total_tickets, prize_pool, commission_cut) VALUES (?, ?, ?, ?, ?)`,
       ['COUNTDOWN', this.ticketPrice, 0, 0.0, 0.0]
     );
-    this.currentRoundId = result.lastID;
+    this.currentRoundId = result?.lastID || null;
+
+    if (!this.currentRoundId) {
+      console.error('[BingoEngine] ⚠️ Could not create game round in DB — retrying in 5s...');
+      setTimeout(() => this.startNewRound(), 5000);
+      return;
+    }
 
     this.startCountdown();
   }

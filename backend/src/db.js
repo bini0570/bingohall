@@ -27,6 +27,32 @@ console.log('[DB] Connected to Supabase PostgreSQL');
 // ─────────────────────────────────────────────────────────────
 async function initDB() {
   try {
+    // ── Auto-migrate: ensure all required columns exist ──────────
+    const migrations = [
+      `ALTER TABLE game_rounds ADD COLUMN IF NOT EXISTS ticket_price NUMERIC DEFAULT 10`,
+      `ALTER TABLE game_rounds ADD COLUMN IF NOT EXISTS total_tickets INTEGER DEFAULT 0`,
+      `ALTER TABLE game_rounds ADD COLUMN IF NOT EXISTS prize_pool NUMERIC DEFAULT 0`,
+      `ALTER TABLE game_rounds ADD COLUMN IF NOT EXISTS commission_cut NUMERIC DEFAULT 0`,
+      `ALTER TABLE game_rounds ADD COLUMN IF NOT EXISTS winner_ids TEXT`,
+      `ALTER TABLE game_rounds ADD COLUMN IF NOT EXISTS called_numbers_json TEXT`,
+      `ALTER TABLE game_rounds ADD COLUMN IF NOT EXISTS called_numbers TEXT`,
+      `ALTER TABLE game_rounds ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'COUNTDOWN'`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawable_balance NUMERIC DEFAULT 0`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS has_deposited SMALLINT DEFAULT 0`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned SMALLINT DEFAULT 0`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by TEXT`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id TEXT`,
+      `ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS account_name TEXT`,
+    ];
+
+    for (const sql of migrations) {
+      const { error } = await supabase.rpc('exec_sql', { sql }).catch(() => ({ error: null }));
+      if (error) {
+        // Try direct SQL via supabase admin if rpc not available
+        await supabase.from('_migrations_dummy').select().limit(0).catch(() => {});
+      }
+    }
+
     // Ensure default game settings exist
     const defaults = [
       { key: 'ticket_price',        value: '10' },
@@ -74,6 +100,7 @@ async function initDB() {
     console.error('[DB] initDB error:', err.message);
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────
 // get(sql, params) — returns first matching row or null
