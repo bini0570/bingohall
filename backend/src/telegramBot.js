@@ -1308,7 +1308,7 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
     ).catch(() => {});
     return;
   }
-}�━━━━━`;
+}�━━━━━`;
 
     const keyboard = [
       [
