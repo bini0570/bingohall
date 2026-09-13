@@ -1,0 +1,16 @@
+﻿{
+  "name": "Bingo X Admin",
+  "short_name": "Admin",
+  "start_url": "/admin/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
