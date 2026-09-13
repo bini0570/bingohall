@@ -11,9 +11,7 @@ try {
 const { get, all, run } = require('./db');
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8933892491:AAFafN2fystn8Ixeu89J5Xp162I6MK5zPcQ';
-const ADMIN_BOT_TOKEN = process.env.TELEGRAM_ADMIN_BOT_TOKEN || null;
 const WEB_APP_URL = (process.env.WEB_APP_URL || 'https://bingohall.vercel.app').replace(/\/$/, '');
-const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID || '7768666075';
 
 // Helper to escape HTML tags in user-generated strings
 function escapeHTML(str) {
@@ -100,38 +98,6 @@ function initTelegramBot(ioInstance) {
       bot.setChatMenuButton({ menu_button: { type: 'default' } }).catch(() => {});
     }
 
-    // Separate Admin Bot initialization if dedicated token provided
-    if (ADMIN_BOT_TOKEN && ADMIN_BOT_TOKEN !== BOT_TOKEN) {
-      try {
-        adminBotInstance = new TelegramBot(ADMIN_BOT_TOKEN, { polling: true });
-        adminBotInstance.on('polling_error', () => {});
-        console.log('[Telegram Bot] Dedicated Admin Bot initialized!');
-        
-        adminBotInstance.onText(/\/start|\/admin/, (msg) => {
-          const chatId = msg.chat.id;
-          const telegramId = String(msg.from.id);
-          if (telegramId === ADMIN_TELEGRAM_ID) {
-            sendAdminDashboard(chatId, null, adminBotInstance);
-          } else {
-            adminBotInstance.sendMessage(chatId, `⛔ <b>Access Denied:</b> You are not authorized.`, { parse_mode: 'HTML' });
-          }
-        });
-
-        adminBotInstance.on('callback_query', async query => {
-          const chatId = query.message.chat.id;
-          const messageId = query.message.message_id;
-          const telegramId = String(query.from.id);
-          const data = query.data;
-
-          if (telegramId === ADMIN_TELEGRAM_ID && data.startsWith('adm_')) {
-            handleAdminCallback(query, data, chatId, messageId, telegramId, ioInstance, adminBotInstance);
-          }
-        });
-      } catch (e) {
-        console.error('[Telegram Bot] Admin Bot init error:', e.message);
-      }
-    }
-
     // MAIN START COMMAND
     bot.onText(/\/start(?:@\w+)?(.*)/, async (msg, match) => {
       const chatId = msg.chat.id;
@@ -143,30 +109,12 @@ function initTelegramBot(ioInstance) {
         userStates[chatId] = { referralCode: param };
       }
 
-      // Link Admin user if telegramId matches
-      if (telegramId === ADMIN_TELEGRAM_ID) {
-        let adminUser = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
-        if (!adminUser) {
-          await run(`UPDATE users SET telegram_id = ?, is_admin = 1 WHERE username = 'admin'`, [telegramId]);
-        } else {
-          await run(`UPDATE users SET is_admin = 1 WHERE id = ?`, [adminUser.id]);
-        }
-      }
-
-      let user = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
-
       if (!user || !user.phone || user.phone.startsWith('tg_')) {
         sendContactRequest(chatId);
         return;
       }
 
-      // Route: admin gets admin dashboard, normal user gets player menu
-      const isAdminUser = telegramId === ADMIN_TELEGRAM_ID || (user && (user.is_admin == 1 || user.is_admin == true));
-      if (isAdminUser) {
-        sendAdminDashboard(chatId, null, bot);
-      } else {
-        sendMainMenu(chatId, user);
-      }
+      sendMainMenu(chatId, user);
     });
 
     // PLAY COMMAND: /play
@@ -180,30 +128,6 @@ function initTelegramBot(ioInstance) {
       sendPlayPrompt(chatId, user);
     });
 
-    // ADMIN COMMAND (Accessible by admin Telegram ID or is_admin flag in DB)
-    bot.onText(/\/admin(?:@\w+)?(?:\s+|$)/, async (msg) => {
-      const chatId = msg.chat.id;
-      const telegramId = String(msg.from.id);
-
-      // Auto-link Admin user if matching telegram ID
-      if (telegramId === ADMIN_TELEGRAM_ID) {
-        let adminUser = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
-        if (!adminUser) {
-          await run(`UPDATE users SET telegram_id = ?, is_admin = 1 WHERE username = 'admin'`, [telegramId]);
-        } else {
-          await run(`UPDATE users SET is_admin = 1 WHERE id = ?`, [adminUser.id]);
-        }
-      }
-
-      const user = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
-      const isAdmin = telegramId === ADMIN_TELEGRAM_ID || (user && (user.is_admin == 1 || user.is_admin == true));
-
-      if (isAdmin) {
-        sendAdminDashboard(chatId, null, bot);
-      } else {
-        bot.sendMessage(chatId, `⛔ <b>Access Denied:</b> You do not have admin permissions. (Your Telegram ID: <code>${telegramId}</code>)`, { parse_mode: 'HTML' });
-      }
-    });
 
     // CONTACT SHARE EVENT HANDLER
     bot.on('contact', async msg => {
@@ -276,10 +200,7 @@ function initTelegramBot(ioInstance) {
 
       delete userStates[chatId];
 
-      const isAdminContact = telegramId === ADMIN_TELEGRAM_ID || (user && (user.is_admin == 1 || user.is_admin == true));
-      if (isAdminContact) {
-        sendAdminDashboard(chatId, null, bot);
-      } else {
+
         const totalBalance = user ? (parseFloat(user.balance) || 0).toFixed(2) : '20.00';
         const homepageMsg = isNewUser
           ? `🎉 <b>Welcome to Afla Bingo!</b> 🇪🇹\n\n` +
@@ -295,7 +216,6 @@ function initTelegramBot(ioInstance) {
           parse_mode: 'HTML',
           reply_markup: getMainReplyKeyboard()
         });
-      }
     });
 
     // BALANCE COMMAND
@@ -362,13 +282,7 @@ function initTelegramBot(ioInstance) {
 
       try { bot.answerCallbackQuery(query.id); } catch (e) {}
 
-      const dbUser = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
-      const isAdmin = telegramId === ADMIN_TELEGRAM_ID || (dbUser && (dbUser.is_admin == 1 || dbUser.is_admin == true));
 
-      if (isAdmin && data.startsWith('adm_')) {
-        handleAdminCallback(query, data, chatId, messageId, telegramId, ioInstance, bot);
-        return;
-      }
 
       const user = await checkUserRegistered(chatId, telegramId);
       if (!user) return;
@@ -507,11 +421,7 @@ function initTelegramBot(ioInstance) {
       const state = userStates[chatId];
       if (!state) return;
 
-      if (state.action === 'awaiting_broadcast') {
-        delete userStates[chatId];
-        executeAdminBroadcast(chatId, text, bot);
-        return;
-      }
+
 
       if (state.action === 'awaiting_deposit_amount') {
         const amt = parseFloat(text);
@@ -698,59 +608,9 @@ function showBankInfo(chatId, method, amount, ioInstance) {
   );
 }
 
-function notifyAdminNewDeposit(deposit) {
-  const activeBot = adminBotInstance || bot;
-  if (!activeBot || !ADMIN_TELEGRAM_ID) return;
-  const text =
-    `🔔 <b>INSTANT ALERT: NEW DEPOSIT REQUEST #${deposit.id}</b>\n` +
-    `━━━━━━━━━━━━━━━━━━━━━\n` +
-    `👤 <b>Player:</b> <code>${escapeHTML(deposit.username)}</code>\n` +
-    `📱 <b>Phone:</b> <code>${escapeHTML(deposit.phone || 'N/A')}</code>\n` +
-    `💰 <b>Amount:</b> <code>${parseFloat(deposit.amount).toFixed(2)} ETB</code>\n` +
-    `💳 <b>Method:</b> ${escapeHTML(deposit.method || 'Telebirr/CBE')}\n` +
-    `🧾 <b>SMS/Receipt:</b> <code>${escapeHTML(deposit.receipt_sms || 'N/A')}</code>\n` +
-    `━━━━━━━━━━━━━━━━━━━━━\n` +
-    `💡 <i>Tap below to approve/reject immediately or manage on Web Admin Panel.</i>`;
+function notifyAdminNewDeposit(deposit) {}
 
-  activeBot.sendMessage(ADMIN_TELEGRAM_ID, text, {
-    parse_mode: 'HTML',
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: '✅ Approve', callback_data: `adm_dep_app_${deposit.id}` },
-          { text: '❌ Reject', callback_data: `adm_dep_rej_${deposit.id}` }
-        ]
-      ]
-    }
-  }).catch(e => console.error('[Telegram Bot] Admin deposit notification error:', e.message));
-}
-
-function notifyAdminNewWithdrawal(withdrawal) {
-  const activeBot = adminBotInstance || bot;
-  if (!activeBot || !ADMIN_TELEGRAM_ID) return;
-  const text =
-    `🔔 <b>INSTANT ALERT: NEW WITHDRAWAL REQUEST #${withdrawal.id}</b>\n` +
-    `━━━━━━━━━━━━━━━━━━━━━\n` +
-    `👤 <b>Player:</b> <code>${escapeHTML(withdrawal.username)}</code>\n` +
-    `📱 <b>Phone:</b> <code>${escapeHTML(withdrawal.phone || 'N/A')}</code>\n` +
-    `💰 <b>Amount:</b> <code>${parseFloat(withdrawal.amount).toFixed(2)} ETB</code>\n` +
-    `💳 <b>Method:</b> ${escapeHTML(withdrawal.method || 'Telebirr/CBE')}\n` +
-    `📞 <b>Account:</b> <code>${escapeHTML(withdrawal.account_number || 'N/A')}</code>\n` +
-    `━━━━━━━━━━━━━━━━━━━━━\n` +
-    `💡 <i>Tap below to approve/reject immediately or manage on Web Admin Panel.</i>`;
-
-  activeBot.sendMessage(ADMIN_TELEGRAM_ID, text, {
-    parse_mode: 'HTML',
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: '✅ Approve & Pay', callback_data: `adm_wit_app_${withdrawal.id}` },
-          { text: '❌ Reject', callback_data: `adm_wit_rej_${withdrawal.id}` }
-        ]
-      ]
-    }
-  }).catch(e => console.error('[Telegram Bot] Admin withdrawal notification error:', e.message));
-}
+function notifyAdminNewWithdrawal(withdrawal) {}
 
 async function processDeposit(chatId, telegramId, amount, smsText, method, ioInstance) {
   const user = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
