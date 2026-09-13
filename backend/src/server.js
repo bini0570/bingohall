@@ -899,7 +899,7 @@ async function startServer() {
   }
 
   // Start HTTP server first so Railway health checks pass
-  server.listen(PORT, () => {
+  server.listen(PORT, '0.0.0.0', () => {
     console.log(`===================================================`);
     console.log(`🎰 Bingo Platform Backend running on port ${PORT}`);
     console.log(`===================================================`);
