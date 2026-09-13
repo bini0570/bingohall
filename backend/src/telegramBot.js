@@ -10,9 +10,9 @@ try {
 
 const { get, all, run } = require('./db');
 
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8926254654:AAGDWlvP8g_J6_Xdh8P8vIQRgYsn8reK2Dk';
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8933892491:AAFafN2fystn8Ixeu89J5Xp162I6MK5zPcQ';
 const ADMIN_BOT_TOKEN = process.env.TELEGRAM_ADMIN_BOT_TOKEN || null;
-const WEB_APP_URL = (process.env.WEB_APP_URL || 'https://aflabingo.vercel.app').replace(/\/$/, '');
+const WEB_APP_URL = (process.env.WEB_APP_URL || 'https://bingohall.vercel.app').replace(/\/$/, '');
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID || '7768666075';
 
 // Helper to escape HTML tags in user-generated strings
