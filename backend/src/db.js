@@ -83,6 +83,7 @@ async function initDB() {
         username:     adminUsername,
         phone:        adminPhone,
         password_hash: hash,
+        first_name:   'Admin',
         balance:      1000.00,
         referral_code: 'ADMIN00',
         is_admin:     1,
