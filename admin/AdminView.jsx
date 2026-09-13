@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 
-const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+const API_BASE = (import.meta.env.VITE_API_URL || 'https://bingohall-production.up.railway.app').replace(/\/$/, '');
 
 async function apiFetch(path, options = {}) {
   return fetch(`${API_BASE}${path}`, options);

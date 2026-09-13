@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://bingohall-production.up.railway.app';
 
 async function apiFetch(path, options = {}) {
   return fetch(`${API_BASE}${path}`, options);

@@ -1,8 +1,8 @@
 // Central API configuration
-// Dev:  empty string → Vite proxy forwards /api → localhost:4000
-// Prod: VITE_API_URL = https://localhost:4000
+// Dev:  empty string   Vite proxy forwards /api   localhost:4000
+// Prod: Railway URL
 
-export const API_BASE = import.meta.env.VITE_API_URL || '';
+export const API_BASE = import.meta.env.VITE_API_URL || 'https://bingohall-production.up.railway.app';
 
 /**
  * Drop-in fetch() wrapper that prepends the Railway URL in production.
