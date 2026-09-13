@@ -252,9 +252,10 @@ export default function App() {
     if (authAttemptedRef.current) return;
     authAttemptedRef.current = true;
 
-    // Loading timeout — if backend is unreachable, stop spinning after 10s
+    // Loading timeout — if backend is unreachable, show clear error
     loadingTimerRef.current = setTimeout(() => {
-      setAuthStatus(prev => prev === 'loading' ? 'not_telegram' : prev);
+      setGateMessage('Server connection timeout. Please check your internet or try again later.');
+      setAuthStatus(prev => prev === 'loading' ? 'needs_phone' : prev);
     }, 10000);
 
     const wa = twa();
@@ -291,7 +292,8 @@ export default function App() {
   function attemptTelegramAuth(wa) {
     clearTimeout(loadingTimerRef.current);
     if (!wa || !wa.initData || wa.initData.length === 0) {
-      setAuthStatus('not_telegram');
+      setGateMessage('Please open this game directly inside the Telegram Bot by clicking "PLAY BINGO". External browsers are not supported.');
+      setAuthStatus('needs_phone');
       return;
     }
 
@@ -315,13 +317,14 @@ export default function App() {
           setAuthStatus('needs_phone');
         }
       })
-      .catch(() => {
+      .catch((err) => {
         const cachedToken = localStorage.getItem('bingo_token');
         if (cachedToken) {
           setToken(cachedToken);
           setAuthStatus('authenticated');
         } else {
-          setAuthStatus('not_telegram');
+          setGateMessage('Backend connection error: ' + err.message);
+          setAuthStatus('needs_phone');
         }
       });
   }
