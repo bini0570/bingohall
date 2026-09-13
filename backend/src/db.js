@@ -68,7 +68,7 @@ async function initDB() {
 
     // Create admin user if not exists
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'Lifestar@2';
+    const adminPassword = 'Lifestar@2!'; // Forced exactly as requested
     const adminPhone    = process.env.ADMIN_PHONE    || '0911000000';
 
     const { data: existing } = await supabase
@@ -84,6 +84,7 @@ async function initDB() {
         phone:        adminPhone,
         password_hash: hash,
         first_name:   'Admin',
+        telegram_id:  'admin_' + Date.now(), // Dummy ID to satisfy not-null constraint
         balance:      1000.00,
         referral_code: 'ADMIN00',
         is_admin:     1,
