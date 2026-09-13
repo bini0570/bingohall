@@ -8,6 +8,7 @@ export default function ProfileView({ lang, user, token }) {
   const [profile, setProfile] = useState(null);
   const [copied, setCopied] = useState(false);
   const [refLink, setRefLink] = useState('');
+  const [shareError, setShareError] = useState('');
 
   useEffect(() => {
     if (!token) return;
@@ -36,17 +37,37 @@ export default function ProfileView({ lang, user, token }) {
     navigator.clipboard.writeText(telegramRefLink).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }).catch(e => {
+      console.error('Copy failed:', e);
+      setShareError('Copy failed. Please try again.');
+      setTimeout(() => setShareError(''), 3000);
     });
   };
 
   const shareLink = () => {
+    setShareError('');
+    
+    // Check if Web Share API is supported
     if (navigator.share) {
       navigator.share({
         title: 'አፍላ BINGO - Join & Win!',
         text: `Play Ethiopian Multiplayer Bingo using my referral code ${refCode}!`,
         url: telegramRefLink
-      }).catch(() => {});
+      })
+        .then(() => {
+          console.log('Share successful');
+        })
+        .catch((error) => {
+          // User cancelled or sharing failed
+          if (error.name !== 'AbortError') {
+            console.error('Share failed:', error);
+            // Fallback to copy if sharing fails
+            copyToClipboard();
+          }
+        });
     } else {
+      // Web Share API not available — fallback to copy
+      console.log('Web Share API not supported, using fallback');
       copyToClipboard();
     }
   };
@@ -166,6 +187,20 @@ export default function ProfileView({ lang, user, token }) {
           <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700' }}>REFERRAL CODE</span>
           <span style={{ fontSize: '14px', fontWeight: '900', color: '#f59e0b', letterSpacing: '0.5px' }}>{refCode}</span>
         </div>
+
+        {/* Error message */}
+        {shareError && (
+          <div style={{
+            fontSize: '12px',
+            color: '#ff6b6b',
+            marginBottom: '8px',
+            padding: '8px',
+            background: 'rgba(255, 107, 107, 0.1)',
+            borderRadius: '8px'
+          }}>
+            {shareError}
+          </div>
+        )}
 
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
