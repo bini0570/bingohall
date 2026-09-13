@@ -955,48 +955,43 @@ function sendHelpInfo(chatId, telegramId) {
     {
       parse_mode: 'HTML',
       reply_markup: {
-        inline_keyboard: [
-          [
-            { text: '📥 Deposit', callback_data: 'cb_deposit' },
-            { text: '📤 Withdraw', callback_data: 'cb_withdraw' }
-          ]
-        ]
-      }
-    }
-  );
-}
-
-async function sendTelegramNotification(telegramId, message) {
-  if (!bot || !telegramId) return;
-  try {
-    await bot.sendMessage(telegramId, message, { parse_mode: 'HTML' });
-  } catch (e) {
-    console.error(`[Telegram Bot] Notification error to ${telegramId}:`, e.message);
-  }
-}
-
-// -------------------------------------------------------------
-// MODERN TELEGRAM ADMIN SYSTEM
+ // -------------------------------------------------------------
+// MODERN STREAMLINED TELEGRAM ADMIN SYSTEM
 // -------------------------------------------------------------
 
 async function sendAdminDashboard(chatId, messageId = null, targetBot = bot) {
   const activeBot = targetBot || bot;
   if (!activeBot) return;
-  activeBot.sendMessage(
-    chatId,
-    `🔔 <b>Afla Bingo Admin Notification Center</b> 🇪🇹\n\n` +
-    `🟢 <b>Status:</b> Active & Listening\n\n` +
-    `You will receive instant push notifications here whenever a player submits a deposit or withdrawal request.\n\n` +
-    `Tap below to open the Web Admin Panel:`,
-    {
+
+  const text =
+    `👑 <b>AflaBingo Admin Control Panel</b> 🇪🇹\n` +
+    `━━━━━━━━━━━━━━━━━━━━━\n` +
+    `Select an option from the menu below:`;
+
+  const keyboard = [
+    [{ text: '📢 Broadcast', callback_data: 'adm_broadcast' }],
+    [{ text: '⏳ Pending Requests', callback_data: 'adm_pending' }],
+    [{ text: '📈 Financial Report', callback_data: 'adm_report' }]
+  ];
+
+  if (messageId) {
+    activeBot.editMessageText(text, {
+      chat_id: chatId,
+      message_id: messageId,
       parse_mode: 'HTML',
-      reply_markup: {
-        inline_keyboard: [
-          [getAdminPanelButton()]
-        ]
-      }
-    }
-  ).catch(() => {});
+      reply_markup: { inline_keyboard: keyboard }
+    }).catch(() => {
+      activeBot.sendMessage(chatId, text, {
+        parse_mode: 'HTML',
+        reply_markup: { inline_keyboard: keyboard }
+      });
+    });
+  } else {
+    activeBot.sendMessage(chatId, text, {
+      parse_mode: 'HTML',
+      reply_markup: { inline_keyboard: keyboard }
+    });
+  }
 }
 
 async function handleAdminCallback(query, data, chatId, messageId, telegramId, ioInstance, targetBot = bot) {
@@ -1007,7 +1002,138 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
     return;
   }
 
-  // --- SPECIFIC ACTION HANDLERS ---
+  // 1. BROADCAST INITIATION
+  if (data === 'adm_broadcast') {
+    userStates[chatId] = { action: 'awaiting_broadcast' };
+    activeBot.sendMessage(
+      chatId,
+      `📢 <b>Send Broadcast Announcement to ALL Users</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━\n` +
+      `Please reply to this message with the text message you want to broadcast to ALL registered players:`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [[{ text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }]]
+        }
+      }
+    );
+    return;
+  }
+
+  // 2. FINANCIAL REPORT
+  if (data === 'adm_report') {
+    const totalDepRow = await get(`SELECT SUM(amount) as sum FROM deposits WHERE status = 'approved'`);
+    const totalWitRow = await get(`SELECT SUM(amount) as sum FROM withdrawals WHERE status = 'approved' OR status = 'paid'`);
+
+    const totalDeposits = parseFloat(totalDepRow?.sum) || 0;
+    const totalWithdrawals = parseFloat(totalWitRow?.sum) || 0;
+    const totalRevenue = Math.max(0, totalDeposits - totalWithdrawals);
+
+    const reportText =
+      `📈 <b>AFLABINGO FINANCIAL REPORT</b>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━\n` +
+      `💰 <b>Total Deposits:</b> <code>${totalDeposits.toFixed(2)} ETB</code>\n` +
+      `📤 <b>Total Withdrawals:</b> <code>${totalWithdrawals.toFixed(2)} ETB</code>\n` +
+      `📈 <b>Total Revenue:</b> <code>${totalRevenue.toFixed(2)} ETB</code>\n` +
+      `━━━━━━━━━━━━━━━━━━━━━`;
+
+    const keyboard = [
+      [{ text: '🔄 Refresh Report', callback_data: 'adm_report' }],
+      [{ text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }]
+    ];
+
+    activeBot.editMessageText(reportText, {
+      chat_id: chatId,
+      message_id: messageId,
+      parse_mode: 'HTML',
+      reply_markup: { inline_keyboard: keyboard }
+    }).catch(() => {});
+    return;
+  }
+
+  // 3. ACTIVE PENDING REQUESTS
+  if (data === 'adm_pending') {
+    const pendingDeposits = await all(`SELECT * FROM deposits WHERE status = 'pending' ORDER BY id ASC`);
+    const pendingWithdrawals = await all(`SELECT * FROM withdrawals WHERE status = 'pending' ORDER BY id ASC`);
+
+    if (pendingDeposits.length === 0 && pendingWithdrawals.length === 0) {
+      activeBot.editMessageText(
+        `✨ <b>No Active Pending Requests!</b>\n\nAll deposit and withdrawal requests are currently cleared.`,
+        {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'HTML',
+          reply_markup: {
+            inline_keyboard: [[{ text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }]]
+          }
+        }
+      ).catch(() => {});
+      return;
+    }
+
+    activeBot.sendMessage(
+      chatId,
+      `⏳ <b>Active Pending Requests (${pendingDeposits.length} Deposits, ${pendingWithdrawals.length} Withdrawals)</b>`,
+      {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: '🔄 Refresh Pending', callback_data: 'adm_pending' }],
+            [{ text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }]
+          ]
+        }
+      }
+    );
+
+    // Render each pending deposit
+    for (const d of pendingDeposits) {
+      const depText =
+        `📥 <b>PENDING DEPOSIT #${d.id}</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━\n` +
+        `👤 <b>Player:</b> <code>${escapeHTML(d.username)}</code> (${escapeHTML(d.phone || 'No phone')})\n` +
+        `💰 <b>Amount:</b> <code>${parseFloat(d.amount).toFixed(2)} ETB</code>\n` +
+        `💳 <b>Method:</b> ${escapeHTML(d.method || 'Telebirr/CBE')}\n` +
+        `📱 <b>SMS Code / Ref:</b> <code>${escapeHTML(d.receipt_sms || 'N/A')}</code>`;
+
+      activeBot.sendMessage(chatId, depText, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '✅ Approve', callback_data: `adm_dep_app_${d.id}` },
+              { text: '❌ Reject', callback_data: `adm_dep_rej_${d.id}` }
+            ]
+          ]
+        }
+      });
+    }
+
+    // Render each pending withdrawal
+    for (const w of pendingWithdrawals) {
+      const witText =
+        `📤 <b>PENDING WITHDRAWAL #${w.id}</b>\n` +
+        `━━━━━━━━━━━━━━━━━━━━━\n` +
+        `👤 <b>Player:</b> <code>${escapeHTML(w.username)}</code> (${escapeHTML(w.phone || 'No phone')})\n` +
+        `💰 <b>Amount:</b> <code>${parseFloat(w.amount).toFixed(2)} ETB</code>\n` +
+        `💳 <b>Method:</b> ${escapeHTML(w.method || 'Telebirr/CBE')}\n` +
+        `🏦 <b>Account:</b> <code>${escapeHTML(w.account_number)}</code>`;
+
+      activeBot.sendMessage(chatId, witText, {
+        parse_mode: 'HTML',
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: '✅ Approve & Pay', callback_data: `adm_wit_app_${w.id}` },
+              { text: '❌ Reject', callback_data: `adm_wit_rej_${w.id}` }
+            ]
+          ]
+        }
+      });
+    }
+    return;
+  }
+
+  // --- ACTION EXECUTIONS ---
 
   // APPROVE DEPOSIT ACTION
   if (data.startsWith('adm_dep_app_')) {
@@ -1016,13 +1142,11 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
 
     if (!deposit || deposit.status !== 'pending') {
       try { activeBot.answerCallbackQuery(query.id, { text: '⚠️ Already processed!', show_alert: true }); } catch (e) {}
-      sendAdminDashboard(chatId, messageId, activeBot);
       return;
     }
 
     await run('UPDATE deposits SET status = ? WHERE id = ?', ['approved', depId]);
-    await run('UPDATE users SET balance = balance + ? WHERE id = ?', [deposit.amount, deposit.user_id]);
-    await run('UPDATE users SET has_deposited = 1 WHERE id = ?', [deposit.user_id]);
+    await run('UPDATE users SET balance = balance + ?, withdrawable_balance = withdrawable_balance + ?, has_deposited = 1 WHERE id = ?', [deposit.amount, deposit.amount, deposit.user_id]);
 
     const refRecord = await get(`SELECT * FROM referrals WHERE referee_id = ? AND status = 'pending'`, [deposit.user_id]);
     if (refRecord) {
@@ -1052,18 +1176,14 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
       ioInstance.emit('balance_updated', { userId: deposit.user_id, newBalance: updatedUser?.balance });
     }
 
-    try { activeBot.answerCallbackQuery(query.id, { text: `✅ Deposit #${deposit.id} Approved! +${parseFloat(deposit.amount).toFixed(0)} ETB` }); } catch (e) {}
-    // Expire the notification message — remove buttons and show result
-    activeBot.editMessageReplyMarkup({ inline_keyboard: [] }, { chat_id: chatId, message_id: messageId }).catch(() => {});
+    try { activeBot.answerCallbackQuery(query.id, { text: `✅ Deposit #${deposit.id} Approved!` }); } catch (e) {}
     activeBot.editMessageText(
       `✅ <b>DEPOSIT #${deposit.id} APPROVED</b>\n` +
       `━━━━━━━━━━━━━━━━━━━━━\n` +
       `👤 <b>Player:</b> <code>${escapeHTML(deposit.username)}</code>\n` +
       `💰 <b>Amount:</b> <code>${parseFloat(deposit.amount).toFixed(2)} ETB</code>\n` +
-      `💳 <b>Method:</b> ${escapeHTML(deposit.method || 'Telebirr/CBE')}\n` +
-      `━━━━━━━━━━━━━━━━━━━━━\n` +
       `🟢 <b>Status: Approved — Wallet Credited</b>`,
-      { chat_id: chatId, message_id: messageId, parse_mode: 'HTML' }
+      { chat_id: chatId, message_id: messageId, parse_mode: 'HTML', reply_markup: { inline_keyboard: [] } }
     ).catch(() => {});
     return;
   }
@@ -1075,7 +1195,6 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
 
     if (!deposit || deposit.status !== 'pending') {
       try { activeBot.answerCallbackQuery(query.id, { text: '⚠️ Already processed!', show_alert: true }); } catch (e) {}
-      sendAdminDashboard(chatId, messageId, activeBot);
       return;
     }
 
@@ -1085,7 +1204,7 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
     if (user?.telegram_id) {
       sendTelegramNotification(
         user.telegram_id,
-        `❌ <b>Deposit Rejected</b>\n\nYour deposit of <b>${deposit.amount} ETB</b> was rejected by admin. Please verify details and try again.`
+        `❌ <b>Deposit Rejected</b>\n\nYour deposit of <b>${deposit.amount} ETB</b> was rejected by admin: fake transaction and try again.`
       );
     }
 
@@ -1095,14 +1214,12 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
     }
 
     try { activeBot.answerCallbackQuery(query.id, { text: `❌ Deposit #${depId} Rejected` }); } catch (e) {}
-    // Expire the notification message
     activeBot.editMessageText(
       `❌ <b>DEPOSIT #${depId} REJECTED</b>\n` +
       `━━━━━━━━━━━━━━━━━━━━━\n` +
       `👤 <b>Player:</b> <code>${escapeHTML(deposit.username)}</code>\n` +
       `💰 <b>Amount:</b> <code>${parseFloat(deposit.amount).toFixed(2)} ETB</code>\n` +
-      `━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🔴 <b>Status: Rejected</b>`,
+      `🔴 <b>Reason: fake transaction and try again</b>`,
       { chat_id: chatId, message_id: messageId, parse_mode: 'HTML', reply_markup: { inline_keyboard: [] } }
     ).catch(() => {});
     return;
@@ -1115,7 +1232,6 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
 
     if (!withdrawal || withdrawal.status !== 'pending') {
       try { activeBot.answerCallbackQuery(query.id, { text: '⚠️ Already processed!', show_alert: true }); } catch (e) {}
-      sendAdminDashboard(chatId, messageId, activeBot);
       return;
     }
 
@@ -1127,8 +1243,7 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
     }
 
     await run('UPDATE withdrawals SET status = ? WHERE id = ?', ['approved', wId]);
-    await run('UPDATE users SET balance = balance - ? WHERE id = ?', [withdrawal.amount, withdrawal.user_id]);
-    await run('UPDATE users SET withdrawable_balance = withdrawable_balance - ? WHERE id = ?', [withdrawal.amount, withdrawal.user_id]);
+    await run('UPDATE users SET balance = balance - ?, withdrawable_balance = withdrawable_balance - ? WHERE id = ?', [withdrawal.amount, withdrawal.amount, withdrawal.user_id]);
 
     const updatedUser = await get('SELECT balance, withdrawable_balance FROM users WHERE id = ?', [withdrawal.user_id]);
     if (user?.telegram_id) {
@@ -1144,15 +1259,13 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
       ioInstance.emit('balance_updated', { userId: withdrawal.user_id, newBalance: updatedUser?.balance });
     }
 
-    try { activeBot.answerCallbackQuery(query.id, { text: `✅ Withdrawal #${w.id} Approved — ${parseFloat(withdrawal.amount).toFixed(0)} ETB Paid` }); } catch (e) {}
-    // Expire the notification message
+    try { activeBot.answerCallbackQuery(query.id, { text: `✅ Withdrawal #${wId} Approved & Paid` }); } catch (e) {}
     activeBot.editMessageText(
       `✅ <b>WITHDRAWAL #${withdrawal.id} APPROVED</b>\n` +
       `━━━━━━━━━━━━━━━━━━━━━\n` +
       `👤 <b>Player:</b> <code>${escapeHTML(withdrawal.username)}</code>\n` +
       `💰 <b>Amount:</b> <code>${parseFloat(withdrawal.amount).toFixed(2)} ETB</code>\n` +
-      `📞 <b>Account:</b> <code>${escapeHTML(withdrawal.account_number || 'N/A')}</code>\n` +
-      `━━━━━━━━━━━━━━━━━━━━━\n` +
+      `🏦 <b>Account:</b> <code>${escapeHTML(withdrawal.account_number || 'N/A')}</code>\n` +
       `🟢 <b>Status: Approved — Payment Sent</b>`,
       { chat_id: chatId, message_id: messageId, parse_mode: 'HTML', reply_markup: { inline_keyboard: [] } }
     ).catch(() => {});
@@ -1166,7 +1279,6 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
 
     if (!withdrawal || withdrawal.status !== 'pending') {
       try { activeBot.answerCallbackQuery(query.id, { text: '⚠️ Already processed!', show_alert: true }); } catch (e) {}
-      sendAdminDashboard(chatId, messageId, activeBot);
       return;
     }
 
@@ -1176,7 +1288,7 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
     if (user?.telegram_id) {
       sendTelegramNotification(
         user.telegram_id,
-        `❌ <b>Withdrawal Rejected</b>\n\nYour withdrawal of <b>${withdrawal.amount} ETB</b> was rejected by admin.`
+        `❌ <b>Withdrawal Rejected</b>\n\nYour withdrawal of <b>${withdrawal.amount} ETB</b> was rejected by admin: fake transaction and try again.`
       );
     }
 
@@ -1186,281 +1298,17 @@ async function handleAdminCallback(query, data, chatId, messageId, telegramId, i
     }
 
     try { activeBot.answerCallbackQuery(query.id, { text: `❌ Withdrawal #${wId} Rejected` }); } catch (e) {}
-    // Expire the notification message
     activeBot.editMessageText(
       `❌ <b>WITHDRAWAL #${wId} REJECTED</b>\n` +
       `━━━━━━━━━━━━━━━━━━━━━\n` +
       `👤 <b>Player:</b> <code>${escapeHTML(withdrawal.username)}</code>\n` +
       `💰 <b>Amount:</b> <code>${parseFloat(withdrawal.amount).toFixed(2)} ETB</code>\n` +
-      `━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🔴 <b>Status: Rejected</b>`,
+      `🔴 <b>Reason: fake transaction and try again</b>`,
       { chat_id: chatId, message_id: messageId, parse_mode: 'HTML', reply_markup: { inline_keyboard: [] } }
     ).catch(() => {});
     return;
   }
-
-  // ADD / DEDUCT BALANCE ACTIONS
-  if (data.startsWith('adm_usr_add100_') || data.startsWith('adm_usr_ded100_')) {
-    const isAdd = data.startsWith('adm_usr_add100_');
-    const parts = data.replace(isAdd ? 'adm_usr_add100_' : 'adm_usr_ded100_', '').split('_');
-    const userId = parts[0];
-    const pageIdx = parseInt(parts[1]) || 0;
-
-    const u = await get('SELECT * FROM users WHERE id = ?', [userId]);
-    if (!u) return;
-
-    const amount = 100.0;
-    if (isAdd) {
-      await run('UPDATE users SET balance = balance + ? WHERE id = ?', [amount, userId]);
-    } else {
-      await run('UPDATE users SET balance = balance - ? WHERE id = ?', [amount, userId]);
-    }
-
-    const updated = await get('SELECT balance, telegram_id FROM users WHERE id = ?', [userId]);
-
-    if (updated?.telegram_id) {
-      sendTelegramNotification(
-        updated.telegram_id,
-        `🔔 <b>Wallet Adjusted:</b> Admin ${isAdd ? 'credited' : 'deducted'} <b>100.00 ETB</b>. New Balance: <b>${(updated.balance || 0).toFixed(2)} ETB</b>.`
-      );
-    }
-
-    if (ioInstance) {
-      ioInstance.emit('admin_data_changed');
-      ioInstance.emit('balance_updated', { userId, newBalance: updated?.balance });
-    }
-
-    try { activeBot.answerCallbackQuery(query.id, { text: `${isAdd ? '➕ Added' : '➖ Deducted'} 100 ETB for ${u.username}`, show_alert: true }); } catch (e) {}
-    handleAdminCallback(query, `adm_users_${pageIdx}`, chatId, messageId, telegramId, ioInstance, activeBot);
-    return;
-  }
-
-  // BAN / UNBAN ACTION
-  if (data.startsWith('adm_usr_ban_')) {
-    const parts = data.replace('adm_usr_ban_', '').split('_');
-    const userId = parts[0];
-    const pageIdx = parseInt(parts[1]) || 0;
-
-    const u = await get('SELECT * FROM users WHERE id = ?', [userId]);
-    if (!u) return;
-
-    const newStatus = u.is_banned ? 0 : 1;
-    await run('UPDATE users SET is_banned = ? WHERE id = ?', [newStatus, userId]);
-
-    try { activeBot.answerCallbackQuery(query.id, { text: `User ${u.username} ${newStatus ? 'BANNED' : 'UNBANNED'}`, show_alert: true }); } catch (e) {}
-    handleAdminCallback(query, `adm_users_${pageIdx}`, chatId, messageId, telegramId, ioInstance, activeBot);
-    return;
-  }
-
-  // --- BROWSER HANDLERS ---
-
-  // 1. PENDING DEPOSITS BROWSER
-  if (data.startsWith('adm_dep_')) {
-    const idx = parseInt(data.replace('adm_dep_', '')) || 0;
-    const deposits = await all('SELECT * FROM deposits WHERE status = \'pending\' ORDER BY id DESC', []);
-
-    if (deposits.length === 0) {
-      activeBot.editMessageText(
-        `✅ <b>No Pending Deposits!</b>\n\nAll deposit requests have been processed.`,
-        {
-          chat_id: chatId,
-          message_id: messageId,
-          parse_mode: 'HTML',
-          reply_markup: {
-            inline_keyboard: [[{ text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }]]
-          }
-        }
-      ).catch(() => {});
-      return;
-    }
-
-    const currentIdx = Math.max(0, Math.min(idx, deposits.length - 1));
-    const d = deposits[currentIdx];
-
-    const text =
-      `📥 <b>PENDING DEPOSIT REVIEW</b> (${currentIdx + 1} of ${deposits.length})\n` +
-      `━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🆔 <b>Deposit ID:</b> <code>#${d.id}</code>\n` +
-      `👤 <b>User:</b> <code>${escapeHTML(d.username)}</code> (Phone: <code>${escapeHTML(d.phone || 'N/A')}</code>)\n` +
-      `💰 <b>Amount:</b> <code>${parseFloat(d.amount).toFixed(2)} ETB</code>\n` +
-      `💳 <b>Method:</b> ${escapeHTML(d.method || 'Telebirr/CBE')}\n` +
-      `🧾 <b>SMS/Receipt:</b> <code>${escapeHTML(d.receipt_sms || 'No SMS code')}</code>\n` +
-      `📅 <b>Requested:</b> ${d.created_at ? new Date(d.created_at).toLocaleString() : 'N/A'}\n` +
-      `━━━━━━━━━━━━━━━━━━━━━`;
-
-    const prevIdx = currentIdx > 0 ? currentIdx - 1 : deposits.length - 1;
-    const nextIdx = currentIdx < deposits.length - 1 ? currentIdx + 1 : 0;
-
-    const keyboard = [
-      [
-        { text: '✅ Approve Deposit', callback_data: `adm_dep_app_${d.id}` },
-        { text: '❌ Reject Deposit', callback_data: `adm_dep_rej_${d.id}` }
-      ],
-      [
-        { text: '⬅️ Prev', callback_data: `adm_dep_${prevIdx}` },
-        { text: `${currentIdx + 1} / ${deposits.length}`, callback_data: `adm_dep_${currentIdx}` },
-        { text: '➡️ Next', callback_data: `adm_dep_${nextIdx}` }
-      ],
-      [
-        { text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }
-      ]
-    ];
-
-    activeBot.editMessageText(text, {
-      chat_id: chatId,
-      message_id: messageId,
-      parse_mode: 'HTML',
-      reply_markup: { inline_keyboard: keyboard }
-    }).catch(() => {});
-    return;
-  }
-
-  // 2. PENDING WITHDRAWALS BROWSER
-  if (data.startsWith('adm_wit_')) {
-    const idx = parseInt(data.replace('adm_wit_', '')) || 0;
-    const withdrawals = await all('SELECT * FROM withdrawals WHERE status = \'pending\' ORDER BY id DESC', []);
-
-    if (withdrawals.length === 0) {
-      activeBot.editMessageText(
-        `✅ <b>No Pending Withdrawals!</b>\n\nAll withdrawal requests have been processed.`,
-        {
-          chat_id: chatId,
-          message_id: messageId,
-          parse_mode: 'HTML',
-          reply_markup: {
-            inline_keyboard: [[{ text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }]]
-          }
-        }
-      ).catch(() => {});
-      return;
-    }
-
-    const currentIdx = Math.max(0, Math.min(idx, withdrawals.length - 1));
-    const w = withdrawals[currentIdx];
-
-    const text =
-      `📤 <b>PENDING WITHDRAWAL REVIEW</b> (${currentIdx + 1} of ${withdrawals.length})\n` +
-      `━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🆔 <b>Withdrawal ID:</b> <code>#${w.id}</code>\n` +
-      `👤 <b>User:</b> <code>${escapeHTML(w.username)}</code> (Phone: <code>${escapeHTML(w.phone || 'N/A')}</code>)\n` +
-      `💰 <b>Amount:</b> <code>${parseFloat(w.amount).toFixed(2)} ETB</code>\n` +
-      `💳 <b>Method:</b> ${escapeHTML(w.method || 'Telebirr/CBE')}\n` +
-      `📞 <b>Account Number:</b> <code>${escapeHTML(w.account_number || 'N/A')}</code>\n` +
-      `📅 <b>Requested:</b> ${w.created_at ? new Date(w.created_at).toLocaleString() : 'N/A'}\n` +
-      `━━━━━━━━━━━━━━━━━━━━━`;
-
-    const prevIdx = currentIdx > 0 ? currentIdx - 1 : withdrawals.length - 1;
-    const nextIdx = currentIdx < withdrawals.length - 1 ? currentIdx + 1 : 0;
-
-    const keyboard = [
-      [
-        { text: '✅ Approve & Pay', callback_data: `adm_wit_app_${w.id}` },
-        { text: '❌ Reject Withdrawal', callback_data: `adm_wit_rej_${w.id}` }
-      ],
-      [
-        { text: '⬅️ Prev', callback_data: `adm_wit_${prevIdx}` },
-        { text: `${currentIdx + 1} / ${withdrawals.length}`, callback_data: `adm_wit_${currentIdx}` },
-        { text: '➡️ Next', callback_data: `adm_wit_${nextIdx}` }
-      ],
-      [
-        { text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }
-      ]
-    ];
-
-    activeBot.editMessageText(text, {
-      chat_id: chatId,
-      message_id: messageId,
-      parse_mode: 'HTML',
-      reply_markup: { inline_keyboard: keyboard }
-    }).catch(() => {});
-    return;
-  }
-
-  // 3. USER MANAGEMENT BROWSER
-  if (data.startsWith('adm_users_')) {
-    const idx = parseInt(data.replace('adm_users_', '')) || 0;
-    const users = await all('SELECT * FROM users WHERE is_admin = 0 OR is_admin IS NULL ORDER BY id DESC', []);
-
-    if (users.length === 0) {
-      activeBot.editMessageText(`👥 <b>No Registered Players Found.</b>`, {
-        chat_id: chatId,
-        message_id: messageId,
-        parse_mode: 'HTML',
-        reply_markup: { inline_keyboard: [[{ text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }]] }
-      }).catch(() => {});
-      return;
-    }
-
-    const currentIdx = Math.max(0, Math.min(idx, users.length - 1));
-    const u = users[currentIdx];
-
-    const text =
-      `👤 <b>PLAYER PROFILE MANAGER</b> (${currentIdx + 1} of ${users.length})\n` +
-      `━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🆔 <b>User ID:</b> <code>#${u.id}</code>\n` +
-      `👤 <b>Username:</b> <code>${escapeHTML(u.username)}</code>\n` +
-      `📱 <b>Phone:</b> <code>${escapeHTML(u.phone || 'N/A')}</code>\n` +
-      `💰 <b>Wallet Balance:</b> <code>${(u.balance || 0).toFixed(2)} ETB</code>\n` +
-      `🎁 <b>Referral Code:</b> <code>${escapeHTML(u.referral_code || 'N/A')}</code>\n` +
-      `🚫 <b>Status:</b> ${u.is_banned ? '🔴 BANNED' : '🟢 ACTIVE'}\n` +
-      `📅 <b>Joined:</b> ${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}\n` +
-      `━━━━━━━━━━━━━━━━━━━━━`;
-
-    const prevIdx = currentIdx > 0 ? currentIdx - 1 : users.length - 1;
-    const nextIdx = currentIdx < users.length - 1 ? currentIdx + 1 : 0;
-
-    const keyboard = [
-      [
-        { text: '➕ Add 100 ETB', callback_data: `adm_usr_add100_${u.id}_${currentIdx}` },
-        { text: '➖ Deduct 100 ETB', callback_data: `adm_usr_ded100_${u.id}_${currentIdx}` }
-      ],
-      [
-        { text: u.is_banned ? '🟢 Unban User' : '🔴 Ban User', callback_data: `adm_usr_ban_${u.id}_${currentIdx}` }
-      ],
-      [
-        { text: '⬅️ Prev', callback_data: `adm_users_${prevIdx}` },
-        { text: `${currentIdx + 1} / ${users.length}`, callback_data: `adm_users_${currentIdx}` },
-        { text: '➡️ Next', callback_data: `adm_users_${nextIdx}` }
-      ],
-      [
-        { text: '🔙 Back to Admin Menu', callback_data: 'adm_menu' }
-      ]
-    ];
-
-    activeBot.editMessageText(text, {
-      chat_id: chatId,
-      message_id: messageId,
-      parse_mode: 'HTML',
-      reply_markup: { inline_keyboard: keyboard }
-    }).catch(() => {});
-    return;
-  }
-
-  // 4. BROADCAST INSTRUCTION
-  if (data === 'adm_broadcast') {
-    userStates[chatId] = { action: 'awaiting_broadcast' };
-    activeBot.sendMessage(
-      chatId,
-      `📢 <b>Admin Telegram Mass Broadcast</b>\n\nPlease reply to this message with the text message you want to broadcast to ALL registered Telegram players:`,
-      { parse_mode: 'HTML' }
-    );
-    return;
-  }
-
-  // 5. GAME SETTINGS
-  if (data === 'adm_settings') {
-    const settingsList = await all('SELECT * FROM game_settings', []);
-    const settingsMap = {};
-    settingsList.forEach(s => { settingsMap[s.key] = s.value; });
-
-    const text =
-      `⚙️ <b>GAME SETTINGS MANAGER</b>\n` +
-      `━━━━━━━━━━━━━━━━━━━━━\n` +
-      `🎟️ <b>Cartella Ticket Price:</b> <code>${escapeHTML(settingsMap.ticket_price || '10')} ETB</code>\n` +
-      `⏱️ <b>Round Countdown:</b> <code>${escapeHTML(settingsMap.countdown_sec || '40')} seconds</code>\n` +
-      `💼 <b>House Commission:</b> <code>${escapeHTML(settingsMap.commission_pct || '20')}%</code>\n` +
-      `⚡ <b>Auto Round Start:</b> <code>${escapeHTML(settingsMap.auto_start || 'true')}</code>\n` +
-      `━━━━━━━━━━━━━━━━━━━━━`;
+}�━━━━━`;
 
     const keyboard = [
       [
