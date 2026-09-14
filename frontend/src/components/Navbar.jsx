@@ -39,19 +39,36 @@ export default function Navbar({
           height: '48px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
         }}
       >
-        {/* Centered Brand */}
+        {/* Left 25% - Balance */}
+        <div style={{ width: '25%', display: 'flex', alignItems: 'center' }}>
+          {user && (
+            <div style={{
+              background: 'rgba(16,185,129,0.15)',
+              border: '1px solid rgba(16,185,129,0.3)',
+              borderRadius: '8px',
+              padding: '4px 8px',
+              color: '#10b981',
+              fontWeight: '900',
+              fontSize: '15px',
+            }}>
+              {(parseFloat(user.balance) || 0).toFixed(0)}
+            </div>
+          )}
+        </div>
+
+        {/* Right 75% - Centered Brand */}
         <div
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+          style={{ width: '75%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', paddingRight: '15%' }}
           onClick={() => setCurrentView('lobby')}
         >
           <div
             style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '9px',
+              width: '28px',
+              height: '28px',
+              borderRadius: '8px',
               background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
               display: 'flex',
               alignItems: 'center',
@@ -60,7 +77,7 @@ export default function Navbar({
               boxShadow: '0 0 16px rgba(245,158,11,0.5)'
             }}
           >
-            <Dices size={18} color="#000" />
+            <Dices size={16} color="#000" />
           </div>
           <span
             style={{
@@ -73,7 +90,7 @@ export default function Navbar({
               letterSpacing: '-0.3px'
             }}
           >
-            አፍላ BINGO
+            Bingo X
           </span>
         </div>
       </header>
