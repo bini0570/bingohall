@@ -95,7 +95,10 @@ const S = {
   },
 
   // Main
-  main: { flex: 1, overflowY: 'auto', padding: '20px', minWidth: 0 },
+  main: (isMobile) => ({
+    flex: 1, overflowY: 'auto', padding: isMobile ? '12px' : '24px', minWidth: 0,
+    width: '100%', boxSizing: 'border-box'
+  }),
 
   // Cards
   card: (extra = {}) => ({
@@ -446,11 +449,12 @@ export default function AdminView({ token, onLogout }) {
 
       {/* BODY */}
       <div style={S.body}>
-
-        {/* Sidebar overlay on mobile */}
+        {/* Mobile Sidebar Backdrop */}
         {isMobile && sidebarOpen && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9998, backdropFilter: 'blur(2px)' }}
-            onClick={() => setSidebarOpen(false)} />
+          <div 
+            onClick={() => setSidebarOpen(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 9998, backdropFilter: 'blur(2px)' }} 
+          />
         )}
 
         {/* SIDEBAR */}
@@ -501,7 +505,7 @@ export default function AdminView({ token, onLogout }) {
         </aside>
 
         {/* MAIN */}
-        <main style={S.main}>
+        <main style={S.main(isMobile)}>
 
           {msg.error   && <div style={S.alert('error')}><AlertCircle size={15} />{msg.error}</div>}
           {msg.success && <div style={S.alert('success')}><CheckCircle2 size={15} />{msg.success}</div>}
@@ -517,7 +521,7 @@ export default function AdminView({ token, onLogout }) {
               </div>
 
               {/* Metrics Grid */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
                 {[
                   { label: 'System Balance', value: (metrics?.totalSystemBalance || 0).toFixed(0), unit: 'ETB', rgb: '16,185,129', color: '#10b981', icon: '💰' },
                   { label: 'Total Users', value: metrics?.totalUsers || 0, unit: '', rgb: '59,130,246', color: '#60a5fa', icon: '👥' },
@@ -811,7 +815,7 @@ export default function AdminView({ token, onLogout }) {
                 <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#fff' }}>
                   👥 Users ({filteredUsers.length})
                 </h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.4)', padding: '9px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', minWidth: '220px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.4)', padding: '9px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', flex: 1, minWidth: '150px' }}>
                   <Search size={14} color="#475569" />
                   <input type="text" placeholder="Search name or phone…"
                     value={userSearch} onChange={e => setUserSearch(e.target.value)}

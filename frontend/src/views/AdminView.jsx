@@ -187,7 +187,6 @@ export default function AdminView({ token, onLogout, onBack }) {
   const [tab, setTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Data
   const [metrics, setMetrics] = useState(null);

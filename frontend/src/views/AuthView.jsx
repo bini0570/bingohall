@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { Dices, LogIn, UserPlus, ShieldAlert, KeyRound, Phone, User, Gift } from 'lucide-react';
-import { translations } from '../i18n/i18n';
 import { apiFetch } from '../api';
 
-export default function AuthView({ lang, onLoginSuccess, onToggleLang }) {
-  const t = translations[lang] || {};
+export default function AuthView({ onLoginSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   
   // Login State
@@ -79,17 +77,6 @@ export default function AuthView({ lang, onLoginSuccess, onToggleLang }) {
 
   return (
     <div style={{ maxWidth: '440px', margin: '30px auto', padding: '0 16px', fontFamily: 'inherit' }}>
-      {/* Header controls */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
-        <button
-          className="glass-button-secondary"
-          onClick={onToggleLang}
-          style={{ padding: '4px 10px', minHeight: '32px', fontSize: '12px', fontWeight: '700' }}
-        >
-          {t.langToggle || (lang === 'en' ? '🇪🇹 አማርኛ' : '🇬🇧 EN')}
-        </button>
-      </div>
-
       <div className="glass-panel" style={{ padding: '32px 24px', borderRadius: '24px', background: 'rgba(15, 23, 42, 0.95)' }}>
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
