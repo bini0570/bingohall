@@ -23,7 +23,7 @@ export default function Navbar({
 
   return (
     <>
-      {/* ── Top Header Bar ── */}
+      {/* ── Top Header Bar (Split Design) ── */}
       <header
         style={{
           position: 'fixed',
@@ -31,67 +31,83 @@ export default function Navbar({
           left: 0,
           right: 0,
           zIndex: 500,
-          background: 'rgba(5, 8, 15, 0.97)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderBottom: 'none',
-          padding: '0 16px',
-          height: '48px',
+          height: '52px',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          overflow: 'hidden',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
         }}
       >
-        {/* Left 25% - Balance */}
-        <div style={{ width: '25%', display: 'flex', alignItems: 'center' }}>
-          {user && (
-            <div style={{
-              background: 'rgba(16,185,129,0.15)',
-              border: '1px solid rgba(16,185,129,0.3)',
-              borderRadius: '8px',
-              padding: '4px 8px',
-              color: '#10b981',
-              fontWeight: '900',
-              fontSize: '15px',
-            }}>
-              {(parseFloat(user.balance) || 0).toFixed(0)}
-            </div>
-          )}
-        </div>
-
-        {/* Right 75% - Centered Brand */}
+        {/* Left 75% - Brand Block */}
         <div
-          style={{ width: '75%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', paddingRight: '15%' }}
           onClick={() => setCurrentView('lobby')}
+          style={{
+            width: '75%',
+            background: 'linear-gradient(90deg, rgba(10,15,30,0.98) 0%, rgba(15,23,42,0.98) 100%)',
+            backdropFilter: 'blur(20px)',
+            display: 'flex',
+            alignItems: 'center',
+            paddingLeft: '16px',
+            gap: '10px',
+            cursor: 'pointer',
+            borderRight: '1px solid rgba(255,255,255,0.05)'
+          }}
         >
           <div
             style={{
-              width: '28px',
-              height: '28px',
+              width: '30px',
+              height: '30px',
               borderRadius: '8px',
               background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               flexShrink: 0,
-              boxShadow: '0 0 16px rgba(245,158,11,0.5)'
+              boxShadow: '0 0 12px rgba(245,158,11,0.4)'
             }}
           >
-            <Dices size={16} color="#000" />
+            <Dices size={18} color="#000" />
           </div>
           <span
             style={{
-              fontSize: '20px',
+              fontSize: '19px',
               fontWeight: '900',
               background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%)',
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
-              letterSpacing: '-0.3px'
+              letterSpacing: '-0.3px',
+              textTransform: 'uppercase'
             }}
           >
             Bingo X
           </span>
+        </div>
+
+        {/* Right 25% - Balance Block */}
+        <div
+          style={{
+            width: '25%',
+            background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.25) 100%)',
+            backdropFilter: 'blur(20px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 8px'
+          }}
+        >
+          {user ? (
+            <span style={{
+              color: '#10b981',
+              fontWeight: '900',
+              fontSize: '15px',
+              letterSpacing: '-0.2px'
+            }}>
+              {(parseFloat(user.balance) || 0).toFixed(2)}
+            </span>
+          ) : (
+            <span style={{ color: '#10b981', fontSize: '12px' }}>...</span>
+          )}
         </div>
       </header>
 
