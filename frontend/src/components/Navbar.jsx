@@ -10,7 +10,6 @@ export default function Navbar({
   setCurrentView,
   onLogout
 }) {
-  const t = translations[lang] || {};
   const [showHelpModal, setShowHelpModal] = useState(false);
 
   const navItems = [

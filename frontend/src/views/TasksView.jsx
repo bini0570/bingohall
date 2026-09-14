@@ -3,8 +3,6 @@ import { ClipboardList, CheckCircle2, Gift } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 
 export default function TasksView({ lang }) {
-  const t = translations[lang] || {};
-
   return (
     <div style={{ padding: '20px 16px', paddingBottom: '100px' }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>

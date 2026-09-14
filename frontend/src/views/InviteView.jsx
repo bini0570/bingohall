@@ -3,7 +3,6 @@ import { Users, Copy, CheckCircle2, Share2 } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 
 export default function InviteView({ lang, user }) {
-  const t = translations[lang] || {};
   const [copied, setCopied] = useState(false);
 
   const inviteLink = `https://t.me/bingox2019_bot?start=ref_${user?.id || '123'}`;
