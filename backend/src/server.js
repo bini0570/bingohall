@@ -89,6 +89,9 @@ const authenticateAdmin = (req, res, next) => {
   });
 };
 
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin_v2', authenticateAdmin, adminRoutes);
+
 // -------------------------------------------------------------
 // AUTH ROUTES
 // -------------------------------------------------------------

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode, command }) => {
@@ -9,7 +10,29 @@ export default defineConfig(({ mode, command }) => {
   const isAdminBuild = process.env.BUILD_TARGET === 'admin';
 
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      VitePWA({
+        registerType: 'autoUpdate',
+        devOptions: { enabled: true },
+        manifest: {
+          name: 'Bingo X',
+          short_name: 'BingoX',
+          description: 'Live Multiplayer Bingo',
+          theme_color: '#0B1120',
+          background_color: '#0B1120',
+          display: 'standalone',
+          icons: [
+            {
+              src: '/icon.jpg',
+              sizes: '192x192 512x512',
+              type: 'image/jpeg',
+              purpose: 'any maskable'
+            }
+          ]
+        }
+      })
+    ],
 
     // Root changes per build target:
     //   player: frontend/  (default)

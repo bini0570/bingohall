@@ -199,13 +199,22 @@ class BingoEngine {
       throw new Error('Maximum 4 cartellas allowed per player in a single round');
     }
 
-    const user = await get(`SELECT balance FROM users WHERE id = ?`, [userId]);
+    const user = await get(`SELECT balance, withdrawable_balance FROM users WHERE id = ?`, [userId]);
     if (!user || user.balance < this.ticketPrice) {
       throw new Error('Insufficient wallet balance (10 ETB required)');
     }
 
+    let withdrawableBal = parseFloat(user.withdrawable_balance) || 0;
+    const nonWithdrawable = user.balance - withdrawableBal;
+    let amountDeductedFromWithdrawable = 0;
+
+    if (nonWithdrawable < this.ticketPrice) {
+      amountDeductedFromWithdrawable = this.ticketPrice - Math.max(0, nonWithdrawable);
+      withdrawableBal -= amountDeductedFromWithdrawable;
+    }
+
     const newBalance = user.balance - this.ticketPrice;
-    await run(`UPDATE users SET balance = ? WHERE id = ?`, [newBalance, userId]);
+    await run(`UPDATE users SET balance = ?, withdrawable_balance = ? WHERE id = ?`, [newBalance, withdrawableBal, userId]);
 
     cartella.isSold = true;
     cartella.purchasedBy = username;
@@ -214,7 +223,8 @@ class BingoEngine {
       userId,
       username,
       cartellaIndex,
-      grid: cartella.grid
+      grid: cartella.grid,
+      withdrawableDeducted: amountDeductedFromWithdrawable
     };
     this.purchasedTickets.push(ticketObj);
 
@@ -234,7 +244,7 @@ class BingoEngine {
     );
 
     // Also emit balance update so frontend wallet pill is immediately in sync
-    this.io.emit('balance_updated', { userId: String(userId), newBalance });
+    this.io.emit('balance_updated', { userId: String(userId), newBalance, withdrawableBalance: withdrawableBal });
 
     this.broadcastState();
     return { success: true, newBalance, cartellaIndex };
@@ -253,6 +263,8 @@ class BingoEngine {
       throw new Error('Cartella not found in your purchases');
     }
 
+    const ticketObj = this.purchasedTickets[indexInList];
+    const amountToRestoreToWithdrawable = ticketObj.withdrawableDeducted || 0;
     this.purchasedTickets.splice(indexInList, 1);
 
     const cartella = this.cartellas[cartellaIndex - 1];
@@ -261,9 +273,10 @@ class BingoEngine {
       cartella.purchasedBy = null;
     }
 
-    const user = await get(`SELECT balance FROM users WHERE id = ?`, [userId]);
+    const user = await get(`SELECT balance, withdrawable_balance FROM users WHERE id = ?`, [userId]);
     const newBalance = (user?.balance || 0) + this.ticketPrice;
-    await run(`UPDATE users SET balance = ? WHERE id = ?`, [newBalance, userId]);
+    const newWithdrawable = (parseFloat(user?.withdrawable_balance) || 0) + amountToRestoreToWithdrawable;
+    await run(`UPDATE users SET balance = ?, withdrawable_balance = ? WHERE id = ?`, [newBalance, newWithdrawable, userId]);
 
     const totalTickets = this.purchasedTickets.length;
     const grossTotal = totalTickets * this.ticketPrice;
@@ -276,7 +289,7 @@ class BingoEngine {
     );
 
     // Emit balance update
-    this.io.emit('balance_updated', { userId: String(userId), newBalance });
+    this.io.emit('balance_updated', { userId: String(userId), newBalance, withdrawableBalance: newWithdrawable });
 
     this.broadcastState();
     return { success: true, newBalance, cartellaIndex };

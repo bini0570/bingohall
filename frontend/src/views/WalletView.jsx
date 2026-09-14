@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Wallet, ArrowDownLeft, ArrowUpRight, CheckCircle2, Clock, Copy, ChevronRight, ChevronLeft, Phone, CreditCard, AlertCircle } from 'lucide-react';
+import { Wallet, CheckCircle2, Clock, Copy, ChevronLeft, AlertCircle } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 import { apiFetch } from '../api';
 
-// =============================================
-// ADMIN PAYMENT ACCOUNTS
-// =============================================
 const PAYMENT_ACCOUNTS = {
   Telebirr: {
     name: 'Biniyam Eyoel',
@@ -13,13 +10,6 @@ const PAYMENT_ACCOUNTS = {
     logo: '/images/telebirr.jpg',
     label: 'Telebirr',
     color: '#f59e0b'
-  },
-  CBE: {
-    name: 'Biniyam Eyoel',
-    number: '1000483719853',
-    logo: '/images/cbe.jpg',
-    label: 'CBE',
-    color: '#3b82f6'
   },
   CBEBirr: {
     name: 'Biniyam Eyoel',
@@ -34,14 +24,12 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   const t = translations[lang];
   const [activeTab, setActiveTab] = useState('deposit');
 
-  // DEPOSIT: step 1=choose method, 2=enter amount, 3=show bank info & receipt, 4=success
   const [depStep, setDepStep] = useState(1);
   const [depMethod, setDepMethod] = useState('');
   const [depAmount, setDepAmount] = useState('');
   const [receiptSms, setReceiptSms] = useState('');
   const [proofFile, setProofFile] = useState(null);
 
-  // WITHDRAW: step 1=enter amount, 2=choose method, 3=fill account info, 4=success
   const [withStep, setWithStep] = useState(1);
   const [withMethod, setWithMethod] = useState('');
   const [withAccount, setWithAccount] = useState('');
@@ -64,22 +52,28 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   };
 
   useEffect(() => {
+    if (!depMethod && Object.keys(PAYMENT_ACCOUNTS).length > 0) {
+      setDepMethod(Object.keys(PAYMENT_ACCOUNTS)[0]);
+    }
+    if (!withMethod && Object.keys(PAYMENT_ACCOUNTS).length > 0) {
+      setWithMethod(Object.keys(PAYMENT_ACCOUNTS)[0]);
+    }
+  }, [depMethod, withMethod]);
+
+  useEffect(() => {
     if (token) fetchTransactions();
     if (socket) {
-      // Re-fetch when any admin action happens
       const handleDataChanged = () => fetchTransactions();
-      // Instantly update this user's transactions when admin approve/rejects their request
       const handleUserTxUpdated = (data) => {
         if (!data.userId || String(data.userId) === String(user?.id)) {
           fetchTransactions();
         }
       };
-      // Instantly update balance when admin approves
       const handleBalanceUpdated = data => {
         if (String(data.userId) === String(user?.id) && onBalanceUpdated) {
           onBalanceUpdated(data.newBalance, data.withdrawableBalance);
         }
-        fetchTransactions(); // also refresh transactions to show new status
+        fetchTransactions();
       };
       socket.on('admin_data_changed', handleDataChanged);
       socket.on('user_transaction_updated', handleUserTxUpdated);
@@ -99,7 +93,6 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
     });
   };
 
-  // ---------- DEPOSIT ----------
   const handleDepositSubmit = async () => {
     if (!receiptSms.trim()) {
       setMsg({ error: 'Please enter your transaction SMS or confirmation text', success: '' });
@@ -121,7 +114,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Deposit failed');
-      setDepStep(4);
+      setDepStep(2); // Step 2 is now the Success screen
       fetchTransactions();
     } catch (err) {
       setMsg({ error: err.message, success: '' });
@@ -131,11 +124,14 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   };
 
   const resetDeposit = () => {
-    setDepStep(1); setDepMethod(''); setDepAmount(''); setReceiptSms(''); setProofFile(null);
+    setDepStep(1); 
+    setDepMethod(Object.keys(PAYMENT_ACCOUNTS)[0] || ''); 
+    setDepAmount(''); 
+    setReceiptSms(''); 
+    setProofFile(null);
     setMsg({ error: '', success: '' });
   };
 
-  // ---------- WITHDRAW ----------
   const handleWithdrawSubmit = async () => {
     if (!withAccount.trim()) {
       setMsg({ error: 'Please enter your account number', success: '' });
@@ -156,7 +152,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Withdrawal failed');
-      setWithStep(4);
+      setWithStep(2); // Step 2 is now the Success screen
       fetchTransactions();
     } catch (err) {
       setMsg({ error: err.message, success: '' });
@@ -166,386 +162,283 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   };
 
   const resetWithdraw = () => {
-    setWithStep(1); setWithMethod(''); setWithAccount(''); setWithAccountName(''); setWithAmount('');
+    setWithStep(1); 
+    setWithMethod(Object.keys(PAYMENT_ACCOUNTS)[0] || ''); 
+    setWithAccount(''); 
+    setWithAccountName(''); 
+    setWithAmount('');
     setMsg({ error: '', success: '' });
   };
 
   const balance = user?.balance || 0;
   const withdrawableBal = user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0;
-  const panelStyle = { background: 'var(--bg-elevated)', borderRadius: '16px', padding: '16px', marginBottom: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-card)' };
-  const btnPrimary = { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer', marginTop: '12px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#fff', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)' };
-  const btnGhost = { padding: '10px 16px', borderRadius: '10px', border: '1px solid var(--border-medium)', background: 'transparent', color: 'var(--text-muted)', fontWeight: '700', cursor: 'pointer', fontSize: '13px', transition: 'all 0.2s' };
-  const inputStyle = { width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid var(--border-subtle)', background: 'var(--bg-input)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600', boxSizing: 'border-box', marginTop: '8px', outline: 'none' };
 
   const renderStatusBadge = status => {
     const map = {
-      pending: { bg: 'rgba(245,158,11,0.2)', color: '#f59e0b', icon: <Clock size={12} />, label: 'Pending' },
-      approved: { bg: 'rgba(100,116,139,0.2)', color: '#94a3b8', icon: <CheckCircle2 size={12} />, label: 'Completed' },
-      rejected: { bg: 'rgba(239,68,68,0.2)', color: '#ef4444', icon: <AlertCircle size={12} />, label: 'Rejected' }
+      pending: { bg: 'rgba(245,158,11,0.2)', color: 'var(--gold)', icon: <Clock size={12} />, label: 'Pending' },
+      approved: { bg: 'rgba(16,185,129,0.2)', color: 'var(--green)', icon: <CheckCircle2 size={12} />, label: 'Completed' },
+      rejected: { bg: 'rgba(239,68,68,0.2)', color: 'var(--red)', icon: <AlertCircle size={12} />, label: 'Rejected' }
     };
     const s = map[status] || map.pending;
     return (
-      <span style={{ background: s.bg, color: s.color, padding: '3px 8px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+      <span style={{ background: s.bg, color: s.color, padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
         {s.icon} {s.label}
       </span>
     );
   };
 
   return (
-    <div style={{ maxWidth: '1100px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '20px 16px 20px' }}>
-
-      {/* No token guard */}
+    <div style={{ maxWidth: '640px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {!token && (
-        <div style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '16px', padding: '20px', textAlign: 'center', marginBottom: '20px' }}>
+        <div className="glass-panel" style={{ background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.3)', padding: '20px', textAlign: 'center' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔒</div>
           <div style={{ fontWeight: '800', color: '#fca5a5', fontSize: '15px', marginBottom: '6px' }}>Session Not Ready</div>
-          <div style={{ color: '#94a3b8', fontSize: '13px' }}>Your session is still loading. Please wait a moment and try again, or refresh the page.</div>
+          <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Your session is still loading. Please wait a moment and try again, or refresh the page.</div>
         </div>
       )}
 
-      {/* ── 2-WAY BALANCE BREAKDOWN (Total & Withdrawable) ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-
-        {/* 1. TOTAL BALANCE */}
-        <div style={{
-          background: 'var(--bg-elevated)',
-          borderRadius: '16px', padding: '16px 12px',
-          border: '1px solid var(--border-cyan)',
-          boxShadow: 'var(--shadow-card)', textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '10px', color: 'var(--cyan)', marginBottom: '4px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+      {/* BALANCE BREAKDOWN */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="glass-panel" style={{ padding: '24px 16px', textAlign: 'center', borderColor: 'var(--border-cyan)', boxShadow: 'var(--shadow-cyan)' }}>
+          <div style={{ fontSize: '12px', color: 'var(--cyan)', marginBottom: '8px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             💰 Total Balance
           </div>
-          <div style={{ fontSize: '20px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '32px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
             {(user?.balance || 0).toFixed(2)}
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', marginTop: '4px' }}>ETB</div>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '700', marginTop: '6px' }}>ETB</div>
         </div>
 
-        {/* 2. WITHDRAWABLE (Winnings) */}
-        <div style={{
-          background: 'var(--bg-elevated)',
-          borderRadius: '16px', padding: '16px 12px',
-          border: '1px solid var(--border-green)',
-          boxShadow: 'var(--shadow-card)', textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '10px', color: 'var(--green)', marginBottom: '4px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+        <div className="glass-panel" style={{ padding: '24px 16px', textAlign: 'center', borderColor: 'var(--border-gold)', boxShadow: 'var(--shadow-gold)' }}>
+          <div style={{ fontSize: '12px', color: 'var(--gold)', marginBottom: '8px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             🏆 Withdrawable
           </div>
-          <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--green)', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '32px', fontWeight: '900', color: 'var(--gold)', lineHeight: 1.1 }}>
             {(user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0).toFixed(2)}
           </div>
-          <div style={{ fontSize: '11px', color: 'var(--green)', opacity: 0.8, fontWeight: '700', marginTop: '4px' }}>ETB Winnings</div>
+          <div style={{ fontSize: '13px', color: 'var(--gold)', opacity: 0.8, fontWeight: '700', marginTop: '6px' }}>ETB Winnings</div>
         </div>
-
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', background: 'var(--bg-elevated)', borderRadius: '12px', padding: '4px', marginBottom: '16px', gap: '4px', border: '1px solid var(--border-subtle)' }}>
-        {[['deposit','📥 Deposit'],['withdraw','📤 Withdraw'],['history','📋 History']].map(([key, label]) => (
-          <button key={key} onClick={() => { setActiveTab(key); resetDeposit(); resetWithdraw(); setMsg({ error: '', success: '' }); }}
-            style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', background: activeTab === key ? 'var(--bg-card-hover)' : 'transparent', color: activeTab === key ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: activeTab === key ? '800' : '600', cursor: 'pointer', fontSize: '12px', transition: 'all 0.2s', boxShadow: activeTab === key ? '0 2px 8px rgba(0,0,0,0.2)' : 'none' }}>
+      {/* TABS */}
+      <div className="glass-panel" style={{ display: 'flex', padding: '6px', gap: '6px' }}>
+        {[['deposit', '📥 Deposit'], ['withdraw', '📤 Withdraw'], ['history', '📋 History']].map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => { setActiveTab(key); resetDeposit(); resetWithdraw(); setMsg({ error: '', success: '' }); }}
+            style={{
+              flex: 1, padding: '12px 4px', borderRadius: '8px', border: 'none',
+              background: activeTab === key ? 'var(--bg-elevated)' : 'transparent',
+              color: activeTab === key ? 'var(--text-primary)' : 'var(--text-muted)',
+              fontWeight: activeTab === key ? '800' : '600',
+              cursor: 'pointer', fontSize: '14px', transition: 'all 0.2s',
+              boxShadow: activeTab === key ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
+            }}
+          >
             {label}
           </button>
         ))}
       </div>
 
       {msg.error && (
-        <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', padding: '12px', borderRadius: '12px', marginBottom: '14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <AlertCircle size={16} /> {msg.error}
+        <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', padding: '16px', borderRadius: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AlertCircle size={18} /> {msg.error}
         </div>
       )}
 
-      {/* ==================== DEPOSIT ==================== */}
+      {/* DEPOSIT */}
       {activeTab === 'deposit' && (
-        <>
-          {/* Progress indicator */}
-          {depStep < 4 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
-              {[1,2,3].map(s => (
-                <React.Fragment key={s}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '12px',
-                    background: depStep >= s ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'rgba(255,255,255,0.07)',
-                    color: depStep >= s ? '#000' : '#64748b' }}>{s}</div>
-                  {s < 3 && <div style={{ flex: 1, height: '2px', background: depStep > s ? '#f59e0b' : 'rgba(255,255,255,0.07)', borderRadius: '2px' }} />}
-                </React.Fragment>
-              ))}
-            </div>
-          )}
-
-          {/* STEP 1: Choose Payment Method */}
+        <div className="glass-panel" style={{ padding: '24px 20px', minHeight: '320px' }}>
           {depStep === 1 && (
-            <div>
-              <div style={{ textAlign: 'center', marginBottom: '12px', fontWeight: '800', color: '#fff', fontSize: '14px' }}>Select Deposit Method</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
-                  <button key={key} onClick={() => { setDepMethod(key); setDepStep(2); }}
-                    style={{ padding: '10px 4px', borderRadius: '14px', border: `1.5px solid ${acc.color}40`, background: `${acc.color}12`, color: '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s' }}>
-                    <div style={{ background: '#fff', padding: '4px 6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40px', width: '100%', boxSizing: 'border-box' }}>
-                      <img src={acc.logo} alt={acc.label} style={{ maxHeight: '32px', maxWidth: '100%', objectFit: 'contain' }} />
-                    </div>
-                    <span style={{ fontWeight: '800', fontSize: '11px', color: acc.color }}>{acc.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 2: Enter Amount */}
-          {depStep === 2 && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-                <button onClick={() => setDepStep(1)} style={btnGhost}><ChevronLeft size={16} /></button>
-                <h3 style={{ fontWeight: '800', color: '#fff', margin: 0 }}>Enter Deposit Amount</h3>
-              </div>
-              <div style={{ ...panelStyle, textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                  Selected: <img src={PAYMENT_ACCOUNTS[depMethod]?.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> <strong style={{ color: PAYMENT_ACCOUNTS[depMethod]?.color }}>{depMethod}</strong>
-                </div>
-                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Amount (ETB)</div>
-                <input type="number" style={{ ...inputStyle, fontSize: '24px', textAlign: 'center', fontWeight: '900' }} placeholder="Enter Amount" value={depAmount} onChange={e => setDepAmount(e.target.value)} min="10" />
-                <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' }}>
-                  {['200','500','1000'].map(a => (
-                    <button key={a} onClick={() => setDepAmount(a)}
-                      style={{ flex: '1 1 auto', padding: '8px', borderRadius: '10px', border: '1px solid rgba(245,158,11,0.3)', background: depAmount === a ? 'rgba(245,158,11,0.2)' : 'transparent', color: '#f59e0b', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
-                      {a} ETB
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              {/* Section 1: Method & Amount */}
+              <div>
+                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>1. Payment Method</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
+                  {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
+                    <button key={key} onClick={() => setDepMethod(key)}
+                      style={{
+                        padding: '12px', borderRadius: '12px', border: `2px solid ${depMethod === key ? acc.color : 'transparent'}`,
+                        background: depMethod === key ? `${acc.color}12` : 'var(--bg-elevated)',
+                        color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
+                        transition: 'all 0.2s', boxShadow: depMethod === key ? `0 0 12px ${acc.color}40` : 'none'
+                      }}>
+                      <img src={acc.logo} alt="" style={{ height: '24px', borderRadius: '4px', background: '#fff', padding: '2px' }} />
+                      <span style={{ fontWeight: '800', fontSize: '14px', color: depMethod === key ? acc.color : 'var(--text-secondary)' }}>{acc.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
-              <button onClick={() => { if (!depAmount || parseFloat(depAmount) < 10) { setMsg({ error: 'Minimum deposit is 10 ETB', success: '' }); return; } setMsg({ error:'', success:'' }); setDepStep(3); }}
-                style={{ ...btnPrimary, background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#000' }}>
-                Continue →
+
+              <div>
+                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>2. Deposit Amount (ETB)</div>
+                <input type="number" className="input-field" style={{ fontSize: '28px', textAlign: 'center', fontWeight: '900', padding: '16px' }} placeholder="0.00" value={depAmount} onChange={e => setDepAmount(e.target.value)} min="10" />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '12px' }}>
+                  {['200', '500', '1000'].map(a => (
+                    <button key={a} onClick={() => setDepAmount(a)} className="btn-secondary" style={{ borderColor: depAmount === a ? 'var(--gold)' : '', color: depAmount === a ? 'var(--gold)' : '', fontSize: '14px', padding: '8px' }}>
+                      +{a}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 2: Instructions */}
+              {depMethod && PAYMENT_ACCOUNTS[depMethod] && (() => {
+                const acc = PAYMENT_ACCOUNTS[depMethod];
+                return (
+                  <div style={{ background: 'var(--bg-elevated)', borderRadius: '16px', padding: '20px', border: `1px solid ${acc.color}40` }}>
+                    <div style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <img src={acc.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> Transfer to {acc.label}:
+                    </div>
+                    <div style={{ marginBottom: '16px' }}>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>ACCOUNT NAME</div>
+                      <div style={{ fontWeight: '900', fontSize: '16px' }}>{acc.name}</div>
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>ACCOUNT NUMBER</div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: '900', fontSize: '20px', color: acc.color, letterSpacing: '1px' }}>{acc.number}</span>
+                        <button onClick={() => copyToClipboard(acc.number, 'num')} className="btn-secondary" style={{ padding: '6px 12px', minHeight: '32px', fontSize: '13px' }}>
+                          {copied === 'num' ? '✅ Copied' : <><Copy size={14} /> Copy</>}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Section 3: Verification */}
+              <div>
+                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>3. Verify Transfer</div>
+                <textarea rows={3} className="input-field" style={{ resize: 'vertical' }} placeholder={`Paste your ${depMethod} SMS receipt or transaction ID here...`} value={receiptSms} onChange={e => setReceiptSms(e.target.value)} />
+              </div>
+
+              <button onClick={() => {
+                if (!depAmount || parseFloat(depAmount) < 10) { setMsg({ error: 'Minimum deposit is 10 ETB', success: '' }); return; }
+                handleDepositSubmit();
+              }} disabled={loading || !token} className="btn-gold" style={{ width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '8px', padding: '16px', fontSize: '18px' }}>
+                {loading ? '⏳ Submitting...' : !token ? '🔒 Session Loading...' : 'Submit Deposit'}
               </button>
             </div>
           )}
 
-          {/* STEP 3: Show Bank Info + Receipt */}
-          {depStep === 3 && (() => {
-            const acc = PAYMENT_ACCOUNTS[depMethod];
-            return (
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-                  <button onClick={() => setDepStep(2)} style={btnGhost}><ChevronLeft size={16} /></button>
-                  <h3 style={{ fontWeight: '800', color: '#fff', margin: 0 }}>Send Payment & Confirm</h3>
-                </div>
-
-                {/* Amount summary */}
-                <div style={{ background: 'rgba(245,158,11,0.12)', border: '1.5px solid rgba(245,158,11,0.3)', borderRadius: '16px', padding: '14px', marginBottom: '14px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '13px', color: '#94a3b8' }}>You are depositing</div>
-                  <div style={{ fontSize: '32px', fontWeight: '900', color: '#f59e0b' }}>{parseFloat(depAmount).toFixed(2)} ETB</div>
-                </div>
-
-                {/* Bank details to send TO */}
-                <div style={{ ...panelStyle, border: `1.5px solid ${acc.color}40` }}>
-                  <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <img src={acc.logo} alt="" style={{ height: '22px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> Send to this {acc.label} Account:
-                  </div>
-                  <div style={{ marginBottom: '12px' }}>
-                    <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>ACCOUNT NAME</div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: '900', fontSize: '16px', color: '#fff' }}>{acc.name}</span>
-                      <button onClick={() => copyToClipboard(acc.name, 'name')} style={{ ...btnGhost, padding: '6px 10px', fontSize: '11px' }}>
-                        {copied === 'name' ? '✅ Copied' : <><Copy size={12} /> Copy</>}
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>ACCOUNT NUMBER</div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: '900', fontSize: '20px', color: acc.color, letterSpacing: '1px' }}>{acc.number}</span>
-                      <button onClick={() => copyToClipboard(acc.number, 'num')} style={{ ...btnGhost, padding: '6px 10px', fontSize: '11px' }}>
-                        {copied === 'num' ? '✅ Copied' : <><Copy size={12} /> Copy</>}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Receipt SMS input */}
-                <div style={panelStyle}>
-                  <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px', fontWeight: '700' }}>
-                    📋 After sending, paste your SMS confirmation or transaction code:
-                  </div>
-                  <textarea
-                    rows={3}
-                    style={{ ...inputStyle, resize: 'vertical', fontFamily: 'inherit' }}
-                    placeholder="e.g. Telebirr transaction 9AB4857 confirmed for 200 ETB..."
-                    value={receiptSms}
-                    onChange={e => setReceiptSms(e.target.value)}
-                  />
-                </div>
-
-                <button onClick={handleDepositSubmit} disabled={loading || !token}
-                  style={{ ...btnPrimary, background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', opacity: (!token || loading) ? 0.6 : 1 }}>
-                  {loading ? '⏳ Submitting...' : !token ? '🔒 Session Loading...' : '✅ Submit Payment & Wait for Approval'}
-                </button>
-              </div>
-            );
-          })()}
-
-          {/* STEP 4: Success */}
-          {depStep === 4 && (
-            <div style={{ textAlign: 'center', padding: '30px 20px' }}>
-              <div style={{ fontSize: '64px', marginBottom: '16px' }}>✅</div>
-              <h3 style={{ fontWeight: '900', fontSize: '20px', color: '#10b981', marginBottom: '8px' }}>Payment Submitted!</h3>
-              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
-                Your deposit of <strong style={{ color: '#f59e0b' }}>{parseFloat(depAmount).toFixed(2)} ETB</strong> via <strong>{depMethod}</strong> has been submitted.<br /><br />
+          {depStep === 2 && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontSize: '80px', marginBottom: '24px' }}>✅</div>
+              <h3 style={{ fontWeight: '900', fontSize: '28px', color: 'var(--green)', marginBottom: '16px' }}>Deposit Submitted!</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: '1.6', marginBottom: '40px' }}>
+                Your deposit of <strong style={{ color: 'var(--gold)' }}>{parseFloat(depAmount).toFixed(2)} ETB</strong> via <strong>{depMethod}</strong> has been submitted.<br /><br />
                 Admin will verify and credit your wallet shortly. ⚡
               </p>
-              <div style={{ background: 'rgba(245,158,11,0.1)', borderRadius: '14px', padding: '14px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Clock size={20} color="#f59e0b" />
-                <span style={{ fontSize: '13px', color: '#f59e0b', fontWeight: '700' }}>Waiting for Admin Approval...</span>
-              </div>
-              <button onClick={resetDeposit} style={{ ...btnPrimary, background: 'rgba(255,255,255,0.08)', color: '#fff', maxWidth: '200px', margin: '0 auto' }}>Make Another Deposit</button>
+              <button onClick={resetDeposit} className="btn-secondary" style={{ minWidth: '200px' }}>Make Another Deposit</button>
             </div>
           )}
-        </>
+        </div>
       )}
 
-      {/* ==================== WITHDRAW ==================== */}
+      {/* WITHDRAW */}
       {activeTab === 'withdraw' && (
-        <>
-          {withStep < 4 && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
-              {[1,2,3].map(s => (
-                <React.Fragment key={s}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900', fontSize: '12px',
-                    background: withStep >= s ? 'linear-gradient(135deg,#6366f1,#4f46e5)' : 'rgba(255,255,255,0.07)',
-                    color: withStep >= s ? '#fff' : '#64748b' }}>{s}</div>
-                  {s < 3 && <div style={{ flex: 1, height: '2px', background: withStep > s ? '#6366f1' : 'rgba(255,255,255,0.07)', borderRadius: '2px' }} />}
-                </React.Fragment>
-              ))}
-            </div>
-          )}
-
-          {/* STEP 1: Enter Amount */}
+        <div className="glass-panel" style={{ padding: '24px 20px', minHeight: '320px' }}>
           {withStep === 1 && (
-            <div>
-              <h3 style={{ textAlign: 'center', marginBottom: '18px', fontWeight: '800', color: '#fff' }}>Enter Withdrawal Amount</h3>
-              <div style={{ ...panelStyle, textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px' }}>Available Withdrawable Winnings</div>
-                <div style={{ fontSize: '22px', fontWeight: '900', color: '#10b981', marginBottom: '16px' }}>{withdrawableBal.toFixed(2)} ETB</div>
-                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '8px' }}>Amount to Withdraw (ETB)</div>
-                <input type="number" style={{ ...inputStyle, fontSize: '24px', textAlign: 'center', fontWeight: '900' }}
-                  placeholder="Enter Amount" value={withAmount} onChange={e => setWithAmount(e.target.value)} min="200" max={withdrawableBal} />
-                <div style={{ marginTop: '12px' }}>
-                  <button onClick={() => setWithAmount(String(Math.floor(withdrawableBal)))}
-                    style={{ width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid rgba(99,102,241,0.35)', background: 'rgba(99,102,241,0.12)', color: '#818cf8', fontWeight: '800', cursor: 'pointer', fontSize: '13px' }}>
-                    Withdraw All ({Math.floor(withdrawableBal)} ETB)
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              
+              <div style={{ textAlign: 'center', background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: '16px', padding: '20px' }}>
+                <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700', textTransform: 'uppercase' }}>Available Winnings</div>
+                <div style={{ fontSize: '32px', fontWeight: '900', color: 'var(--cyan)' }}>{withdrawableBal.toFixed(2)} <span style={{ fontSize: '16px', opacity: 0.8 }}>ETB</span></div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>1. Withdrawal Amount (ETB)</div>
+                <div style={{ position: 'relative' }}>
+                  <input type="number" className="input-field" style={{ fontSize: '24px', textAlign: 'center', fontWeight: '900', padding: '16px', width: '100%', boxSizing: 'border-box' }}
+                    placeholder="0.00" value={withAmount} onChange={e => setWithAmount(e.target.value)} min="200" max={withdrawableBal} />
+                  <button onClick={() => setWithAmount(String(Math.floor(withdrawableBal)))} className="btn-secondary" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', padding: '6px 12px', fontSize: '12px' }}>
+                    MAX
                   </button>
                 </div>
               </div>
-              <button onClick={() => {
-                if (!withAmount || parseFloat(withAmount) < 200) { setMsg({ error: 'Minimum withdrawal is 200 ETB', success: '' }); return; }
-                if (parseFloat(withAmount) > withdrawableBal) { setMsg({ error: `Insufficient withdrawable balance. Your withdrawable balance is ${withdrawableBal.toFixed(2)} ETB.`, success: '' }); return; }
-                setMsg({ error:'', success:'' }); setWithStep(2);
-              }} style={{ ...btnPrimary, background: 'linear-gradient(135deg,#6366f1,#4f46e5)', color: '#fff' }}>
-                Continue →
-              </button>
-            </div>
-          )}
 
-          {/* STEP 2: Choose Payment Method */}
-          {withStep === 2 && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-                <button onClick={() => setWithStep(1)} style={btnGhost}><ChevronLeft size={16} /></button>
-                <h3 style={{ fontWeight: '800', color: '#fff', margin: 0 }}>Choose Withdrawal Method</h3>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
-                  <button key={key} onClick={() => { setWithMethod(key); setWithStep(3); }}
-                    style={{ padding: '10px 4px', borderRadius: '14px', border: `1.5px solid ${acc.color}40`, background: `${acc.color}12`, color: '#fff', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', transition: 'all 0.2s' }}>
-                    <div style={{ background: '#fff', padding: '4px 6px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '40px', width: '100%', boxSizing: 'border-box' }}>
-                      <img src={acc.logo} alt={acc.label} style={{ maxHeight: '32px', maxWidth: '100%', objectFit: 'contain' }} />
-                    </div>
-                    <span style={{ fontWeight: '800', fontSize: '11px', color: acc.color }}>{acc.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: Fill Account Info */}
-          {withStep === 3 && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-                <button onClick={() => setWithStep(2)} style={btnGhost}><ChevronLeft size={16} /></button>
-                <h3 style={{ fontWeight: '800', color: '#fff', margin: 0 }}>Your {withMethod} Account</h3>
-              </div>
-
-              <div style={{ background: 'rgba(99,102,241,0.12)', border: '1.5px solid rgba(99,102,241,0.3)', borderRadius: '16px', padding: '14px', marginBottom: '14px', textAlign: 'center' }}>
-                <div style={{ fontSize: '13px', color: '#94a3b8' }}>Withdrawing</div>
-                <div style={{ fontSize: '28px', fontWeight: '900', color: '#818cf8' }}>{parseFloat(withAmount).toFixed(2)} ETB</div>
-                <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '4px' }}>
-                  via <img src={PAYMENT_ACCOUNTS[withMethod]?.logo} alt="" style={{ height: '18px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> {withMethod}
+              <div>
+                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>2. Withdrawal Method</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
+                  {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
+                    <button key={key} onClick={() => setWithMethod(key)}
+                      style={{
+                        padding: '12px', borderRadius: '12px', border: `2px solid ${withMethod === key ? acc.color : 'transparent'}`,
+                        background: withMethod === key ? `${acc.color}12` : 'var(--bg-elevated)',
+                        color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
+                        transition: 'all 0.2s', boxShadow: withMethod === key ? `0 0 12px ${acc.color}40` : 'none'
+                      }}>
+                      <img src={acc.logo} alt="" style={{ height: '24px', borderRadius: '4px', background: '#fff', padding: '2px' }} />
+                      <span style={{ fontWeight: '800', fontSize: '14px', color: withMethod === key ? acc.color : 'var(--text-secondary)' }}>{acc.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div style={panelStyle}>
-                <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '4px', fontWeight: '700' }}>
-                  Your {withMethod} Account Number / Phone
+              <div>
+                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>
+                  3. Your {withMethod} Account Number / Phone
                 </div>
                 <input
                   type="text"
-                  style={inputStyle}
+                  className="input-field"
                   placeholder={withMethod === 'Telebirr' ? 'e.g. 0911223344' : 'e.g. 1000123456789'}
                   value={withAccount}
                   onChange={e => setWithAccount(e.target.value)}
                 />
               </div>
 
-              <button onClick={handleWithdrawSubmit} disabled={loading || !token}
-                style={{ ...btnPrimary, background: 'linear-gradient(135deg,#10b981,#059669)', color: '#fff', opacity: (!token || loading) ? 0.6 : 1 }}>
-                {loading ? '⏳ Submitting...' : !token ? '🔒 Session Loading...' : '✅ Submit Withdrawal Request'}
+              <button onClick={() => {
+                if (!withAmount || parseFloat(withAmount) < 200) { setMsg({ error: 'Minimum withdrawal is 200 ETB', success: '' }); return; }
+                if (parseFloat(withAmount) > withdrawableBal) { setMsg({ error: `Insufficient withdrawable balance. Your withdrawable balance is ${withdrawableBal.toFixed(2)} ETB.`, success: '' }); return; }
+                handleWithdrawSubmit();
+              }} disabled={loading || !token} className="btn-gold" style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', boxShadow: 'var(--shadow-cyan)', color: '#fff', width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '8px', padding: '16px', fontSize: '18px' }}>
+                {loading ? '⏳ Submitting...' : !token ? '🔒 Session Loading...' : 'Submit Request'}
               </button>
             </div>
           )}
 
-          {/* STEP 4: Success */}
-          {withStep === 4 && (
-            <div style={{ textAlign: 'center', padding: '30px 20px' }}>
-              <div style={{ fontSize: '64px', marginBottom: '16px' }}>✅</div>
-              <h3 style={{ fontWeight: '900', fontSize: '20px', color: '#10b981', marginBottom: '8px' }}>Withdrawal Submitted!</h3>
-              <p style={{ color: '#94a3b8', fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
-                Your withdrawal of <strong style={{ color: '#818cf8' }}>{parseFloat(withAmount).toFixed(2)} ETB</strong> via <strong>{withMethod}</strong> to account <strong>{withAccount}</strong> has been submitted.<br /><br />
+          {withStep === 2 && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <div style={{ fontSize: '80px', marginBottom: '24px' }}>✅</div>
+              <h3 style={{ fontWeight: '900', fontSize: '28px', color: 'var(--cyan)', marginBottom: '16px' }}>Withdrawal Submitted!</h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: '1.6', marginBottom: '40px' }}>
+                Your withdrawal of <strong style={{ color: 'var(--cyan)' }}>{parseFloat(withAmount).toFixed(2)} ETB</strong> via <strong>{withMethod}</strong> to account <strong>{withAccount}</strong> has been submitted.<br /><br />
                 Admin will process and transfer funds to your account shortly. ⚡
               </p>
-              <div style={{ background: 'rgba(99,102,241,0.1)', borderRadius: '14px', padding: '14px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Clock size={20} color="#818cf8" />
-                <span style={{ fontSize: '13px', color: '#818cf8', fontWeight: '700' }}>Waiting for Admin Approval...</span>
-              </div>
-              <button onClick={resetWithdraw} style={{ ...btnPrimary, background: 'rgba(255,255,255,0.08)', color: '#fff', maxWidth: '220px', margin: '0 auto' }}>Make Another Withdrawal</button>
+              <button onClick={resetWithdraw} className="btn-secondary" style={{ minWidth: '200px' }}>Make Another Withdrawal</button>
             </div>
           )}
-        </>
+        </div>
       )}
 
-      {/* ==================== HISTORY ==================== */}
+      {/* HISTORY */}
       {activeTab === 'history' && (
-        <div>
-          <div style={{ fontSize: '11px', fontWeight: '800', marginBottom: '8px', color: '#94a3b8', textTransform: 'uppercase' }}>Deposits</div>
+        <div className="glass-panel" style={{ padding: '24px 20px' }}>
+          <div style={{ fontSize: '14px', fontWeight: '800', marginBottom: '16px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Deposits</div>
           {(transactions.deposits || []).length === 0
-            ? <div style={{ color: '#64748b', textAlign: 'center', padding: '14px', fontSize: '12px' }}>No deposits yet</div>
+            ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px', fontSize: '15px' }}>No deposits yet</div>
             : (transactions.deposits || []).slice().reverse().map(d => (
-              <div key={d.id} style={{ background: 'rgba(13,20,38,0.8)', borderRadius: '10px', padding: '8px 12px', marginBottom: '6px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={d.id} style={{ background: 'var(--bg-elevated)', borderRadius: '14px', padding: '16px 20px', marginBottom: '10px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: '800', color: '#10b981', fontSize: '13px' }}>+{parseFloat(d.amount).toFixed(2)} ETB</div>
-                  <div style={{ fontSize: '10px', color: '#64748b' }}>{d.method} · {new Date(d.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontWeight: '900', color: 'var(--green)', fontSize: '16px' }}>+{parseFloat(d.amount).toFixed(2)} ETB</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>{d.method} · {new Date(d.created_at).toLocaleDateString()}</div>
                 </div>
                 {renderStatusBadge(d.status)}
               </div>
             ))
           }
 
-          <div style={{ fontSize: '11px', fontWeight: '800', margin: '14px 0 8px', color: '#94a3b8', textTransform: 'uppercase' }}>Withdrawals</div>
+          <div style={{ fontSize: '14px', fontWeight: '800', margin: '32px 0 16px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Withdrawals</div>
           {(transactions.withdrawals || []).length === 0
-            ? <div style={{ color: '#64748b', textAlign: 'center', padding: '14px', fontSize: '12px' }}>No withdrawals yet</div>
+            ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px', fontSize: '15px' }}>No withdrawals yet</div>
             : (transactions.withdrawals || []).slice().reverse().map(w => (
-              <div key={w.id} style={{ background: 'rgba(13,20,38,0.8)', borderRadius: '10px', padding: '8px 12px', marginBottom: '6px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={w.id} style={{ background: 'var(--bg-elevated)', borderRadius: '14px', padding: '16px 20px', marginBottom: '10px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: '800', color: '#ef4444', fontSize: '13px' }}>-{parseFloat(w.amount).toFixed(2)} ETB</div>
-                  <div style={{ fontSize: '10px', color: '#64748b' }}>{w.method} · {new Date(w.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontWeight: '900', color: 'var(--red)', fontSize: '16px' }}>-{parseFloat(w.amount).toFixed(2)} ETB</div>
+                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>{w.method} · {new Date(w.created_at).toLocaleDateString()}</div>
                 </div>
                 {renderStatusBadge(w.status)}
               </div>
