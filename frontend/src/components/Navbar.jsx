@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, Wallet, Dices, HelpCircle, X } from 'lucide-react';
+import { Home, Wallet, Dices, HelpCircle, X, ClipboardList, Users } from 'lucide-react';
 import { translations } from '../i18n/i18n';
 
 export default function Navbar({
@@ -15,6 +15,8 @@ export default function Navbar({
 
   const navItems = [
     { id: 'lobby', label: 'Home', icon: Home, activeColor: '#f59e0b', activeBg: 'rgba(245,158,11,0.12)' },
+    { id: 'tasks', label: 'Tasks', icon: ClipboardList, activeColor: '#3b82f6', activeBg: 'rgba(59,130,246,0.12)' },
+    { id: 'invite', label: 'Invite', icon: Users, activeColor: '#8b5cf6', activeBg: 'rgba(139,92,246,0.12)' },
     { id: 'wallet', label: 'Wallet', icon: Wallet, activeColor: '#10b981', activeBg: 'rgba(16,185,129,0.12)' },
   ];
 
