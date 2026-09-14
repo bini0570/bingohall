@@ -60,14 +60,14 @@ export default function InviteView({ lang, user }) {
         </button>
         <button onClick={shareLink} style={{ 
           padding: '12px 16px', 
-          background: 'var(--bg-elevated)', 
-          border: '1px solid var(--border-subtle)', 
+          background: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)', 
+          border: 'none', 
           borderRadius: '8px', 
           color: '#fff', 
           cursor: 'pointer',
-          fontWeight: '800',
+          fontWeight: '900',
           fontSize: '12px',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+          boxShadow: '0 4px 12px rgba(2, 132, 199, 0.4)'
         }}>
           SHARE
         </button>
