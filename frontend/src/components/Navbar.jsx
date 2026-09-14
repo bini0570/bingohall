@@ -66,10 +66,10 @@ export default function Navbar({
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '0 16px',
-          background: 'rgba(15, 23, 42, 1)', // Solid background so it's opaque
-          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'var(--bg-main)', // Solid background
+          borderBottom: '1px solid var(--border-subtle)',
           boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4)',
-          flexShrink: 0, // Prevent shrinking in flex layout
+          flexShrink: 0,
           position: 'relative',
           zIndex: 500
         }}
@@ -264,15 +264,13 @@ export default function Navbar({
             left: 0,
             right: 0,
             zIndex: 9999,
-            background: 'rgba(5, 8, 15, 0.98)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
+            background: 'var(--bg-main)',
+            borderTop: '1px solid var(--border-subtle)',
             display: 'flex',
             alignItems: 'stretch',
             height: '68px',
             paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-            boxShadow: '0 -8px 40px rgba(0,0,0,0.7)'
+            boxShadow: '0 -8px 32px rgba(0,0,0,0.8)'
           }}
         >
           {navItems.map(({ id, label, icon: Icon, activeColor, activeBg }) => {

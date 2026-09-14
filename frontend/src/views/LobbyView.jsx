@@ -133,21 +133,19 @@ export default function LobbyView({
   return (
     <div style={{ maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '12px 10px 4px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', height: '100%', flex: 1, overflow: 'hidden', position: 'relative' }}>
       
-      {/* ── MODERN STATS BANNER ── */}
+      {/* ── PREMIUM STATS BANNER ── */}
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr 1fr',
           gap: '8px',
-          background: 'rgba(15, 23, 42, 0.6)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '12px',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: '16px',
           padding: '8px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
           flexShrink: 0,
-          marginBottom: '12px'
+          marginBottom: '16px'
         }}
       >
         {/* Balance */}
