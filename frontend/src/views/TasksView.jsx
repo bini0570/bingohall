@@ -5,7 +5,22 @@ import { translations } from '../i18n/i18n';
 export default function TasksView({ lang }) {
   const [streak, setStreak] = useState(() => parseInt(localStorage.getItem('bingo_streak') || '1'));
   const [cooldownEnd, setCooldownEnd] = useState(() => parseInt(localStorage.getItem('bingo_cooldown') || '0'));
-  const [timeLeft, setTimeLeft] = useState(null);
+  
+  // Calculate initial time left synchronously to prevent UI flicker
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const end = parseInt(localStorage.getItem('bingo_cooldown') || '0');
+    if (end > 0) {
+      const now = Date.now();
+      if (now < end) {
+        const diff = end - now;
+        const h = Math.floor(diff / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      }
+    }
+    return null;
+  });
 
   // Check for 24h missed window to reset streak
   useEffect(() => {
@@ -17,6 +32,7 @@ export default function TasksView({ lang }) {
         setCooldownEnd(0);
         localStorage.setItem('bingo_streak', '1');
         localStorage.setItem('bingo_cooldown', '0');
+        setTimeLeft(null);
       }
     }
   }, []);
@@ -48,7 +64,7 @@ export default function TasksView({ lang }) {
       }
     };
     
-    tick();
+    tick(); // Run immediately to sync exactly, but we also run in initial state now
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, [cooldownEnd]);
