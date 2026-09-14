@@ -26,7 +26,7 @@ export default function InviteView({ lang, user }) {
   };
 
   return (
-    <div style={{ padding: '20px 16px', paddingBottom: '100px', maxWidth: '480px', margin: '0 auto' }}>
+    <div style={{ maxWidth: '1100px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '20px 16px 20px' }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <div style={{ 
           width: '64px', height: '64px', borderRadius: '20px', 
