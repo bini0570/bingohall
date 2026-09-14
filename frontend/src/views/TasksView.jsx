@@ -4,18 +4,19 @@ import { translations } from '../i18n/i18n';
 
 export default function TasksView({ lang }) {
   return (
-    <div style={{ padding: '20px 16px', paddingBottom: '100px' }}>
+    <div style={{ padding: '20px 16px', paddingBottom: '100px', maxWidth: '480px', margin: '0 auto' }}>
       <div style={{ textAlign: 'center', marginBottom: '24px' }}>
         <div style={{ 
           width: '64px', height: '64px', borderRadius: '20px', 
-          background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(29,78,216,0.2))', 
+          background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(29,78,216,0.1))', 
+          border: '1px solid var(--border-cyan)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
-          boxShadow: '0 8px 32px rgba(59,130,246,0.15)'
+          boxShadow: 'var(--shadow-card)'
         }}>
-          <ClipboardList size={32} color="#60a5fa" />
+          <ClipboardList size={32} color="#38BDF8" />
         </div>
         <h2 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: '900', color: '#fff' }}>Daily Tasks</h2>
-        <p style={{ margin: 0, fontSize: '14px', color: '#94a3b8' }}>Complete tasks to earn free ETB rewards!</p>
+        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>Complete tasks to earn free ETB rewards!</p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -30,32 +31,32 @@ export default function TasksView({ lang }) {
 function TaskCard({ icon, title, reward, status, progress }) {
   const isCompleted = status === 'completed';
   return (
-    <div style={{ 
-      background: 'rgba(15,23,42,0.6)', borderRadius: '16px', padding: '16px',
-      border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: '16px'
-    }}>
+    <div className="glass-panel" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
       <div style={{ 
         width: '42px', height: '42px', borderRadius: '12px', flexShrink: 0,
         background: isCompleted ? 'rgba(16,185,129,0.1)' : 'rgba(59,130,246,0.1)',
+        border: `1px solid ${isCompleted ? 'rgba(16,185,129,0.2)' : 'rgba(59,130,246,0.2)'}`,
         color: isCompleted ? '#10b981' : '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center'
       }}>
         {icon}
       </div>
       <div style={{ flex: 1 }}>
-        <h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: '800', color: isCompleted ? '#94a3b8' : '#fff' }}>
+        <h4 style={{ margin: '0 0 4px', fontSize: '15px', fontWeight: '800', color: isCompleted ? 'var(--text-muted)' : '#fff' }}>
           {title}
         </h4>
-        <div style={{ fontSize: '13px', color: '#fbbf24', fontWeight: '700' }}>+{reward}</div>
+        <div style={{ fontSize: '13px', color: 'var(--gold)', fontWeight: '700' }}>+{reward}</div>
       </div>
       <div>
         {isCompleted ? (
-          <span style={{ fontSize: '12px', fontWeight: '800', color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '6px 12px', borderRadius: '8px' }}>
+          <span style={{ fontSize: '12px', fontWeight: '800', color: '#10B981', background: 'rgba(16,185,129,0.1)', padding: '6px 12px', borderRadius: '8px' }}>
             Done
           </span>
         ) : (
           <button style={{ 
-            background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', border: 'none', color: '#fff',
-            padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: '800', cursor: 'pointer'
+            background: 'linear-gradient(135deg, #3B82F6, #1D4ED8)', border: 'none', color: '#fff',
+            padding: '8px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: '800', cursor: 'pointer',
+            boxShadow: '0 4px 12px rgba(59,130,246,0.3), inset 0 1px 2px rgba(255,255,255,0.2)',
+            transition: 'all 0.2s'
           }}>
             {status === 'in_progress' ? progress : 'Go'}
           </button>

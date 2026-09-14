@@ -77,7 +77,7 @@ export default function AuthView({ onLoginSuccess }) {
 
   return (
     <div style={{ maxWidth: '440px', margin: '30px auto', padding: '0 16px', fontFamily: 'inherit' }}>
-      <div className="glass-panel" style={{ padding: '32px 24px', borderRadius: '24px', background: 'rgba(15, 23, 42, 0.95)' }}>
+      <div className="glass-panel" style={{ padding: '32px 24px', borderRadius: '24px' }}>
         {/* Brand Header */}
         <div style={{ textAlign: 'center', marginBottom: '24px' }}>
           <div
@@ -108,10 +108,11 @@ export default function AuthView({ onLoginSuccess }) {
         <div
           style={{
             display: 'flex',
-            background: 'rgba(255, 255, 255, 0.06)',
+            background: 'var(--bg-elevated)',
             padding: '4px',
             borderRadius: '14px',
-            marginBottom: '20px'
+            marginBottom: '20px',
+            border: '1px solid var(--border-subtle)'
           }}
         >
           <button
@@ -121,8 +122,9 @@ export default function AuthView({ onLoginSuccess }) {
               padding: '10px',
               borderRadius: '10px',
               border: 'none',
-              background: mode === 'login' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'transparent',
-              color: mode === 'login' ? '#000' : '#94a3b8',
+              background: mode === 'login' ? 'var(--bg-card-hover)' : 'transparent',
+              color: mode === 'login' ? 'var(--gold)' : 'var(--text-muted)',
+              boxShadow: mode === 'login' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
               fontWeight: '800',
               fontSize: '13px',
               cursor: 'pointer',
@@ -130,7 +132,7 @@ export default function AuthView({ onLoginSuccess }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s ease'
             }}
           >
             <LogIn size={15} /> Log In
@@ -143,8 +145,9 @@ export default function AuthView({ onLoginSuccess }) {
               padding: '10px',
               borderRadius: '10px',
               border: 'none',
-              background: mode === 'register' ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' : 'transparent',
-              color: mode === 'register' ? '#000' : '#94a3b8',
+              background: mode === 'register' ? 'var(--bg-card-hover)' : 'transparent',
+              color: mode === 'register' ? 'var(--gold)' : 'var(--text-muted)',
+              boxShadow: mode === 'register' ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
               fontWeight: '800',
               fontSize: '13px',
               cursor: 'pointer',
@@ -152,7 +155,7 @@ export default function AuthView({ onLoginSuccess }) {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '6px',
-              transition: 'all 0.2s'
+              transition: 'all 0.2s ease'
             }}
           >
             <UserPlus size={15} /> Register
@@ -186,53 +189,35 @@ export default function AuthView({ onLoginSuccess }) {
         {mode === 'login' && (
           <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
-              <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
                 Phone Number or Username:
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <User size={16} color="#64748b" style={{ position: 'absolute', left: '12px' }} />
+                <User size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '14px' }} />
                 <input
                   type="text"
+                  className="input-field"
                   placeholder="e.g. 0912345678 or username"
                   value={loginId}
                   onChange={e => setLoginId(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 12px 12px 38px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    color: '#fff',
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
+                  style={{ paddingLeft: '42px', fontSize: '14px' }}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
                 Password:
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <KeyRound size={16} color="#64748b" style={{ position: 'absolute', left: '12px' }} />
+                <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '14px' }} />
                 <input
                   type="password"
+                  className="input-field"
                   placeholder="••••••••"
                   value={loginPass}
                   onChange={e => setLoginPass(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 12px 12px 38px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    color: '#fff',
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
+                  style={{ paddingLeft: '42px', fontSize: '14px' }}
                 />
               </div>
             </div>
@@ -240,22 +225,8 @@ export default function AuthView({ onLoginSuccess }) {
             <button
               type="submit"
               disabled={loading}
-              style={{
-                marginTop: '8px',
-                padding: '14px',
-                borderRadius: '12px',
-                border: 'none',
-                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                color: '#000',
-                fontWeight: '900',
-                fontSize: '14px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(245, 158, 11, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}
+              className="btn-gold"
+              style={{ marginTop: '8px', width: '100%' }}
             >
               <LogIn size={18} /> {loading ? 'Logging in...' : 'Log In & Play'}
             </button>
@@ -268,105 +239,69 @@ export default function AuthView({ onLoginSuccess }) {
         {mode === 'register' && (
           <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
-              <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
                 Username:
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <User size={16} color="#64748b" style={{ position: 'absolute', left: '12px' }} />
+                <User size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '14px' }} />
                 <input
                   type="text"
+                  className="input-field"
                   placeholder="e.g. biniyam"
                   value={regUsername}
                   onChange={e => setRegUsername(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 12px 12px 38px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    color: '#fff',
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
+                  style={{ paddingLeft: '42px', fontSize: '14px' }}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
                 Phone Number (Telebirr / CBE):
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Phone size={16} color="#64748b" style={{ position: 'absolute', left: '12px' }} />
+                <Phone size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '14px' }} />
                 <input
                   type="text"
+                  className="input-field"
                   placeholder="e.g. 0912345678"
                   value={regPhone}
                   onChange={e => setRegPhone(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 12px 12px 38px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    color: '#fff',
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
+                  style={{ paddingLeft: '42px', fontSize: '14px' }}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
                 Password:
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <KeyRound size={16} color="#64748b" style={{ position: 'absolute', left: '12px' }} />
+                <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '14px' }} />
                 <input
                   type="password"
+                  className="input-field"
                   placeholder="••••••••"
                   value={regPass}
                   onChange={e => setRegPass(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 12px 12px 38px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    color: '#fff',
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
+                  style={{ paddingLeft: '42px', fontSize: '14px' }}
                 />
               </div>
             </div>
 
             <div>
-              <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
+              <label style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '700', marginBottom: '6px', display: 'block' }}>
                 Referral Code (Optional):
               </label>
               <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Gift size={16} color="#64748b" style={{ position: 'absolute', left: '12px' }} />
+                <Gift size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '14px' }} />
                 <input
                   type="text"
+                  className="input-field"
                   placeholder="e.g. REF1234"
                   value={regRef}
                   onChange={e => setRegRef(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '12px 12px 12px 38px',
-                    borderRadius: '12px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    background: 'rgba(15, 23, 42, 0.8)',
-                    color: '#fff',
-                    fontSize: '13px',
-                    outline: 'none',
-                    boxSizing: 'border-box'
-                  }}
+                  style={{ paddingLeft: '42px', fontSize: '14px' }}
                 />
               </div>
             </div>
@@ -374,21 +309,13 @@ export default function AuthView({ onLoginSuccess }) {
             <button
               type="submit"
               disabled={loading}
+              className="btn-gold"
               style={{
                 marginTop: '8px',
-                padding: '14px',
-                borderRadius: '12px',
-                border: 'none',
+                width: '100%',
                 background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                 color: '#fff',
-                fontWeight: '900',
-                fontSize: '14px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3), inset 0 2px 4px rgba(255,255,255,0.2)'
               }}
             >
               <UserPlus size={18} /> {loading ? 'Creating account...' : 'Create Account & Play'}

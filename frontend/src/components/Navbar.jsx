@@ -21,92 +21,124 @@ export default function Navbar({
 
   if (currentView === 'admin') return null;
 
+  const getBannerDetails = () => {
+    switch(currentView) {
+      case 'tasks':
+        return { 
+          title: 'Tasks', 
+          icon: <ClipboardList size={22} color="#fff" strokeWidth={2.5} />,
+          bg: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+          shadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+        };
+      case 'invite':
+        return { 
+          title: 'Invite', 
+          icon: <Users size={22} color="#fff" strokeWidth={2.5} />,
+          bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+          shadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+        };
+      case 'wallet':
+        return { 
+          title: 'Wallet', 
+          icon: <Wallet size={22} color="#fff" strokeWidth={2.5} />,
+          bg: 'linear-gradient(135deg, #10b981 0%, #047857 100%)',
+          shadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+        };
+      default:
+        return { 
+          title: <>Bingo <span style={{ color: '#f59e0b' }}>X</span></>, 
+          icon: <Dices size={22} color="#fff" strokeWidth={2.5} />,
+          bg: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
+          shadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+        };
+    }
+  };
+
+  const banner = getBannerDetails();
+
   return (
     <>
-      {/* ── Top Header Bar (Split Design) ── */}
+      {/* ── Top Header Bar (Modernized) ── */}
       <header
         style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 500,
-          height: '52px',
+          height: '60px',
           display: 'flex',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-          overflow: 'hidden',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 16px',
+          background: 'rgba(15, 23, 42, 1)', // Solid background so it's opaque
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 4px 30px rgba(0, 0, 0, 0.4)',
+          flexShrink: 0, // Prevent shrinking in flex layout
+          position: 'relative',
+          zIndex: 500
         }}
       >
-        {/* Left 75% - Brand Block */}
+        {/* Brand Block */}
         <div
           onClick={() => setCurrentView('lobby')}
           style={{
-            width: '75%',
-            background: 'linear-gradient(90deg, rgba(10,15,30,0.98) 0%, rgba(15,23,42,0.98) 100%)',
-            backdropFilter: 'blur(20px)',
             display: 'flex',
             alignItems: 'center',
-            paddingLeft: '16px',
             gap: '10px',
             cursor: 'pointer',
-            borderRight: '1px solid rgba(255,255,255,0.05)'
           }}
         >
           <div
             style={{
-              width: '30px',
-              height: '30px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: banner.bg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              flexShrink: 0,
-              boxShadow: '0 0 12px rgba(245,158,11,0.4)'
+              boxShadow: banner.shadow,
+              transition: 'all 0.3s ease'
             }}
           >
-            <Dices size={18} color="#000" />
+            {banner.icon}
           </div>
           <span
             style={{
-              fontSize: '19px',
-              fontWeight: '900',
-              background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #f59e0b 100%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              fontSize: '20px',
+              fontWeight: '800',
+              color: '#fff',
               letterSpacing: '-0.3px',
-              textTransform: 'uppercase'
+              textTransform: 'uppercase',
+              textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+              transition: 'all 0.3s ease'
             }}
           >
-            Bingo X
+            {banner.title}
           </span>
         </div>
 
-        {/* Right 25% - Balance Block */}
+        {/* Balance Block */}
         <div
           style={{
-            width: '25%',
-            background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.25) 100%)',
-            backdropFilter: 'blur(20px)',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 8px'
+            gap: '8px',
+            background: 'rgba(16, 185, 129, 0.1)',
+            border: '1px solid rgba(16, 185, 129, 0.25)',
+            padding: '6px 14px',
+            borderRadius: '20px',
+            boxShadow: '0 2px 12px rgba(16, 185, 129, 0.15)'
           }}
         >
+          <Wallet size={16} color="#10b981" />
           {user ? (
             <span style={{
               color: '#10b981',
-              fontWeight: '900',
+              fontWeight: '800',
               fontSize: '15px',
               letterSpacing: '-0.2px'
             }}>
               {(parseFloat(user.balance) || 0).toFixed(2)}
             </span>
           ) : (
-            <span style={{ color: '#10b981', fontSize: '12px' }}>...</span>
+            <span style={{ color: '#10b981', fontSize: '14px', fontWeight: 'bold' }}>...</span>
           )}
         </div>
       </header>

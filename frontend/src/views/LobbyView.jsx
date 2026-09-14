@@ -131,26 +131,23 @@ export default function LobbyView({
   const cdColor = currentSec <= 10 ? '#ef4444' : currentSec <= 20 ? '#f59e0b' : '#06b6d4';
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '90px 10px 4px', height: 'calc(100dvh - 68px)', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
-
-      {/* ── SOLID FIXED FULL-WIDTH STATS BANNER (completely unmovable) ── */}
+    <div style={{ maxWidth: '1100px', width: '100%', margin: '0 auto', padding: '12px 10px 4px', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', height: '100%', flex: 1, overflow: 'hidden', position: 'relative' }}>
+      
+      {/* ── MODERN STATS BANNER ── */}
       <div
         style={{
-          position: 'fixed',
-          top: '48px',
-          left: 0,
-          right: 0,
-          zIndex: 499,
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr 1fr',
-          gap: '5px',
-          background: 'rgba(5, 8, 15, 0.97)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          borderBottom: '2px solid rgba(245,158,11,0.25)',
-          padding: '5px 12px 8px 12px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-          flexShrink: 0
+          gap: '8px',
+          background: 'rgba(15, 23, 42, 0.6)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '12px',
+          padding: '8px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          flexShrink: 0,
+          marginBottom: '12px'
         }}
       >
         {/* Balance */}
@@ -161,12 +158,14 @@ export default function LobbyView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '4px 4px',
-            borderRadius: '6px',
-            background: 'rgba(16,185,129,0.08)',
+            padding: '6px 4px',
+            borderRadius: '8px',
+            background: 'rgba(16,185,129,0.1)',
             border: '1px solid rgba(16,185,129,0.2)',
-            gap: '1px',
-            cursor: 'pointer'
+            gap: '2px',
+            cursor: 'pointer',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            boxShadow: 'inset 0 2px 10px rgba(16,185,129,0.05)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
@@ -185,23 +184,24 @@ export default function LobbyView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '4px 4px',
-            borderRadius: '6px',
-            background: isDrawing ? 'rgba(16,185,129,0.12)' : 'rgba(6,182,212,0.08)',
-            border: `1px solid ${isDrawing ? 'rgba(16,185,129,0.3)' : 'rgba(6,182,212,0.2)'}`,
-            gap: '1px'
+            padding: '6px 4px',
+            borderRadius: '8px',
+            background: isDrawing ? 'rgba(16,185,129,0.15)' : 'rgba(6,182,212,0.1)',
+            border: `1px solid ${isDrawing ? 'rgba(16,185,129,0.3)' : 'rgba(6,182,212,0.25)'}`,
+            gap: '2px',
+            boxShadow: `inset 0 2px 10px ${isDrawing ? 'rgba(16,185,129,0.05)' : 'rgba(6,182,212,0.05)'}`
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <Clock size={11} color={isDrawing ? '#10b981' : cdColor} />
-            <span style={{ fontSize: '8px', color: isDrawing ? '#10b981' : cdColor, fontWeight: '700', letterSpacing: '0.4px' }}>
+            <span style={{ fontSize: '8px', color: isDrawing ? '#10b981' : cdColor, fontWeight: '800', letterSpacing: '0.4px' }}>
               {isDrawing ? 'LIVE' : 'STARTS IN'}
             </span>
           </div>
           {isDrawing ? (
-            <span style={{ fontSize: '12px', fontWeight: '900', color: '#10b981', lineHeight: 1 }}>▶ LIVE</span>
+            <span style={{ fontSize: '13px', fontWeight: '900', color: '#10b981', lineHeight: 1, textShadow: '0 0 8px rgba(16,185,129,0.4)' }}>▶ LIVE</span>
           ) : (
-            <span style={{ fontSize: '13px', fontWeight: '900', color: cdColor, lineHeight: 1 }}>
+            <span style={{ fontSize: '14px', fontWeight: '900', color: cdColor, lineHeight: 1 }}>
               {currentSec}<span style={{ fontSize: '9px', opacity: 0.8 }}>s</span>
             </span>
           )}
@@ -214,18 +214,19 @@ export default function LobbyView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '4px 4px',
-            borderRadius: '6px',
-            background: 'rgba(245,158,11,0.08)',
-            border: '1px solid rgba(245,158,11,0.2)',
-            gap: '1px'
+            padding: '6px 4px',
+            borderRadius: '8px',
+            background: 'rgba(245,158,11,0.1)',
+            border: '1px solid rgba(245,158,11,0.25)',
+            gap: '2px',
+            boxShadow: 'inset 0 2px 10px rgba(245,158,11,0.05)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <Trophy size={11} color="#f59e0b" />
-            <span style={{ fontSize: '8px', color: '#f59e0b', fontWeight: '700', letterSpacing: '0.4px' }}>PRIZE</span>
+            <span style={{ fontSize: '8px', color: '#f59e0b', fontWeight: '800', letterSpacing: '0.4px' }}>PRIZE</span>
           </div>
-          <span style={{ fontSize: '12px', fontWeight: '900', color: '#f59e0b', lineHeight: 1 }}>
+          <span style={{ fontSize: '13px', fontWeight: '900', color: '#f59e0b', lineHeight: 1 }}>
             {totalPot.toFixed(0)} <span style={{ fontSize: '9px', opacity: 0.8 }}>ETB</span>
           </span>
         </div>
@@ -237,18 +238,19 @@ export default function LobbyView({
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '4px 4px',
-            borderRadius: '6px',
-            background: 'rgba(139,92,246,0.08)',
-            border: '1px solid rgba(139,92,246,0.2)',
-            gap: '1px'
+            padding: '6px 4px',
+            borderRadius: '8px',
+            background: 'rgba(139,92,246,0.1)',
+            border: '1px solid rgba(139,92,246,0.25)',
+            gap: '2px',
+            boxShadow: 'inset 0 2px 10px rgba(139,92,246,0.05)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <Zap size={11} color="#a78bfa" />
-            <span style={{ fontSize: '8px', color: '#a78bfa', fontWeight: '700', letterSpacing: '0.4px' }}>STAKE</span>
+            <span style={{ fontSize: '8px', color: '#a78bfa', fontWeight: '800', letterSpacing: '0.4px' }}>STAKE</span>
           </div>
-          <span style={{ fontSize: '12px', fontWeight: '900', color: '#a78bfa', lineHeight: 1 }}>
+          <span style={{ fontSize: '13px', fontWeight: '900', color: '#a78bfa', lineHeight: 1 }}>
             {(gameState?.ticketPrice || 10).toFixed(0)} <span style={{ fontSize: '9px', opacity: 0.8 }}>ETB</span>
           </span>
         </div>
@@ -259,8 +261,8 @@ export default function LobbyView({
       {errMsg && (
         <div
           style={{
-            position: 'fixed',
-            top: '96px',
+            position: 'absolute',
+            top: '84px',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 999,
@@ -289,10 +291,11 @@ export default function LobbyView({
       {/* ── 400 CARTELLAS GRID ── */}
       <div
         style={{
-          background: 'rgba(8,14,28,0.7)',
-          borderRadius: '14px',
-          padding: '6px',
-          border: '1px solid rgba(255,255,255,0.06)',
+          background: 'var(--bg-card)',
+          borderRadius: '16px',
+          padding: '8px',
+          border: '1px solid var(--border-subtle)',
+          boxShadow: 'var(--shadow-card)',
           flex: 1,
           minHeight: 0,
           display: 'flex',

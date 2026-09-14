@@ -534,7 +534,15 @@ export default function App() {
   // MAIN GAME UI
   // ─────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: '100vh', paddingBottom: currentView === 'admin' ? '0' : '74px', background: '#090d16', color: '#fff' }}>
+    <div style={{ 
+      height: '100vh', 
+      height: '100dvh',
+      display: 'flex',
+      flexDirection: 'column',
+      background: '#090d16', 
+      color: '#fff',
+      overflow: 'hidden'
+    }}>
       <Navbar
         lang={lang}
         setLang={setLang}
@@ -544,88 +552,97 @@ export default function App() {
         onLogout={handleLogout}
       />
 
-      {/* Toast Announcement */}
-      {toastMessage && (
-        <div style={{
-          position: 'fixed',
-          top: '70px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 9999,
-          background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
-          color: '#fff',
-          padding: '12px 20px',
-          borderRadius: '14px',
-          boxShadow: '0 8px 24px rgba(6, 182, 212, 0.4)',
-          maxWidth: '90vw',
-          fontSize: '13px',
-          fontWeight: '700',
-          textAlign: 'center'
-        }}>
-          📢 {toastMessage}
-        </div>
-      )}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        overflowY: currentView === 'lobby' ? 'hidden' : 'auto',
+        overflowX: 'hidden',
+        position: 'relative',
+        paddingBottom: currentView === 'admin' ? '0' : '74px'
+      }}>
+        {/* Toast Announcement */}
+        {toastMessage && (
+          <div style={{
+            position: 'fixed',
+            top: '70px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999,
+            background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+            color: '#fff',
+            padding: '12px 20px',
+            borderRadius: '14px',
+            boxShadow: '0 8px 24px rgba(6, 182, 212, 0.4)',
+            maxWidth: '90vw',
+            fontSize: '13px',
+            fontWeight: '700',
+            textAlign: 'center'
+          }}>
+            📢 {toastMessage}
+          </div>
+        )}
 
-      {currentView === 'lobby' && (
-        <LobbyView
-          lang={lang}
-          user={user}
-          gameState={gameState}
-          countdown={countdown}
-          token={token}
-          onTicketPurchased={handleBalanceUpdate}
-          onGoToGameplay={() => setCurrentView('gameplay')}
-          onGoToWallet={() => setCurrentView('wallet')}
-        />
-      )}
+        {currentView === 'lobby' && (
+          <LobbyView
+            lang={lang}
+            user={user}
+            gameState={gameState}
+            countdown={countdown}
+            token={token}
+            onTicketPurchased={handleBalanceUpdate}
+            onGoToGameplay={() => setCurrentView('gameplay')}
+            onGoToWallet={() => setCurrentView('wallet')}
+          />
+        )}
 
-      {currentView === 'gameplay' && userTickets.length > 0 && (
-        <GameplayView
-          lang={lang}
-          user={user}
-          gameState={gameState}
-          userTickets={userTickets}
-          socket={socket}
-          onBackToLobby={handleBackToLobby}
-        />
-      )}
-      {currentView === 'gameplay' && userTickets.length === 0 && null}
+        {currentView === 'gameplay' && userTickets.length > 0 && (
+          <GameplayView
+            lang={lang}
+            user={user}
+            gameState={gameState}
+            userTickets={userTickets}
+            socket={socket}
+            onBackToLobby={handleBackToLobby}
+          />
+        )}
+        {currentView === 'gameplay' && userTickets.length === 0 && null}
 
-      {currentView === 'tasks' && (
-        <TasksView
-          lang={lang}
-          user={user}
-          token={token}
-        />
-      )}
+        {currentView === 'tasks' && (
+          <TasksView
+            lang={lang}
+            user={user}
+            token={token}
+          />
+        )}
 
-      {currentView === 'invite' && (
-        <InviteView
-          lang={lang}
-          user={user}
-          token={token}
-        />
-      )}
+        {currentView === 'invite' && (
+          <InviteView
+            lang={lang}
+            user={user}
+            token={token}
+          />
+        )}
 
-      {currentView === 'wallet' && (
-        <WalletView
-          lang={lang}
-          user={user}
-          token={token}
-          socket={socket}
-          onBalanceUpdated={handleBalanceUpdate}
-        />
-      )}
+        {currentView === 'wallet' && (
+          <WalletView
+            lang={lang}
+            user={user}
+            token={token}
+            socket={socket}
+            onBalanceUpdated={handleBalanceUpdate}
+          />
+        )}
 
-      {currentView === 'admin' && (
-        <AdminView
-          lang={lang}
-          token={token}
-          socket={socket}
-          onGoToLobby={() => setCurrentView('lobby')}
-        />
-      )}
-
+        {currentView === 'admin' && (
+          <AdminView
+            lang={lang}
+            token={token}
+            socket={socket}
+            onGoToLobby={() => setCurrentView('lobby')}
+          />
+        )}
+      </div>
     </div>
   );
 }

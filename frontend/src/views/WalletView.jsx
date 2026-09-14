@@ -172,10 +172,10 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
 
   const balance = user?.balance || 0;
   const withdrawableBal = user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0;
-  const panelStyle = { background: 'rgba(13,20,38,0.8)', borderRadius: '16px', padding: '16px', marginBottom: '12px', border: '1px solid rgba(255,255,255,0.07)' };
-  const btnPrimary = { width: '100%', padding: '13px', borderRadius: '13px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer', marginTop: '8px', minHeight: '48px' };
-  const btnGhost = { padding: '9px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: '#94a3b8', fontWeight: '700', cursor: 'pointer', fontSize: '13px' };
-  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.10)', background: 'rgba(5,8,15,0.7)', color: '#fff', fontSize: '15px', fontWeight: '600', boxSizing: 'border-box', marginTop: '6px', outline: 'none' };
+  const panelStyle = { background: 'var(--bg-elevated)', borderRadius: '16px', padding: '16px', marginBottom: '16px', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-card)' };
+  const btnPrimary = { width: '100%', padding: '14px', borderRadius: '12px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer', marginTop: '12px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: '#fff', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)' };
+  const btnGhost = { padding: '10px 16px', borderRadius: '10px', border: '1px solid var(--border-medium)', background: 'transparent', color: 'var(--text-muted)', fontWeight: '700', cursor: 'pointer', fontSize: '13px', transition: 'all 0.2s' };
+  const inputStyle = { width: '100%', padding: '14px 16px', borderRadius: '12px', border: '1px solid var(--border-subtle)', background: 'var(--bg-input)', color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600', boxSizing: 'border-box', marginTop: '8px', outline: 'none' };
 
   const renderStatusBadge = status => {
     const map = {
@@ -192,7 +192,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   };
 
   return (
-    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '60px 12px 10px' }}>
+    <div style={{ maxWidth: '480px', margin: '0 auto', padding: '20px 12px 10px' }}>
 
       {/* No token guard */}
       {!token && (
@@ -204,47 +204,47 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       )}
 
       {/* ── 2-WAY BALANCE BREAKDOWN (Total & Withdrawable) ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
 
         {/* 1. TOTAL BALANCE */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(15,35,75,0.95) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '14px', padding: '12px 10px',
-          border: '1px solid rgba(59,130,246,0.25)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
+          background: 'var(--bg-elevated)',
+          borderRadius: '16px', padding: '16px 12px',
+          border: '1px solid var(--border-cyan)',
+          boxShadow: 'var(--shadow-card)', textAlign: 'center'
         }}>
-          <div style={{ fontSize: '9px', color: '#38bdf8', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            💰 TOTAL BALANCE
+          <div style={{ fontSize: '10px', color: 'var(--cyan)', marginBottom: '4px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            💰 Total Balance
           </div>
-          <div style={{ fontSize: '18px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '20px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
             {(user?.balance || 0).toFixed(2)}
           </div>
-          <div style={{ fontSize: '9px', color: '#64748b', fontWeight: '700', marginTop: '2px' }}>ETB</div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', marginTop: '4px' }}>ETB</div>
         </div>
 
         {/* 2. WITHDRAWABLE (Winnings) */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(16,185,129,0.14) 0%, rgba(5,8,15,0.98) 100%)',
-          borderRadius: '14px', padding: '12px 10px',
-          border: '1px solid rgba(16,185,129,0.35)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.3)', textAlign: 'center'
+          background: 'var(--bg-elevated)',
+          borderRadius: '16px', padding: '16px 12px',
+          border: '1px solid var(--border-green)',
+          boxShadow: 'var(--shadow-card)', textAlign: 'center'
         }}>
-          <div style={{ fontSize: '9px', color: '#10b981', marginBottom: '2px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            🏆 WITHDRAWABLE
+          <div style={{ fontSize: '10px', color: 'var(--green)', marginBottom: '4px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            🏆 Withdrawable
           </div>
-          <div style={{ fontSize: '18px', fontWeight: '900', color: '#10b981', lineHeight: 1.1 }}>
+          <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--green)', lineHeight: 1.1 }}>
             {(user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0).toFixed(2)}
           </div>
-          <div style={{ fontSize: '9px', color: '#10b981', opacity: 0.8, fontWeight: '700', marginTop: '2px' }}>ETB Winnings</div>
+          <div style={{ fontSize: '11px', color: 'var(--green)', opacity: 0.8, fontWeight: '700', marginTop: '4px' }}>ETB Winnings</div>
         </div>
 
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', background: 'rgba(8,14,28,0.8)', borderRadius: '10px', padding: '3px', marginBottom: '10px', gap: '3px', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ display: 'flex', background: 'var(--bg-elevated)', borderRadius: '12px', padding: '4px', marginBottom: '16px', gap: '4px', border: '1px solid var(--border-subtle)' }}>
         {[['deposit','📥 Deposit'],['withdraw','📤 Withdraw'],['history','📋 History']].map(([key, label]) => (
           <button key={key} onClick={() => { setActiveTab(key); resetDeposit(); resetWithdraw(); setMsg({ error: '', success: '' }); }}
-            style={{ flex: 1, padding: '7px 4px', borderRadius: '8px', border: 'none', background: activeTab === key ? 'rgba(255,255,255,0.10)' : 'transparent', color: activeTab === key ? '#f1f5f9' : '#475569', fontWeight: activeTab === key ? '800' : '600', cursor: 'pointer', fontSize: '11px', transition: 'all 0.2s' }}>
+            style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', background: activeTab === key ? 'var(--bg-card-hover)' : 'transparent', color: activeTab === key ? 'var(--text-primary)' : 'var(--text-muted)', fontWeight: activeTab === key ? '800' : '600', cursor: 'pointer', fontSize: '12px', transition: 'all 0.2s', boxShadow: activeTab === key ? '0 2px 8px rgba(0,0,0,0.2)' : 'none' }}>
             {label}
           </button>
         ))}
