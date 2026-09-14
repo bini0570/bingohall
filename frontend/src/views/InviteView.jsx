@@ -27,20 +27,8 @@ export default function InviteView({ lang, user }) {
 
   return (
     <div style={{ maxWidth: '1100px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '20px 16px 20px' }}>
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <div style={{ 
-          width: '64px', height: '64px', borderRadius: '20px', 
-          background: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(109,40,217,0.1))', 
-          border: '1px solid var(--border-purple)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
-          boxShadow: 'var(--shadow-card)'
-        }}>
-          <Users size={32} color="#A78BFA" />
-        </div>
-        <h2 style={{ margin: '0 0 8px', fontSize: '24px', fontWeight: '900', color: '#fff' }}>Invite Friends</h2>
-        <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-muted)' }}>Get 10 ETB for every friend that joins and deposits!</p>
-      </div>
-
+      
+      {/* 1. Referral Link Section at the top */}
       <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
         <div style={{ fontSize: '12px', fontWeight: '800', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
           Your Referral Link
@@ -75,15 +63,46 @@ export default function InviteView({ lang, user }) {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-        <div className="glass-panel" style={{ padding: '16px', textAlign: 'center', borderRadius: '16px' }}>
-          <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--green)', marginBottom: '4px' }}>0</div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase' }}>Friends Invited</div>
+      {/* 2. Friends Invited Stat */}
+      <div className="glass-panel" style={{ padding: '16px', textAlign: 'center', borderRadius: '16px', marginBottom: '24px' }}>
+        <div style={{ fontSize: '28px', fontWeight: '900', color: 'var(--green)', marginBottom: '4px' }}>
+          {user?.referrals?.length || 0}
         </div>
-        <div className="glass-panel" style={{ padding: '16px', textAlign: 'center', borderRadius: '16px' }}>
-          <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--gold)', marginBottom: '4px' }}>0</div>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase' }}>ETB Earned</div>
+        <div style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '800', textTransform: 'uppercase' }}>
+          Friends Invited
         </div>
+      </div>
+
+      {/* 3. Invited Friends List */}
+      <div>
+        <h3 style={{ fontSize: '16px', fontWeight: '800', color: '#fff', marginBottom: '16px', marginTop: 0 }}>
+          Invited Friends
+        </h3>
+        
+        {(!user?.referrals || user.referrals.length === 0) ? (
+          <div style={{ textAlign: 'center', padding: '32px 16px', background: 'var(--bg-elevated)', borderRadius: '16px', border: '1px solid var(--border-subtle)' }}>
+            <Users size={32} color="var(--text-muted)" style={{ marginBottom: '12px', opacity: 0.5 }} />
+            <div style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '600' }}>You haven't invited anyone yet.</div>
+            <div style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '4px' }}>Share your link above to start earning!</div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {user.referrals.map((friend, idx) => (
+              <div key={idx} className="glass-panel" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-card-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)', fontWeight: '800' }}>
+                    {friend?.username?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <div style={{ color: '#fff', fontSize: '14px', fontWeight: '700' }}>{friend?.username || 'Unknown User'}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Joined recently</div>
+                  </div>
+                </div>
+                <CheckCircle2 size={18} color="#10B981" />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
