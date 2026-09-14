@@ -56,9 +56,6 @@ export default function TasksView({ lang }) {
   const handleClaim = () => {
     if (timeLeft) return; // Still in cooldown
     
-    const reward = streak === 7 ? 10 : streak;
-    alert(`${reward} ETB has been added to your wallet!`);
-    
     const nextStreak = streak >= 7 ? 1 : streak + 1;
     const nextCooldown = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
     
@@ -88,27 +85,30 @@ export default function TasksView({ lang }) {
               <div key={day} style={{ 
                 flex: 1,
                 minWidth: 0,
-                padding: '8px 2px',
+                aspectRatio: '1 / 1.1',
+                padding: '4px 2px',
                 borderRadius: '8px',
                 background: isToday ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : (isClaimed ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-input)'),
                 border: isToday ? 'none' : (isClaimed ? '1px solid rgba(16,185,129,0.3)' : '1px solid var(--border-subtle)'),
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px',
                 boxShadow: isToday ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'inset 0 1px 2px rgba(0,0,0,0.2)',
                 opacity: (isClaimed || isToday) ? 1 : 0.5
               }}>
-                <div style={{ fontSize: '9px', fontWeight: '800', color: isToday ? '#fff' : (isClaimed ? '#10B981' : 'var(--text-muted)') }}>DAY{day}</div>
+                <div style={{ fontSize: '9px', fontWeight: '800', color: isToday ? '#fff' : (isClaimed ? '#10B981' : 'var(--text-muted)'), lineHeight: '1' }}>DAY {day}</div>
                 
                 {isClaimed ? (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '18px' }}>
-                    <Check size={16} color="#10B981" />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '18px', margin: '2px 0' }}>
+                    <Check size={14} color="#10B981" />
                   </div>
                 ) : isMystery ? (
-                  <Gift size={16} color={isToday ? '#fff' : '#F59E0B'} />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '18px', margin: '2px 0' }}>
+                    <Gift size={14} color={isToday ? '#fff' : '#F59E0B'} />
+                  </div>
                 ) : (
-                  <div style={{ fontSize: '13px', fontWeight: '900', color: isToday ? '#fff' : 'var(--gold)' }}>+{reward}</div>
+                  <div style={{ fontSize: '13px', fontWeight: '900', color: isToday ? '#fff' : 'var(--gold)', margin: '2px 0', lineHeight: '1' }}>+{reward}</div>
                 )}
                 
-                <div style={{ fontSize: '8px', fontWeight: '700', color: isToday ? 'rgba(255,255,255,0.9)' : (isClaimed ? '#10B981' : 'var(--text-secondary)') }}>
+                <div style={{ fontSize: '8px', fontWeight: '700', color: isToday ? 'rgba(255,255,255,0.9)' : (isClaimed ? '#10B981' : 'var(--text-secondary)'), lineHeight: '1' }}>
                   {isClaimed ? 'DONE' : (isMystery ? 'BOX' : 'ETB')}
                 </div>
               </div>
