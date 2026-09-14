@@ -14,14 +14,13 @@ export default function InviteView({ lang, user }) {
   };
 
   const shareLink = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: 'Play Bingo X',
-        text: 'Join me and play Bingo X to win real money!',
-        url: inviteLink,
-      });
+    const text = 'Join me and play Bingo X to win real money!';
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(inviteLink)}&text=${encodeURIComponent(text)}`;
+    
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+      window.Telegram.WebApp.openTelegramLink(shareUrl);
     } else {
-      copyToClipboard();
+      window.open(shareUrl, '_blank');
     }
   };
 
