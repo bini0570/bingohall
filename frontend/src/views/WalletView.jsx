@@ -947,19 +947,6 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       <main className="wallet-card">
         <WalletHeader user={user} />
         
-        <TotalCard 
-          hidden={hidden} 
-          onToggle={() => setHidden(h => !h)} 
-          balance={balance} 
-        />
-        
-        <BalanceSplit 
-          hidden={hidden} 
-          totalBalance={balance}
-          withdrawable={withdrawableBal}
-          nonWithdrawable={nonWithdrawableBal}
-        />
-        
         <QuickActions
           onWithdraw={() => { setReqError(''); setActiveSheet('withdraw'); }}
           onDeposit={() => { setReqError(''); setActiveSheet('deposit'); }}
