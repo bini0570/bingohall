@@ -139,11 +139,11 @@ export default function LobbyView({
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr 1fr',
           gap: '8px',
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-subtle)',
+          background: '#ffffff',
+          border: '1px solid #eceef4',
           borderRadius: '16px',
           padding: '8px',
-          boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.05)',
           flexShrink: 0,
           marginBottom: '16px'
         }}
@@ -289,11 +289,11 @@ export default function LobbyView({
       {/* ── 400 CARTELLAS GRID ── */}
       <div
         style={{
-          background: 'var(--bg-card)',
-          borderRadius: '16px',
-          padding: '8px',
-          border: '1px solid var(--border-subtle)',
-          boxShadow: 'var(--shadow-card)',
+          background: '#ffffff',
+          borderRadius: '20px',
+          padding: '12px',
+          border: '1px solid #eceef4',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.05)',
           flex: 1,
           minHeight: 0,
           display: 'flex',
