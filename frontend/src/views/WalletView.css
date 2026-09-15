@@ -288,12 +288,12 @@
 }
 .sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
 .sheet {
-  position: fixed; left: 50%; top: 0; z-index: 50;
-  width: 100%; max-width: 420px;
-  transform: translate(-50%, -100%);
+  position: fixed; left: 50%; top: 75px; z-index: 50;
+  width: calc(100% - 32px); max-width: 420px;
+  transform: translate(-50%, calc(-100% - 80px));
   background: var(--surface);
-  border-radius: 0 0 28px 28px;
-  padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 20px;
+  border-radius: 28px;
+  padding: 24px 20px 20px;
   box-shadow: 0 24px 60px -24px rgba(18,20,29,.45);
   transition: transform .36s cubic-bezier(.32,.72,0,1);
   will-change: transform;
@@ -341,7 +341,7 @@
 }
 .sheet__close-absolute {
   position: absolute;
-  top: calc(16px + env(safe-area-inset-top, 0px));
+  top: 16px;
   right: 16px;
   z-index: 60;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);

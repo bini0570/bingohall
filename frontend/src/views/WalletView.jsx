@@ -338,7 +338,7 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
     if (!c) return;
     const active = c.querySelector('.sheet-step.is-active');
     if (!active) return;
-    const max = Math.round(window.innerHeight * 0.88);
+    const max = Math.round(window.innerHeight * 0.88) - 75;
     c.style.height = Math.min(active.scrollHeight, max) + 'px';
   };
 
@@ -595,7 +595,7 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
     if (!c) return;
     const active = c.querySelector('.sheet-step.is-active');
     if (!active) return;
-    const max = Math.round(window.innerHeight * 0.88);
+    const max = Math.round(window.innerHeight * 0.88) - 75;
     c.style.height = Math.min(active.scrollHeight, max) + 'px';
   };
   useLayoutEffect(() => { if (mounted) resizeSteps(); });
