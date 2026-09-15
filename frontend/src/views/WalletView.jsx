@@ -410,6 +410,9 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
   return (
     <section className={'sheet' + (isOpen ? ' is-open' : '')}
              role="dialog" aria-modal="true" aria-hidden={!isOpen}>
+      <button className="sheet__close-absolute" onClick={onClose} aria-label="Close">
+        <CloseIcon />
+      </button>
       <div className="sheet__handle" />
 
       <div className="sheet__steps" ref={stepsRef}>
@@ -421,9 +424,7 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
               <h3 className="sheet__title">Withdraw funds</h3>
               <p className="sheet__sub">Choose how you'd like to receive your money</p>
             </div>
-            <button className="sheet__close" onClick={onClose} aria-label="Close">
-              <CloseIcon />
-            </button>
+            
           </header>
 
           <div className="sheet__available">
@@ -453,16 +454,17 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
               <button className="sheet__back" onClick={() => setStep(1)} aria-label="Back">
                 <BackIcon />
               </button>
-              <div>
-                <h3 className="sheet__title">
-                  Withdraw to <span>{cfg ? cfg.name : 'Telebirr'}</span>
-                </h3>
-                <p className="sheet__sub">Enter the receiving account details</p>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <img src={`/images/${selected === 'cbebirr' ? 'cbe_birr' : 'telebirr'}.jpg`} alt="" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
+                <div>
+                  <h3 className="sheet__title">
+                    Withdraw to <span>{cfg ? cfg.name : 'Telebirr'}</span>
+                  </h3>
+                  <p className="sheet__sub">Enter the receiving account details</p>
+                </div>
               </div>
             </div>
-            <button className="sheet__close" onClick={onClose} aria-label="Close">
-              <CloseIcon />
-            </button>
+            
           </header>
 
           {errors.global && (
@@ -681,6 +683,9 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
   return (
     <section className={'sheet' + (isOpen ? ' is-open' : '')}
              role="dialog" aria-modal="true" aria-hidden={!isOpen}>
+      <button className="sheet__close-absolute" onClick={onClose} aria-label="Close">
+        <CloseIcon />
+      </button>
       <div className="sheet__handle" />
 
       <div className="sheet__steps" ref={stepsRef}>
@@ -692,9 +697,7 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
               <h3 className="sheet__title">Deposit funds</h3>
               <p className="sheet__sub">Choose how you'd like to add money</p>
             </div>
-            <button className="sheet__close" onClick={onClose} aria-label="Close">
-              <CloseIcon />
-            </button>
+            
           </header>
 
           <ul className="methods">
@@ -720,16 +723,17 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
               <button className="sheet__back" onClick={() => setStep(1)} aria-label="Back">
                 <BackIcon />
               </button>
-              <div>
-                <h3 className="sheet__title">
-                  Deposit via <span className="is-green">{cfg ? cfg.name : 'Telebirr'}</span>
-                </h3>
-                <p className="sheet__sub">Send the amount, then paste your bank SMS</p>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <img src={`/images/${selected === 'cbebirr' ? 'cbe_birr' : 'telebirr'}.jpg`} alt="" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover' }} />
+                <div>
+                  <h3 className="sheet__title">
+                    Deposit via <span className="is-green">{cfg ? cfg.name : 'Telebirr'}</span>
+                  </h3>
+                  <p className="sheet__sub">Send the amount, then paste your bank SMS</p>
+                </div>
               </div>
             </div>
-            <button className="sheet__close" onClick={onClose} aria-label="Close">
-              <CloseIcon />
-            </button>
+            
           </header>
 
           {errors.global && (
