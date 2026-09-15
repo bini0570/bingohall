@@ -304,7 +304,7 @@
   background: #dfe2ec; margin: 4px auto 14px;
 }
 .sheet__steps {
-  position: relative; margin: 0 -4px; overflow-x: hidden; overflow-y: hidden;
+  position: relative; margin: 0 -4px; overflow-x: hidden; overflow-y: auto;
   transition: height .38s cubic-bezier(.32,.72,0,1);
 }
 .sheet-step {
