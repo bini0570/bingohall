@@ -288,20 +288,19 @@
 }
 .sheet-backdrop.is-open { opacity: 1; pointer-events: auto; }
 .sheet {
-  position: fixed; left: 50%; bottom: 0; z-index: 50;
+  position: fixed; left: 50%; top: 0; z-index: 50;
   width: 100%; max-width: 420px;
-  transform: translate(-50%, 100%);
+  transform: translate(-50%, -100%);
   background: var(--surface);
-  border-radius: 28px 28px 0 0;
-  padding: 8px 20px calc(18px + env(safe-area-inset-bottom, 0px));
-  box-shadow: 0 -24px 60px -24px rgba(18,20,29,.45);
+  border-radius: 0 0 28px 28px;
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 20px;
+  box-shadow: 0 24px 60px -24px rgba(18,20,29,.45);
   transition: transform .36s cubic-bezier(.32,.72,0,1);
   will-change: transform;
 }
 .sheet.is-open { transform: translate(-50%, 0); }
 .sheet__handle {
-  width: 40px; height: 4px; border-radius: 99px;
-  background: #dfe2ec; margin: 4px auto 14px;
+  display: none;
 }
 .sheet__steps {
   position: relative; margin: 0 -4px; overflow-x: hidden; overflow-y: auto;
