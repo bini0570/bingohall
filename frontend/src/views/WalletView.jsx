@@ -223,7 +223,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
         {[['deposit', '📥 Deposit'], ['withdraw', '📤 Withdraw'], ['history', '📋 History']].map(([key, label]) => (
           <button
             key={key}
-            onClick={() => { setActiveTab(key); resetDeposit(); resetWithdraw(); setMsg({ error: '', success: '' }); }}
+            onClick={() => { setActiveTab(activeTab === key ? null : key); resetDeposit(); resetWithdraw(); setMsg({ error: '', success: '' }); }}
             style={{
               flex: 1, padding: '12px 4px', borderRadius: '8px', border: 'none',
               background: activeTab === key ? 'var(--bg-elevated)' : 'transparent',
@@ -246,35 +246,35 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
 
       {/* DEPOSIT */}
       {activeTab === 'deposit' && (
-        <div className="glass-panel" style={{ padding: '24px 20px', minHeight: '320px' }}>
+        <div className="glass-panel" style={{ padding: '16px', minHeight: '320px' }}>
           {depStep === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
               {/* Section 1: Method & Amount */}
               <div>
-                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>1. Payment Method</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Payment Method</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px' }}>
                   {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
                     <button key={key} onClick={() => setDepMethod(key)}
                       style={{
-                        padding: '12px', borderRadius: '12px', border: `2px solid ${depMethod === key ? acc.color : 'transparent'}`,
+                        padding: '8px', borderRadius: '10px', border: `2px solid ${depMethod === key ? acc.color : 'transparent'}`,
                         background: depMethod === key ? `${acc.color}12` : 'var(--bg-elevated)',
-                        color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
+                        color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
                         transition: 'all 0.2s', boxShadow: depMethod === key ? `0 0 12px ${acc.color}40` : 'none'
                       }}>
-                      <img src={acc.logo} alt="" style={{ height: '24px', borderRadius: '4px', background: '#fff', padding: '2px' }} />
-                      <span style={{ fontWeight: '800', fontSize: '14px', color: depMethod === key ? acc.color : 'var(--text-secondary)' }}>{acc.label}</span>
+                      <img src={acc.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} />
+                      <span style={{ fontWeight: '800', fontSize: '13px', color: depMethod === key ? acc.color : 'var(--text-secondary)' }}>{acc.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>2. Deposit Amount (ETB)</div>
-                <input type="number" className="input-field" style={{ fontSize: '28px', textAlign: 'center', fontWeight: '900', padding: '16px' }} placeholder="0.00" value={depAmount} onChange={e => setDepAmount(e.target.value)} min="10" />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '12px' }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Deposit Amount (ETB)</div>
+                <input type="number" className="input-field" style={{ fontSize: '20px', textAlign: 'center', fontWeight: '900', padding: '12px' }} placeholder="0.00" value={depAmount} onChange={e => setDepAmount(e.target.value)} min="10" />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '8px' }}>
                   {['200', '500', '1000'].map(a => (
-                    <button key={a} onClick={() => setDepAmount(a)} className="btn-secondary" style={{ borderColor: depAmount === a ? 'var(--gold)' : '', color: depAmount === a ? 'var(--gold)' : '', fontSize: '14px', padding: '8px' }}>
+                    <button key={a} onClick={() => setDepAmount(a)} className="btn-secondary" style={{ borderColor: depAmount === a ? 'var(--gold)' : '', color: depAmount === a ? 'var(--gold)' : '', fontSize: '13px', padding: '6px' }}>
                       +{a}
                     </button>
                   ))}
@@ -285,20 +285,20 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
               {depMethod && PAYMENT_ACCOUNTS[depMethod] && (() => {
                 const acc = PAYMENT_ACCOUNTS[depMethod];
                 return (
-                  <div style={{ background: 'var(--bg-elevated)', borderRadius: '16px', padding: '20px', border: `1px solid ${acc.color}40` }}>
-                    <div style={{ fontSize: '14px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <img src={acc.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> Transfer to {acc.label}:
+                  <div style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '12px', border: `1px solid ${acc.color}40` }}>
+                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <img src={acc.logo} alt="" style={{ height: '16px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> Transfer to {acc.label}:
                     </div>
-                    <div style={{ marginBottom: '16px' }}>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>ACCOUNT NAME</div>
-                      <div style={{ fontWeight: '900', fontSize: '16px' }}>{acc.name}</div>
+                    <div style={{ marginBottom: '12px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>ACCOUNT NAME</div>
+                      <div style={{ fontWeight: '900', fontSize: '14px' }}>{acc.name}</div>
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>ACCOUNT NUMBER</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>ACCOUNT NUMBER</div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontWeight: '900', fontSize: '20px', color: acc.color, letterSpacing: '1px' }}>{acc.number}</span>
-                        <button onClick={() => copyToClipboard(acc.number, 'num')} className="btn-secondary" style={{ padding: '6px 12px', minHeight: '32px', fontSize: '13px' }}>
-                          {copied === 'num' ? '✅ Copied' : <><Copy size={14} /> Copy</>}
+                        <span style={{ fontWeight: '900', fontSize: '16px', color: acc.color, letterSpacing: '1px' }}>{acc.number}</span>
+                        <button onClick={() => copyToClipboard(acc.number, 'num')} className="btn-secondary" style={{ padding: '4px 10px', minHeight: '28px', fontSize: '12px' }}>
+                          {copied === 'num' ? '✅ Copied' : <><Copy size={12} /> Copy</>}
                         </button>
                       </div>
                     </div>
@@ -308,14 +308,14 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
 
               {/* Section 3: Verification */}
               <div>
-                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>3. Verify Transfer</div>
-                <textarea rows={3} className="input-field" style={{ resize: 'vertical' }} placeholder={`Paste your ${depMethod} SMS receipt or transaction ID here...`} value={receiptSms} onChange={e => setReceiptSms(e.target.value)} />
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Verify Transfer</div>
+                <textarea rows={2} className="input-field" style={{ resize: 'vertical', padding: '10px', fontSize: '13px' }} placeholder={`Paste your ${depMethod} SMS receipt or transaction ID here...`} value={receiptSms} onChange={e => setReceiptSms(e.target.value)} />
               </div>
 
               <button onClick={() => {
                 if (!depAmount || parseFloat(depAmount) < 10) { setMsg({ error: 'Minimum deposit is 10 ETB', success: '' }); return; }
                 handleDepositSubmit();
-              }} disabled={loading || !token} className="btn-gold" style={{ width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '8px', padding: '16px', fontSize: '18px' }}>
+              }} disabled={loading || !token} className="btn-gold" style={{ width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '4px', padding: '12px', fontSize: '15px' }}>
                 {loading ? '⏳ Submitting...' : !token ? '🔒 Session Loading...' : 'Submit Deposit'}
               </button>
             </div>
@@ -337,51 +337,52 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
 
       {/* WITHDRAW */}
       {activeTab === 'withdraw' && (
-        <div className="glass-panel" style={{ padding: '24px 20px', minHeight: '320px' }}>
+        <div className="glass-panel" style={{ padding: '16px', minHeight: '320px' }}>
           {withStep === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               
-              <div style={{ textAlign: 'center', background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: '16px', padding: '20px' }}>
-                <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700', textTransform: 'uppercase' }}>Available Winnings</div>
-                <div style={{ fontSize: '32px', fontWeight: '900', color: 'var(--cyan)' }}>{withdrawableBal.toFixed(2)} <span style={{ fontSize: '16px', opacity: 0.8 }}>ETB</span></div>
+              <div style={{ textAlign: 'center', background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: '12px', padding: '12px' }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '700', textTransform: 'uppercase' }}>Available Winnings</div>
+                <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--cyan)' }}>{withdrawableBal.toFixed(2)} <span style={{ fontSize: '14px', opacity: 0.8 }}>ETB</span></div>
               </div>
 
               <div>
-                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>1. Withdrawal Amount (ETB)</div>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Withdrawal Amount (ETB)</div>
                 <div style={{ position: 'relative' }}>
-                  <input type="number" className="input-field" style={{ fontSize: '24px', textAlign: 'center', fontWeight: '900', padding: '16px', width: '100%', boxSizing: 'border-box' }}
+                  <input type="number" className="input-field" style={{ fontSize: '20px', textAlign: 'center', fontWeight: '900', padding: '12px', width: '100%', boxSizing: 'border-box' }}
                     placeholder="0.00" value={withAmount} onChange={e => setWithAmount(e.target.value)} min="200" max={withdrawableBal} />
-                  <button onClick={() => setWithAmount(String(Math.floor(withdrawableBal)))} className="btn-secondary" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', padding: '6px 12px', fontSize: '12px' }}>
+                  <button onClick={() => setWithAmount(String(Math.floor(withdrawableBal)))} className="btn-secondary" style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', padding: '4px 10px', fontSize: '11px' }}>
                     MAX
                   </button>
                 </div>
               </div>
 
               <div>
-                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>2. Withdrawal Method</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Withdrawal Method</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px' }}>
                   {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
                     <button key={key} onClick={() => setWithMethod(key)}
                       style={{
-                        padding: '12px', borderRadius: '12px', border: `2px solid ${withMethod === key ? acc.color : 'transparent'}`,
+                        padding: '8px', borderRadius: '10px', border: `2px solid ${withMethod === key ? acc.color : 'transparent'}`,
                         background: withMethod === key ? `${acc.color}12` : 'var(--bg-elevated)',
-                        color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px',
+                        color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
                         transition: 'all 0.2s', boxShadow: withMethod === key ? `0 0 12px ${acc.color}40` : 'none'
                       }}>
-                      <img src={acc.logo} alt="" style={{ height: '24px', borderRadius: '4px', background: '#fff', padding: '2px' }} />
-                      <span style={{ fontWeight: '800', fontSize: '14px', color: withMethod === key ? acc.color : 'var(--text-secondary)' }}>{acc.label}</span>
+                      <img src={acc.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} />
+                      <span style={{ fontWeight: '800', fontSize: '13px', color: withMethod === key ? acc.color : 'var(--text-secondary)' }}>{acc.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <div style={{ fontSize: '15px', color: 'var(--text-secondary)', marginBottom: '10px', fontWeight: '700' }}>
-                  3. Your {withMethod} Account Number / Phone
+                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>
+                  Your {withMethod} Account Number / Phone
                 </div>
                 <input
                   type="text"
                   className="input-field"
+                  style={{ padding: '10px', fontSize: '14px' }}
                   placeholder={withMethod === 'Telebirr' ? 'e.g. 0911223344' : 'e.g. 1000123456789'}
                   value={withAccount}
                   onChange={e => setWithAccount(e.target.value)}
@@ -392,7 +393,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                 if (!withAmount || parseFloat(withAmount) < 200) { setMsg({ error: 'Minimum withdrawal is 200 ETB', success: '' }); return; }
                 if (parseFloat(withAmount) > withdrawableBal) { setMsg({ error: `Insufficient withdrawable balance. Your withdrawable balance is ${withdrawableBal.toFixed(2)} ETB.`, success: '' }); return; }
                 handleWithdrawSubmit();
-              }} disabled={loading || !token} className="btn-gold" style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', boxShadow: 'var(--shadow-cyan)', color: '#fff', width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '8px', padding: '16px', fontSize: '18px' }}>
+              }} disabled={loading || !token} className="btn-gold" style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', boxShadow: 'var(--shadow-cyan)', color: '#fff', width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '4px', padding: '12px', fontSize: '15px' }}>
                 {loading ? '⏳ Submitting...' : !token ? '🔒 Session Loading...' : 'Submit Request'}
               </button>
             </div>
@@ -414,29 +415,29 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
 
       {/* HISTORY */}
       {activeTab === 'history' && (
-        <div className="glass-panel" style={{ padding: '24px 20px' }}>
-          <div style={{ fontSize: '14px', fontWeight: '800', marginBottom: '16px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Deposits</div>
+        <div className="glass-panel" style={{ padding: '16px' }}>
+          <div style={{ fontSize: '13px', fontWeight: '800', marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Deposits</div>
           {(transactions.deposits || []).length === 0
-            ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px', fontSize: '15px' }}>No deposits yet</div>
+            ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px', fontSize: '14px' }}>No deposits yet</div>
             : (transactions.deposits || []).slice().reverse().map(d => (
-              <div key={d.id} style={{ background: 'var(--bg-elevated)', borderRadius: '14px', padding: '16px 20px', marginBottom: '10px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={d.id} style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '12px 16px', marginBottom: '8px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: '900', color: 'var(--green)', fontSize: '16px' }}>+{parseFloat(d.amount).toFixed(2)} ETB</div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>{d.method} · {new Date(d.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontWeight: '900', color: 'var(--green)', fontSize: '15px' }}>+{parseFloat(d.amount).toFixed(2)} ETB</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{d.method} · {new Date(d.created_at).toLocaleDateString()}</div>
                 </div>
                 {renderStatusBadge(d.status)}
               </div>
             ))
           }
 
-          <div style={{ fontSize: '14px', fontWeight: '800', margin: '32px 0 16px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Withdrawals</div>
+          <div style={{ fontSize: '13px', fontWeight: '800', margin: '24px 0 12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Withdrawals</div>
           {(transactions.withdrawals || []).length === 0
-            ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '24px', fontSize: '15px' }}>No withdrawals yet</div>
+            ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px', fontSize: '14px' }}>No withdrawals yet</div>
             : (transactions.withdrawals || []).slice().reverse().map(w => (
-              <div key={w.id} style={{ background: 'var(--bg-elevated)', borderRadius: '14px', padding: '16px 20px', marginBottom: '10px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div key={w.id} style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '12px 16px', marginBottom: '8px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
-                  <div style={{ fontWeight: '900', color: 'var(--red)', fontSize: '16px' }}>-{parseFloat(w.amount).toFixed(2)} ETB</div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '6px' }}>{w.method} · {new Date(w.created_at).toLocaleDateString()}</div>
+                  <div style={{ fontWeight: '900', color: 'var(--red)', fontSize: '15px' }}>-{parseFloat(w.amount).toFixed(2)} ETB</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{w.method} · {new Date(w.created_at).toLocaleDateString()}</div>
                 </div>
                 {renderStatusBadge(w.status)}
               </div>
