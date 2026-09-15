@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import sys
+
+code = """import React, { useState, useEffect, useCallback } from 'react';
 import { 
   LayoutDashboard, CreditCard, Users, Gift, Tag, Settings, 
   Menu, X, ArrowUpRight, ArrowDownLeft, Activity, RefreshCw, 
@@ -7,7 +9,7 @@ import {
 import { io } from 'socket.io-client';
 import './AdminTheme.css';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'https://bingohall-production.up.railway.app').replace(/\/$/, '');
+const API_BASE = (import.meta.env.VITE_API_URL || 'https://bingohall-production.up.railway.app').replace(/\\/$/, '');
 const apiFetch = async (path, options = {}) => fetch(`${API_BASE}${path}`, options);
 let adminSocket = null;
 
@@ -559,3 +561,9 @@ function PromosTab({ token, flash }) {
     </>
   );
 }
+"""
+
+with open("c:/Users/User/Videos/Platform/Platform/frontend/src/views/AdminView.jsx", "w", encoding="utf-8") as f:
+    f.write(code)
+
+print("Redesigned")
