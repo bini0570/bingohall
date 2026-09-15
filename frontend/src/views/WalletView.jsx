@@ -297,7 +297,7 @@ const stepClass = (i, active) => {
    ============================================================ */
 function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }) {
   const { mounted, isOpen } = useSheetMount(open);
-  const stepsRef = useRef(null);
+  
 
   const [step, setStep]         = useState(1);
   const [selected, setSelected] = useState(null);
@@ -333,25 +333,6 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
     return () => window.removeEventListener('keydown', onKey);
   }, [open, step, onClose]);
 
-  const resizeSteps = () => {
-    const c = stepsRef.current;
-    if (!c) return;
-    const active = c.querySelector('.sheet-step.is-active');
-    if (!active) return;
-    const max = Math.round(window.innerHeight * 0.88) - 75;
-    c.style.height = Math.min(active.scrollHeight, max) + 'px';
-  };
-
-  useLayoutEffect(() => { if (mounted) resizeSteps(); });
-  useEffect(() => {
-    window.addEventListener('resize', resizeSteps);
-    window.addEventListener('orientationchange', resizeSteps);
-    return () => {
-      window.removeEventListener('resize', resizeSteps);
-      window.removeEventListener('orientationchange', resizeSteps);
-    };
-  }, []);
-
   if (!mounted) return null;
 
   const amt = parseFloat(amount) || 0;
@@ -384,7 +365,7 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
     else if (amt > available) { e.amount = 'Amount exceeds your balance of Br ' + fmt(available); ok = false; }
 
     setErrors(e);
-    if (!ok) { requestAnimationFrame(resizeSteps); return; }
+    if (!ok) { return; }
 
     const resSuccess = await onSubmit({
       method: methodKeyMapRev[selected] || selected,
@@ -415,7 +396,7 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
       </button>
       <div className="sheet__handle" />
 
-      <div className="sheet__steps" ref={stepsRef}>
+      <div className="sheet__steps" >
 
         {/* ---------- Step 1 : method ---------- */}
         <div className={stepClass(0, step)}>
@@ -554,7 +535,7 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
    ============================================================ */
 function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
   const { mounted, isOpen } = useSheetMount(open);
-  const stepsRef = useRef(null);
+  
 
   const [step, setStep]         = useState(1);
   const [selected, setSelected] = useState(null);
@@ -589,24 +570,6 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open, step, onClose]);
-
-  const resizeSteps = () => {
-    const c = stepsRef.current;
-    if (!c) return;
-    const active = c.querySelector('.sheet-step.is-active');
-    if (!active) return;
-    const max = Math.round(window.innerHeight * 0.88) - 75;
-    c.style.height = Math.min(active.scrollHeight, max) + 'px';
-  };
-  useLayoutEffect(() => { if (mounted) resizeSteps(); });
-  useEffect(() => {
-    window.addEventListener('resize', resizeSteps);
-    window.addEventListener('orientationchange', resizeSteps);
-    return () => {
-      window.removeEventListener('resize', resizeSteps);
-      window.removeEventListener('orientationchange', resizeSteps);
-    };
-  }, []);
 
   if (!mounted) return null;
 
@@ -662,7 +625,7 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
     else if (smsTrim.length < 8) { e.sms = 'That SMS looks too short — paste the full message'; ok = false; }
 
     setErrors(e);
-    if (!ok) { requestAnimationFrame(resizeSteps); return; }
+    if (!ok) { return; }
 
     const resSuccess = await onSubmit({
       method: methodKeyMapRev[selected] || selected,
@@ -688,7 +651,7 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
       </button>
       <div className="sheet__handle" />
 
-      <div className="sheet__steps" ref={stepsRef}>
+      <div className="sheet__steps" >
 
         {/* ---------- Step 1 : method ---------- */}
         <div className={stepClass(0, step)}>
