@@ -114,7 +114,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Deposit failed');
-      setDepStep(2); // Step 2 is now the Success screen
+      setDepStep(4); // Step 4 is now the Success screen
       fetchTransactions();
     } catch (err) {
       setMsg({ error: err.message, success: '' });
@@ -249,8 +249,6 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
         <div className="glass-panel" style={{ padding: '16px', minHeight: '320px' }}>
           {depStep === 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              
-              {/* Section 1: Method & Amount */}
               <div>
                 <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Payment Method</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px' }}>
@@ -281,7 +279,18 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                 </div>
               </div>
 
-              {/* Section 2: Instructions */}
+              <button onClick={() => {
+                if (!depAmount || parseFloat(depAmount) < 10) { setMsg({ error: 'Minimum deposit is 10 ETB', success: '' }); return; }
+                setMsg({ error: '', success: '' });
+                setDepStep(2);
+              }} className="btn-gold" style={{ width: '100%', marginTop: '4px', padding: '12px', fontSize: '15px' }}>
+                Next
+              </button>
+            </div>
+          )}
+
+          {depStep === 2 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {depMethod && PAYMENT_ACCOUNTS[depMethod] && (() => {
                 const acc = PAYMENT_ACCOUNTS[depMethod];
                 return (
@@ -306,22 +315,31 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
                 );
               })()}
 
-              {/* Section 3: Verification */}
+              <button onClick={() => {
+                setDepStep(3);
+              }} className="btn-gold" style={{ width: '100%', marginTop: '4px', padding: '12px', fontSize: '15px' }}>
+                Send
+              </button>
+            </div>
+          )}
+
+          {depStep === 3 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Verify Transfer</div>
                 <textarea rows={2} className="input-field" style={{ resize: 'vertical', padding: '10px', fontSize: '13px' }} placeholder={`Paste your ${depMethod} SMS receipt or transaction ID here...`} value={receiptSms} onChange={e => setReceiptSms(e.target.value)} />
               </div>
 
               <button onClick={() => {
-                if (!depAmount || parseFloat(depAmount) < 10) { setMsg({ error: 'Minimum deposit is 10 ETB', success: '' }); return; }
+                if (!receiptSms.trim()) { setMsg({ error: 'Please enter your transaction SMS or confirmation text', success: '' }); return; }
                 handleDepositSubmit();
               }} disabled={loading || !token} className="btn-gold" style={{ width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '4px', padding: '12px', fontSize: '15px' }}>
-                {loading ? '⏳ Submitting...' : !token ? '🔒 Session Loading...' : 'Submit Deposit'}
+                {loading ? '⏳ Verifying...' : 'Verify'}
               </button>
             </div>
           )}
 
-          {depStep === 2 && (
+          {depStep === 4 && (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <div style={{ fontSize: '80px', marginBottom: '24px' }}>✅</div>
               <h3 style={{ fontWeight: '900', fontSize: '28px', color: 'var(--green)', marginBottom: '16px' }}>Deposit Submitted!</h3>
