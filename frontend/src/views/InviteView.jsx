@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Users, Copy, CheckCircle2, Share2 } from 'lucide-react';
+import { Users, Copy, CheckCircle2, Share2, Check } from 'lucide-react';
 import { translations } from '../i18n/i18n';
+import './WalletView.css';
 
 export default function InviteView({ lang, user }) {
   const [copied, setCopied] = useState(false);
@@ -25,82 +26,103 @@ export default function InviteView({ lang, user }) {
   };
 
   return (
-    <div style={{ maxWidth: '1100px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '20px 16px 20px' }}>
-      
-      {/* 1. Referral Link, Copy, Share */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
-        <div style={{ 
-          flex: 1, 
-          background: 'var(--bg-input)', 
-          padding: '12px 14px', 
-          borderRadius: '8px', 
-          border: '1px solid var(--border-subtle)', 
-          color: '#38BDF8', 
-          fontSize: '14px', 
-          whiteSpace: 'nowrap', 
-          overflow: 'hidden', 
-          textOverflow: 'ellipsis', 
-          fontFamily: 'monospace',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)'
-        }}>
-          {inviteLink}
-        </div>
-        <button onClick={copyToClipboard} style={{ 
-          padding: '12px 16px', 
-          background: 'var(--bg-elevated)', 
-          border: '1px solid var(--border-subtle)', 
-          borderRadius: '8px', 
-          color: '#fff', 
-          cursor: 'pointer',
-          fontWeight: '800',
-          fontSize: '12px',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
-        }}>
-          {copied ? 'COPIED' : 'COPY'}
-        </button>
-        <button onClick={shareLink} style={{ 
-          padding: '12px 16px', 
-          background: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)', 
-          border: 'none', 
-          borderRadius: '8px', 
-          color: '#fff', 
-          cursor: 'pointer',
-          fontWeight: '900',
-          fontSize: '12px',
-          boxShadow: '0 4px 12px rgba(2, 132, 199, 0.4)'
-        }}>
-          SHARE
-        </button>
-      </div>
+    <div className="wallet-wrapper">
+      <main className="wallet-card">
+        <header className="wallet__header">
+          <p className="greeting__label">Referrals</p>
+          <p className="greeting__name">Invite Friends</p>
+        </header>
 
-      {/* 2. Friends Invited Count */}
-      <div style={{ fontSize: '14px', fontWeight: '800', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '16px', letterSpacing: '0.5px' }}>
-        INVITED FRIENDS [{user?.referrals?.length || 0}]
-      </div>
-
-      {/* 3. Invited Friends List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {(!user?.referrals || user.referrals.length === 0) ? (
-          <div style={{ color: 'var(--text-muted)', fontSize: '14px', padding: '12px 0' }}>
-            No friends invited yet.
-          </div>
-        ) : (
-          user.referrals.map((friend, idx) => (
-            <div key={idx} style={{ 
-              background: 'var(--bg-card)', 
-              padding: '14px 16px', 
-              borderRadius: '8px', 
-              border: '1px solid var(--border-subtle)',
-              color: '#fff',
-              fontSize: '15px',
-              fontWeight: '700'
-            }}>
-              {friend?.username || 'Unknown User'}
+        {/* Invite Card styled like TotalCard */}
+        <section className="total-card" aria-label="Invite Link">
+          <div className="total-card__top">
+            <div>
+              <p className="total-card__label" style={{ color: 'rgba(255,255,255,0.85)' }}>Your Invite Link</p>
+              <div style={{
+                background: 'rgba(255,255,255,0.2)',
+                padding: '12px 14px',
+                borderRadius: '12px',
+                color: '#fff',
+                fontSize: '14px',
+                fontFamily: 'monospace',
+                marginTop: '12px',
+                border: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '12px'
+              }}>
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {inviteLink}
+                </span>
+              </div>
             </div>
-          ))
-        )}
-      </div>
-      
+          </div>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+            <button 
+              onClick={copyToClipboard}
+              style={{
+                flex: 1, padding: '12px', borderRadius: '14px', border: 'none',
+                background: copied ? 'rgba(255,255,255,0.2)' : '#fff',
+                color: copied ? '#fff' : 'var(--brand-1)',
+                fontSize: '14px', fontWeight: '700', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                transition: 'all 0.2s', boxShadow: copied ? 'none' : '0 8px 16px rgba(0,0,0,0.1)'
+              }}>
+              {copied ? <Check size={18} /> : <Copy size={18} />}
+              {copied ? 'Copied' : 'Copy'}
+            </button>
+            <button 
+              onClick={shareLink}
+              style={{
+                flex: 1, padding: '12px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.3)',
+                background: 'transparent', color: '#fff',
+                fontSize: '14px', fontWeight: '700', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                transition: 'all 0.2s'
+              }}>
+              <Share2 size={18} />
+              Share
+            </button>
+          </div>
+        </section>
+
+        <section className="split" aria-label="Referral Stats" style={{ marginTop: '24px' }}>
+          <article className="bal bal--locked">
+            <div className="bal__head">
+              <span className="bal__icon">
+                <Users size={13} strokeWidth={2.5} />
+              </span>
+              <p className="bal__label">Invited Friends</p>
+            </div>
+            <p className="bal__amount">{user?.referrals?.length || 0}</p>
+          </article>
+        </section>
+
+        <div className="section-head" style={{ marginTop: '28px' }}>
+          <h2>Friends List</h2>
+        </div>
+
+        <div className="transactions-wrap" style={{ height: 'auto', paddingBottom: '20px' }}>
+          <ul className="transactions">
+            {(!user?.referrals || user.referrals.length === 0) ? (
+              <li className="tx-empty" style={{ border: 'none' }}>No friends invited yet.</li>
+            ) : (
+              user.referrals.map((friend, idx) => (
+                <li className="tx" key={idx} style={{ padding: '16px 0', borderBottom: '1px solid var(--line)' }}>
+                  <span className="tx__avatar" style={{ background: 'var(--brand-1)', color: '#fff' }}>
+                    {friend?.username ? friend.username.charAt(0).toUpperCase() : '?'}
+                  </span>
+                  <div className="tx__body">
+                    <p className="tx__name" style={{ fontSize: '15px' }}>{friend?.username || 'Unknown User'}</p>
+                    <p className="tx__meta" style={{ marginTop: '4px' }}>Joined via your link</p>
+                  </div>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+      </main>
     </div>
   );
 }
