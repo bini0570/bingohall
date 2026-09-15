@@ -1,45 +1,857 @@
-import React, { useState, useEffect } from 'react';
-import { Wallet, CheckCircle2, Clock, Copy, ChevronLeft, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { translations } from '../i18n/i18n';
 import { apiFetch } from '../api';
+import './WalletView.css';
 
-const PAYMENT_ACCOUNTS = {
-  Telebirr: {
-    name: 'Biniyam Eyoel',
-    number: '0993994168',
-    logo: '/images/telebirr.jpg',
-    label: 'Telebirr',
-    color: '#f59e0b'
-  },
-  CBEBirr: {
-    name: 'Biniyam Eyoel',
-    number: '0993994168',
-    logo: '/images/cbe_birr.jpg',
-    label: 'CBE Birr',
-    color: '#10b981'
-  }
+/* ============================================================
+   Constants & helpers
+   ============================================================ */
+const MIN_DEPOSIT  = 10;
+const MAX_DEPOSIT  = 100000;
+const MIN_WITHDRAW = 10;
+
+const fmt = n => n.toLocaleString('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+
+// Hardcoded based on previous config
+const W_METHODS = {
+  telebirr: { name: 'Telebirr', numberLabel: 'Telebirr phone number',
+              placeholder: 'e.g. 0911223344', type: 'tel' },
+  cbebirr:  { name: 'CBE Birr', numberLabel: 'CBE Birr account number',
+              placeholder: 'e.g. 1000123456789', type: 'text' }
 };
 
+const D_METHODS = {
+  telebirr: { name: 'Telebirr', sysName: 'Biniyam Eyoel', sysNumber: '0993994168',
+              smsPlaceholder: 'Paste the SMS you received from Telebirr here…' },
+  cbebirr: { name: 'CBE Birr', sysName: 'Biniyam Eyoel', sysNumber: '0993994168',
+              smsPlaceholder: 'Paste the SMS you received from CBE Birr here…' }
+};
+
+// Map backend method strings to keys used in design
+const methodKeyMap = {
+  'Telebirr': 'telebirr',
+  'CBEBirr': 'cbebirr',
+  'telebirr': 'telebirr',
+  'cbebirr': 'cbebirr'
+};
+const methodKeyMapRev = {
+  'telebirr': 'Telebirr',
+  'cbebirr': 'CBEBirr'
+};
+
+/* ============================================================
+   Icons (small, reusable)
+   ============================================================ */
+const SvgBase = ({ size = 15, sw = 2.2, children }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" strokeWidth={sw}
+       strokeLinecap="round" strokeLinejoin="round">
+    {children}
+  </svg>
+);
+
+const ArrowUp   = ({ size }) => <SvgBase size={size}><path d="M12 19V5M5 12l7-7 7 7" /></SvgBase>;
+const ArrowDown = ({ size }) => <SvgBase size={size}><path d="M12 5v14M19 12l-7 7-7-7" /></SvgBase>;
+const BackIcon  = () => <SvgBase><path d="M19 12H5M12 19l-7-7 7-7" /></SvgBase>;
+const CloseIcon = () => <SvgBase><path d="M18 6 6 18M6 6l12 12" /></SvgBase>;
+const Check     = ({ size = 12, sw = 3.4 }) => <SvgBase size={size} sw={sw}><path d="M20 6 9 17l-5-5" /></SvgBase>;
+const CopyIcon  = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15V5a2 2 0 0 1 2-2h10" />
+  </svg>
+);
+const ShieldIcon = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+);
+const InfoIcon = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8h.01M11 12h1v4h1" />
+  </svg>
+);
+const EyeIcon = ({ off }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {off ? (
+      <>
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+        <path d="M1 1l22 22" />
+      </>
+    ) : (
+      <>
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
+      </>
+    )}
+  </svg>
+);
+
+/* ============================================================
+   Components
+   ============================================================ */
+function WalletHeader({ user }) {
+  return (
+    <header className="wallet__header">
+      <p className="greeting__label">Wallet</p>
+      <p className="greeting__name">{user?.username || 'Your account'}</p>
+    </header>
+  );
+}
+
+function TotalCard({ hidden, onToggle, balance }) {
+  return (
+    <section className="total-card" aria-label="Total wallet balance">
+      <div className="total-card__top">
+        <div>
+          <p className="total-card__label">Total balance</p>
+          <p className={'total-card__amount' + (hidden ? ' is-hidden' : '')}>
+            <span>Br</span><span>{fmt(balance)}</span>
+            <button className="reveal-btn" onClick={onToggle}
+                    aria-label={hidden ? 'Show balances' : 'Hide balances'}>
+              <EyeIcon off={hidden} />
+            </button>
+          </p>
+        </div>
+      </div>
+      <div className="total-card__meta">
+        <div className="total-card__chip" aria-hidden="true" />
+        <span className="total-card__number">Wallet Account</span>
+      </div>
+    </section>
+  );
+}
+
+function BalanceCard({ variant, label, amount, hidden, footer }) {
+  const icon = variant === 'withdraw'
+    ? <ArrowUp size={13} />
+    : (
+      <SvgBase size={13}>
+        <rect x="4" y="10" width="16" height="11" rx="2.5" />
+        <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+      </SvgBase>
+    );
+
+  return (
+    <article className={'bal bal--' + variant}>
+      <div className="bal__head">
+        <span className="bal__icon">{icon}</span>
+        <p className="bal__label">{label}</p>
+      </div>
+      <p className={'bal__amount js-balance' + (hidden ? ' is-hidden' : '')}>
+        Br {fmt(amount)}
+      </p>
+      {footer}
+    </article>
+  );
+}
+
+function BalanceSplit({ hidden, withdrawable, nonWithdrawable, totalBalance }) {
+  const progressPercent = totalBalance > 0 ? ((nonWithdrawable / totalBalance) * 100).toFixed(0) : 0;
+  return (
+    <section className="split" aria-label="Balance breakdown">
+      <BalanceCard
+        variant="withdraw"
+        label="Withdrawable"
+        amount={withdrawable}
+        hidden={hidden}
+        footer={
+          <div className="bal__foot">
+            <span className="badge badge--ready">
+              <Check size={8} sw={3.6} /> Ready
+            </span>
+          </div>
+        }
+      />
+      <BalanceCard
+        variant="locked"
+        label="Non-withdrawable"
+        amount={nonWithdrawable}
+        hidden={hidden}
+        footer={
+          <>
+            <div className="bal__progress" aria-hidden="true"><i style={{ width: `${progressPercent}%` }} /></div>
+            <div className="bal__foot" style={{ marginTop: 5 }}>
+              <span className="badge badge--locked">
+                <SvgBase size={8} sw={2.4}>
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M12 7v5l3 2" />
+                </SvgBase>
+                Locked
+              </span>
+            </div>
+          </>
+        }
+      />
+    </section>
+  );
+}
+
+function QuickActions({ onWithdraw, onDeposit }) {
+  return (
+    <nav className="actions" aria-label="Quick actions">
+      <button className="action action--primary" onClick={onWithdraw}>
+        <span className="action__icon"><ArrowUp /></span>
+        Withdraw
+      </button>
+      <button className="action action--deposit" onClick={onDeposit}>
+        <span className="action__icon"><ArrowDown /></span>
+        Deposit
+      </button>
+    </nav>
+  );
+}
+
+function Transactions({ txList }) {
+  return (
+    <>
+      <div className="section-head">
+        <h2>Recent activity</h2>
+        <button className="link" style={{opacity: 0, pointerEvents: 'none'}}>See all</button>
+      </div>
+      <div className="transactions-wrap">
+        <ul className="transactions">
+          {txList.length === 0 ? (
+            <li className="tx-empty">No transactions yet.</li>
+          ) : txList.map(t => (
+            <li className="tx" key={t.id}>
+              <span className="tx__avatar" style={{ background: t.bg }}>{t.avatar}</span>
+              <div className="tx__body">
+                <p className="tx__name">{t.name}</p>
+                <p className="tx__meta">
+                  {t.meta} <span className="dot" /> {t.date}
+                </p>
+              </div>
+              <span className={'tx__amount tx__amount--' + t.cls}>{t.amount}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="list-fade" />
+      </div>
+    </>
+  );
+}
+
+/* ============================================================
+   Sheet primitives
+   ============================================================ */
+function useSheetMount(open) {
+  const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen]   = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      const t = setTimeout(() => setIsOpen(true), 20);
+      return () => clearTimeout(t);
+    }
+    setIsOpen(false);
+    const t = setTimeout(() => setMounted(false), 420);
+    return () => clearTimeout(t);
+  }, [open]);
+
+  return { mounted, isOpen };
+}
+
+function MethodRow({ method, meta, selected, onSelect }) {
+  const cls = 'method' + (selected ? ' is-selected' : '');
+  const handleKey = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(); }
+  };
+  return (
+    <li className={cls} tabIndex={0} role="button"
+        aria-pressed={selected}
+        onClick={onSelect} onKeyDown={handleKey}>
+      <span className={'method__icon method__icon--' + method}>
+        {method === 'telebirr' ? <img src="/images/telebirr.jpg" alt="TB" /> : <img src="/images/cbe_birr.jpg" alt="CB" />}
+      </span>
+      <div className="method__body">
+        <p className="method__name">{method === 'telebirr' ? 'Telebirr' : 'CBE Birr'}</p>
+        <p className="method__meta">
+          {meta.split('·').map((part, i, arr) => (
+            <React.Fragment key={i}>
+              {part.trim()}
+              {i < arr.length - 1 && <span className="dot" />}
+            </React.Fragment>
+          ))}
+        </p>
+      </div>
+      <span className="method__check"><Check /></span>
+    </li>
+  );
+}
+
+const stepClass = (i, active) => {
+  const num = i + 1;
+  if (num === active) return 'sheet-step is-active';
+  if (num < active)   return 'sheet-step is-past';
+  return 'sheet-step';
+};
+
+/* ============================================================
+   Withdraw Sheet
+   ============================================================ */
+function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }) {
+  const { mounted, isOpen } = useSheetMount(open);
+  const stepsRef = useRef(null);
+
+  const [step, setStep]         = useState(1);
+  const [selected, setSelected] = useState(null);
+  const [acctName, setAcctName] = useState('');
+  const [acctNumber, setAcctNumber] = useState('');
+  const [amount, setAmount]     = useState('');
+  const [errors, setErrors]     = useState({ name:'', number:'', amount:'', global:'' });
+  const [success, setSuccess]   = useState({ amount:'', method:'', name:'', number:'', ref:'' });
+
+  useEffect(() => {
+    if (!open) return;
+    setStep(1);
+    setSelected(null);
+    setAcctName('');
+    setAcctNumber('');
+    setAmount('');
+    setErrors({ name:'', number:'', amount:'', global:'' });
+  }, [open]);
+
+  useEffect(() => {
+    if (reqError) {
+      setErrors(p => ({ ...p, global: reqError }));
+    }
+  }, [reqError]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      if (step === 2) setStep(1); else if (step === 1) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, step, onClose]);
+
+  const resizeSteps = () => {
+    const c = stepsRef.current;
+    if (!c) return;
+    const active = c.querySelector('.sheet-step.is-active');
+    if (!active) return;
+    const max = Math.round(window.innerHeight * 0.78);
+    c.style.height = Math.min(active.scrollHeight, max) + 'px';
+  };
+
+  useLayoutEffect(() => { if (mounted) resizeSteps(); });
+  useEffect(() => {
+    window.addEventListener('resize', resizeSteps);
+    window.addEventListener('orientationchange', resizeSteps);
+    return () => {
+      window.removeEventListener('resize', resizeSteps);
+      window.removeEventListener('orientationchange', resizeSteps);
+    };
+  }, []);
+
+  if (!mounted) return null;
+
+  const amt = parseFloat(amount) || 0;
+  const canContinue2 = acctName.trim() && acctNumber.trim() && amount.trim() && !loading;
+
+  const handleAmount = (v) => {
+    let s = v.replace(/[^0-9.]/g, '');
+    const dot = s.indexOf('.');
+    if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
+    const [i, d] = s.split('.');
+    if (d !== undefined && d.length > 2) s = i + '.' + d.slice(0, 2);
+    setAmount(s);
+    setErrors(prev => ({ ...prev, amount: '', global: '' }));
+  };
+
+  const submit = async () => {
+    const name = acctName.trim();
+    const num  = acctNumber.trim();
+    const digits = num.replace(/\D/g, '');
+    const e = { name:'', number:'', amount:'', global:'' };
+    let ok = true;
+
+    if (!name) { e.name = 'Enter the account holder name'; ok = false; }
+    else if (name.length < 3) { e.name = 'Name looks too short'; ok = false; }
+
+    if (!num) { e.number = 'Enter the account number'; ok = false; }
+    
+    if (!amt) { e.amount = 'Enter an amount to withdraw'; ok = false; }
+    else if (amt < MIN_WITHDRAW) { e.amount = 'Minimum withdrawal is Br ' + fmt(MIN_WITHDRAW); ok = false; }
+    else if (amt > available) { e.amount = 'Amount exceeds your balance of Br ' + fmt(available); ok = false; }
+
+    setErrors(e);
+    if (!ok) { requestAnimationFrame(resizeSteps); return; }
+
+    const resSuccess = await onSubmit({
+      method: methodKeyMapRev[selected] || selected,
+      accountNumber: num,
+      accountName: name,
+      amount: amt.toString()
+    });
+
+    if (resSuccess) {
+      setSuccess({
+        amount: 'Br ' + fmt(amt),
+        method: W_METHODS[selected].name,
+        name: name,
+        number: num,
+        ref: ''
+      });
+      setStep(3);
+    }
+  };
+
+  const cfg = selected ? W_METHODS[selected] : null;
+
+  return (
+    <section className={'sheet' + (isOpen ? ' is-open' : '')}
+             role="dialog" aria-modal="true" aria-hidden={!isOpen}>
+      <div className="sheet__handle" />
+
+      <div className="sheet__steps" ref={stepsRef}>
+
+        {/* ---------- Step 1 : method ---------- */}
+        <div className={stepClass(0, step)}>
+          <header className="sheet__head">
+            <div>
+              <h3 className="sheet__title">Withdraw funds</h3>
+              <p className="sheet__sub">Choose how you'd like to receive your money</p>
+            </div>
+            <button className="sheet__close" onClick={onClose} aria-label="Close">
+              <CloseIcon />
+            </button>
+          </header>
+
+          <div className="sheet__available">
+            <span>Available to withdraw</span>
+            <strong>Br {fmt(available)}</strong>
+          </div>
+
+          <ul className="methods">
+            <MethodRow method="telebirr" meta="Instant · No fee"
+                       selected={selected === 'telebirr'}
+                       onSelect={() => setSelected('telebirr')} />
+            <MethodRow method="cbebirr" meta="Within minutes · No fee"
+                       selected={selected === 'cbebirr'}
+                       onSelect={() => setSelected('cbebirr')} />
+          </ul>
+
+          <button className="sheet__cta" disabled={!selected}
+                  onClick={() => setStep(2)}>
+            Continue
+          </button>
+        </div>
+
+        {/* ---------- Step 2 : details ---------- */}
+        <div className={stepClass(1, step)}>
+          <header className="sheet__head">
+            <div className="sheet__head-left">
+              <button className="sheet__back" onClick={() => setStep(1)} aria-label="Back">
+                <BackIcon />
+              </button>
+              <div>
+                <h3 className="sheet__title">
+                  Withdraw to <span>{cfg ? cfg.name : 'Telebirr'}</span>
+                </h3>
+                <p className="sheet__sub">Enter the receiving account details</p>
+              </div>
+            </div>
+            <button className="sheet__close" onClick={onClose} aria-label="Close">
+              <CloseIcon />
+            </button>
+          </header>
+
+          {errors.global && (
+             <div style={{ marginBottom: '12px', padding: '10px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', borderRadius: '10px', fontSize: '13px', fontWeight: '500' }}>
+               {errors.global}
+             </div>
+          )}
+
+          <div className="field">
+            <label className="field__label" htmlFor="wName">Account name</label>
+            <input id="wName" className={'field__input' + (errors.name ? ' is-invalid' : '')}
+                   type="text" placeholder="e.g. Abebe Bekele" autoComplete="name"
+                   value={acctName}
+                   onChange={e => { setAcctName(e.target.value); setErrors(p => ({ ...p, name: '' })); }} />
+            <p className={'field__error' + (errors.name ? ' is-show' : '')}>{errors.name}</p>
+          </div>
+
+          <div className="field">
+            <label className="field__label" htmlFor="wNum">
+              {cfg ? cfg.numberLabel : 'Account number'}
+            </label>
+            <input id="wNum" className={'field__input' + (errors.number ? ' is-invalid' : '')}
+                   type={cfg ? cfg.type : 'text'}
+                   placeholder={cfg ? cfg.placeholder : ''}
+                   value={acctNumber}
+                   onChange={e => { setAcctNumber(e.target.value); setErrors(p => ({ ...p, number: '' })); }} />
+            <p className={'field__error' + (errors.number ? ' is-show' : '')}>{errors.number}</p>
+          </div>
+
+          <div className="field">
+            <label className="field__label" htmlFor="wAmt">Amount</label>
+            <div className={'amount-input' + (errors.amount ? ' is-invalid' : '')}>
+              <span className="amount-input__prefix">Br</span>
+              <input id="wAmt" className="amount-input__field"
+                     type="text" inputMode="decimal" placeholder="0.00"
+                     autoComplete="off" value={amount}
+                     onChange={e => handleAmount(e.target.value)} />
+              <button className="amount-input__max" type="button"
+                      onClick={() => { setAmount(available.toString());
+                                       setErrors(p => ({ ...p, amount: '' })); }}>
+                Max
+              </button>
+            </div>
+            <p className={'field__error' + (errors.amount ? ' is-show' : '')}>{errors.amount}</p>
+          </div>
+
+          <div className="summary">
+            <div className="summary__row"><span>Fee</span><strong>Br 0.00</strong></div>
+            <div className="summary__row summary__row--total">
+              <span>You'll receive</span>
+              <strong>Br {fmt(amt)}</strong>
+            </div>
+          </div>
+
+          <button className="sheet__cta" disabled={!canContinue2 || loading} onClick={submit}>
+            {loading ? 'Processing...' : (amt > 0 ? 'Withdraw Br ' + fmt(amt) : 'Withdraw')}
+          </button>
+        </div>
+
+        {/* ---------- Step 3 : success ---------- */}
+        <div className={stepClass(2, step)}>
+          <div className="success">
+            <div className="success__icon">
+              <SvgBase size={30} sw={3}><path d="M20 6 9 17l-5-5" /></SvgBase>
+            </div>
+            <h3 className="success__title">Withdrawal submitted</h3>
+            <p className="success__text">
+              <strong>{success.amount}</strong> is on its way to your{' '}
+              <span>{success.method}</span> account.
+            </p>
+            <div className="success__details">
+              <div className="summary__row"><span>Account name</span><strong>{success.name}</strong></div>
+              <div className="summary__row"><span>Account number</span><strong>{success.number}</strong></div>
+              <div className="summary__row"><span>Reference</span><strong>{success.ref || 'Pending'}</strong></div>
+            </div>
+          </div>
+          <button className="sheet__cta" onClick={onClose}>Done</button>
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   Deposit Sheet
+   ============================================================ */
+function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
+  const { mounted, isOpen } = useSheetMount(open);
+  const stepsRef = useRef(null);
+
+  const [step, setStep]         = useState(1);
+  const [selected, setSelected] = useState(null);
+  const [amount, setAmount]     = useState('');
+  const [sms, setSms]           = useState('');
+  const [errors, setErrors]     = useState({ amount:'', sms:'', global:'' });
+  const [copied, setCopied]     = useState({ name:false, number:false });
+  const [success, setSuccess]   = useState({ amount:'', method:'', ref:'' });
+
+  useEffect(() => {
+    if (!open) return;
+    setStep(1);
+    setSelected(null);
+    setAmount('');
+    setSms('');
+    setErrors({ amount:'', sms:'', global:'' });
+    setCopied({ name:false, number:false });
+  }, [open]);
+
+  useEffect(() => {
+    if (reqError) {
+      setErrors(p => ({ ...p, global: reqError }));
+    }
+  }, [reqError]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      if (step > 1 && step < 3) setStep(step - 1); else if (step === 1) onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, step, onClose]);
+
+  const resizeSteps = () => {
+    const c = stepsRef.current;
+    if (!c) return;
+    const active = c.querySelector('.sheet-step.is-active');
+    if (!active) return;
+    const max = Math.round(window.innerHeight * 0.78);
+    c.style.height = Math.min(active.scrollHeight, max) + 'px';
+  };
+  useLayoutEffect(() => { if (mounted) resizeSteps(); });
+  useEffect(() => {
+    window.addEventListener('resize', resizeSteps);
+    window.addEventListener('orientationchange', resizeSteps);
+    return () => {
+      window.removeEventListener('resize', resizeSteps);
+      window.removeEventListener('orientationchange', resizeSteps);
+    };
+  }, []);
+
+  if (!mounted) return null;
+
+  const cfg = selected ? D_METHODS[selected] : null;
+  const amt = parseFloat(amount) || 0;
+  const hasSms = sms.trim().length >= 8;
+  const canSubmit = amt > 0 && hasSms && !loading;
+
+  const handleAmount = (v) => {
+    let s = v.replace(/[^0-9.]/g, '');
+    const dot = s.indexOf('.');
+    if (dot !== -1) s = s.slice(0, dot + 1) + s.slice(dot + 1).replace(/\./g, '');
+    const [i, d] = s.split('.');
+    if (d !== undefined && d.length > 2) s = i + '.' + d.slice(0, 2);
+    setAmount(s);
+    setErrors(p => ({ ...p, amount: '', global: '' }));
+  };
+
+  const handleCopy = async (which, text) => {
+    const done = () => {
+      setCopied(p => ({ ...p, [which]: true }));
+      onCopy('Copied: ' + text);
+      setTimeout(() => setCopied(p => ({ ...p, [which]: false })), 1400);
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        const copiedSuccessfully = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (!copiedSuccessfully) throw new Error('Copy command failed');
+      }
+    } catch (e) {
+      onCopy('Copy failed — please copy it manually');
+      return;
+    }
+    done();
+  };
+
+  const submit = async () => {
+    const e = { amount:'', sms:'', global:'' };
+    let ok = true;
+    const smsTrim = sms.trim();
+
+    if (!amt) { e.amount = 'Enter the amount you sent'; ok = false; }
+    else if (amt < MIN_DEPOSIT) { e.amount = 'Minimum deposit is Br ' + fmt(MIN_DEPOSIT); ok = false; }
+    else if (amt > MAX_DEPOSIT) { e.amount = 'Maximum deposit is Br ' + fmt(MAX_DEPOSIT); ok = false; }
+
+    if (!smsTrim) { e.sms = 'Paste the SMS you received from your bank'; ok = false; }
+    else if (smsTrim.length < 8) { e.sms = 'That SMS looks too short — paste the full message'; ok = false; }
+
+    setErrors(e);
+    if (!ok) { requestAnimationFrame(resizeSteps); return; }
+
+    const resSuccess = await onSubmit({
+      method: methodKeyMapRev[selected] || selected,
+      amount: amt.toString(),
+      receiptSms: smsTrim
+    });
+
+    if (resSuccess) {
+      setSuccess({
+        amount: 'Br ' + fmt(amt),
+        method: D_METHODS[selected].name,
+        ref: ''
+      });
+      setStep(3);
+    }
+  };
+
+  return (
+    <section className={'sheet' + (isOpen ? ' is-open' : '')}
+             role="dialog" aria-modal="true" aria-hidden={!isOpen}>
+      <div className="sheet__handle" />
+
+      <div className="sheet__steps" ref={stepsRef}>
+
+        {/* ---------- Step 1 : method ---------- */}
+        <div className={stepClass(0, step)}>
+          <header className="sheet__head">
+            <div>
+              <h3 className="sheet__title">Deposit funds</h3>
+              <p className="sheet__sub">Choose how you'd like to add money</p>
+            </div>
+            <button className="sheet__close" onClick={onClose} aria-label="Close">
+              <CloseIcon />
+            </button>
+          </header>
+
+          <ul className="methods">
+            <MethodRow method="telebirr" meta="Send to our Telebirr account"
+                       selected={selected === 'telebirr'}
+                       onSelect={() => setSelected('telebirr')} />
+            <MethodRow method="cbebirr" meta="Send to our CBE Birr account"
+                       selected={selected === 'cbebirr'}
+                       onSelect={() => setSelected('cbebirr')} />
+          </ul>
+
+          <button className="sheet__cta sheet__cta--deposit"
+                  disabled={!selected}
+                  onClick={() => setStep(2)}>
+            Continue
+          </button>
+        </div>
+
+        {/* ---------- Step 2 : amount + system card + SMS ---------- */}
+        <div className={stepClass(1, step)}>
+          <header className="sheet__head">
+            <div className="sheet__head-left">
+              <button className="sheet__back" onClick={() => setStep(1)} aria-label="Back">
+                <BackIcon />
+              </button>
+              <div>
+                <h3 className="sheet__title">
+                  Deposit via <span className="is-green">{cfg ? cfg.name : 'Telebirr'}</span>
+                </h3>
+                <p className="sheet__sub">Send the amount, then paste your bank SMS</p>
+              </div>
+            </div>
+            <button className="sheet__close" onClick={onClose} aria-label="Close">
+              <CloseIcon />
+            </button>
+          </header>
+
+          {errors.global && (
+             <div style={{ marginBottom: '12px', padding: '10px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', borderRadius: '10px', fontSize: '13px', fontWeight: '500' }}>
+               {errors.global}
+             </div>
+          )}
+
+          <div className="field">
+            <label className="field__label" htmlFor="dAmt">Amount you'll send</label>
+            <div className={'amount-input' + (errors.amount ? ' is-invalid' : '')}>
+              <span className="amount-input__prefix">Br</span>
+              <input id="dAmt" className="amount-input__field"
+                     type="text" inputMode="decimal" placeholder="0.00"
+                     autoComplete="off" value={amount}
+                     onChange={e => handleAmount(e.target.value)} />
+            </div>
+            <p className={'field__error' + (errors.amount ? ' is-show' : '')}>{errors.amount}</p>
+          </div>
+
+          <div className="copy-card">
+            <div className="copy-card__title">
+              <ShieldIcon /> Send your payment to
+            </div>
+            <div className="copy-card__row">
+              <span className="copy-card__label">Account name</span>
+              <span className="copy-card__value">{cfg && cfg.sysName ? cfg.sysName : 'Not configured'}</span>
+              <button type="button"
+                      className={'copy-card__btn' + (copied.name ? ' is-copied' : '')}
+                      aria-label="Copy account name"
+                      disabled={!cfg || !cfg.sysName}
+                      onClick={() => handleCopy('name', cfg.sysName)}>
+                <CopyIcon />
+              </button>
+            </div>
+            <div className="copy-card__row">
+              <span className="copy-card__label">Account number</span>
+              <span className="copy-card__value">{cfg && cfg.sysNumber ? cfg.sysNumber : 'Not configured'}</span>
+              <button type="button"
+                      className={'copy-card__btn' + (copied.number ? ' is-copied' : '')}
+                      aria-label="Copy account number"
+                      disabled={!cfg || !cfg.sysNumber}
+                      onClick={() => handleCopy('number', cfg.sysNumber)}>
+                <CopyIcon />
+              </button>
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="field__label" htmlFor="dSms">Bank SMS confirmation</label>
+            <textarea id="dSms" spellCheck="false"
+                      className={'sms-box' + (errors.sms ? ' is-invalid' : '')}
+                      placeholder={cfg ? cfg.smsPlaceholder : 'Paste the SMS…'}
+                      value={sms}
+                      onChange={e => { setSms(e.target.value); setErrors(p => ({ ...p, sms: '' })); }} />
+            <p className="field__hint">
+              <InfoIcon /> Copy the full SMS including the transaction ID.
+            </p>
+            <p className={'field__error' + (errors.sms ? ' is-show' : '')}>{errors.sms}</p>
+          </div>
+
+          <button className="sheet__cta sheet__cta--deposit"
+                  disabled={!canSubmit || loading} onClick={submit}>
+            {loading ? 'Verifying...' : (amt > 0 ? 'Deposit Br ' + fmt(amt) : 'Deposit')}
+          </button>
+        </div>
+
+        {/* ---------- Step 3 : success ---------- */}
+        <div className={stepClass(2, step)}>
+          <div className="success">
+            <div className="success__icon">
+              <SvgBase size={30} sw={3}><path d="M20 6 9 17l-5-5" /></SvgBase>
+            </div>
+            <h3 className="success__title">Deposit submitted</h3>
+            <p className="success__text">
+              Your <strong>{success.amount}</strong> deposit via{' '}
+              <span>{success.method}</span> is awaiting confirmation.
+            </p>
+            <div className="success__details">
+              <div className="summary__row"><span>Method</span><strong>{success.method}</strong></div>
+              <div className="summary__row"><span>Reference</span><strong>{success.ref || 'Pending'}</strong></div>
+              <div className="summary__row">
+                <span>Status</span>
+                <strong style={{ color: 'var(--amber)' }}>Pending review</strong>
+              </div>
+            </div>
+          </div>
+          <button className="sheet__cta sheet__cta--deposit" onClick={onClose}>Done</button>
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+function Toast({ message, onDone }) {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    setShow(true);
+    const t1 = setTimeout(() => setShow(false), 1600);
+    const t2 = setTimeout(onDone, 1900);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
+
+  return <div className={'toast' + (show ? ' is-show' : '')}>{message}</div>;
+}
+
+/* ============================================================
+   App Export
+   ============================================================ */
 export default function WalletView({ lang, user, token, socket, onBalanceUpdated }) {
   const t = translations[lang];
-  const [activeTab, setActiveTab] = useState(null);
-
-  const [depStep, setDepStep] = useState(1);
-  const [depMethod, setDepMethod] = useState('');
-  const [depAmount, setDepAmount] = useState('');
-  const [receiptSms, setReceiptSms] = useState('');
-  const [proofFile, setProofFile] = useState(null);
-
-  const [withStep, setWithStep] = useState(1);
-  const [withMethod, setWithMethod] = useState('');
-  const [withAccount, setWithAccount] = useState('');
-  const [withAccountName, setWithAccountName] = useState('');
-  const [withAmount, setWithAmount] = useState('');
-
+  const [hidden, setHidden]           = useState(false);
+  const [activeSheet, setActiveSheet] = useState(null);
+  const [toast, setToast]             = useState(null);
   const [transactions, setTransactions] = useState({ deposits: [], withdrawals: [] });
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState({ error: '', success: '' });
-  const [copied, setCopied] = useState('');
+  const [reqError, setReqError] = useState('');
 
   const fetchTransactions = async () => {
     try {
@@ -50,15 +862,6 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       if (res.ok) setTransactions(data);
     } catch (e) {}
   };
-
-  useEffect(() => {
-    if (!depMethod && Object.keys(PAYMENT_ACCOUNTS).length > 0) {
-      setDepMethod(Object.keys(PAYMENT_ACCOUNTS)[0]);
-    }
-    if (!withMethod && Object.keys(PAYMENT_ACCOUNTS).length > 0) {
-      setWithMethod(Object.keys(PAYMENT_ACCOUNTS)[0]);
-    }
-  }, [depMethod, withMethod]);
 
   useEffect(() => {
     if (token) fetchTransactions();
@@ -86,26 +889,14 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
     }
   }, [token, socket, user]);
 
-  const copyToClipboard = (text, key) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(key);
-      setTimeout(() => setCopied(''), 2000);
-    });
-  };
-
-  const handleDepositSubmit = async () => {
-    if (!receiptSms.trim()) {
-      setMsg({ error: 'Please enter your transaction SMS or confirmation text', success: '' });
-      return;
-    }
+  const handleDepositSubmit = async ({ method, amount, receiptSms }) => {
     setLoading(true);
-    setMsg({ error: '', success: '' });
+    setReqError('');
     try {
       const formData = new FormData();
-      formData.append('method', depMethod);
-      formData.append('amount', depAmount);
+      formData.append('method', method);
+      formData.append('amount', amount);
       formData.append('receiptSms', receiptSms);
-      if (proofFile) formData.append('proofImage', proofFile);
 
       const res = await apiFetch('/api/wallet/deposit', {
         method: 'POST',
@@ -114,354 +905,131 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Deposit failed');
-      setDepStep(4); // Step 4 is now the Success screen
       fetchTransactions();
+      return true;
     } catch (err) {
-      setMsg({ error: err.message, success: '' });
+      setReqError(err.message);
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const resetDeposit = () => {
-    setDepStep(1); 
-    setDepMethod(Object.keys(PAYMENT_ACCOUNTS)[0] || ''); 
-    setDepAmount(''); 
-    setReceiptSms(''); 
-    setProofFile(null);
-    setMsg({ error: '', success: '' });
-  };
-
-  const handleWithdrawSubmit = async () => {
-    if (!withAccount.trim()) {
-      setMsg({ error: 'Please enter your account number', success: '' });
-      return;
-    }
+  const handleWithdrawSubmit = async ({ method, accountNumber, accountName, amount }) => {
     setLoading(true);
-    setMsg({ error: '', success: '' });
+    setReqError('');
     try {
       const res = await apiFetch('/api/wallet/withdraw', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          method: withMethod,
-          accountNumber: withAccount,
-          accountName: withAccountName,
-          amount: withAmount
+          method,
+          accountNumber,
+          accountName,
+          amount
         })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Withdrawal failed');
-      setWithStep(2); // Step 2 is now the Success screen
       fetchTransactions();
+      return true;
     } catch (err) {
-      setMsg({ error: err.message, success: '' });
+      setReqError(err.message);
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const resetWithdraw = () => {
-    setWithStep(1); 
-    setWithMethod(Object.keys(PAYMENT_ACCOUNTS)[0] || ''); 
-    setWithAccount(''); 
-    setWithAccountName(''); 
-    setWithAmount('');
-    setMsg({ error: '', success: '' });
-  };
+  const showToast = (msg) => setToast({ msg, id: Date.now() });
 
   const balance = user?.balance || 0;
   const withdrawableBal = user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0;
+  const nonWithdrawableBal = balance - withdrawableBal;
 
-  const renderStatusBadge = status => {
-    const map = {
-      pending: { bg: 'rgba(245,158,11,0.2)', color: 'var(--gold)', icon: <Clock size={12} />, label: 'Pending' },
-      approved: { bg: 'rgba(16,185,129,0.2)', color: 'var(--green)', icon: <CheckCircle2 size={12} />, label: 'Completed' },
-      rejected: { bg: 'rgba(239,68,68,0.2)', color: 'var(--red)', icon: <AlertCircle size={12} />, label: 'Rejected' }
-    };
-    const s = map[status] || map.pending;
-    return (
-      <span style={{ background: s.bg, color: s.color, padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-        {s.icon} {s.label}
-      </span>
-    );
-  };
+  // Process and merge transactions
+  const txList = [
+    ...(transactions.deposits || []).map(d => ({
+      id: 'd_' + d.id,
+      type: 'deposit',
+      name: 'Deposit via ' + d.method,
+      meta: d.status,
+      date: new Date(d.created_at).toLocaleDateString(),
+      amount: '+Br ' + parseFloat(d.amount).toFixed(2),
+      rawDate: new Date(d.created_at),
+      bg: 'var(--green-soft)',
+      cls: 'in',
+      avatar: <ArrowDown size={18} />
+    })),
+    ...(transactions.withdrawals || []).map(w => ({
+      id: 'w_' + w.id,
+      type: 'withdraw',
+      name: 'Withdraw to ' + w.method,
+      meta: w.status,
+      date: new Date(w.created_at).toLocaleDateString(),
+      amount: '-Br ' + parseFloat(w.amount).toFixed(2),
+      rawDate: new Date(w.created_at),
+      bg: 'var(--amber-soft)',
+      cls: 'out',
+      avatar: <ArrowUp size={18} />
+    }))
+  ].sort((a, b) => b.rawDate - a.rawDate);
 
   return (
-    <div style={{ maxWidth: '480px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '60px 12px 10px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {!token && (
-        <div className="glass-panel" style={{ background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.3)', padding: '20px', textAlign: 'center' }}>
-          <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔒</div>
-          <div style={{ fontWeight: '800', color: '#fca5a5', fontSize: '15px', marginBottom: '6px' }}>Session Not Ready</div>
-          <div style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Your session is still loading. Please wait a moment and try again, or refresh the page.</div>
-        </div>
-      )}
+    <div className="wallet-wrapper">
+      <main className="wallet-card">
+        <WalletHeader user={user} />
+        
+        <TotalCard 
+          hidden={hidden} 
+          onToggle={() => setHidden(h => !h)} 
+          balance={balance} 
+        />
+        
+        <BalanceSplit 
+          hidden={hidden} 
+          totalBalance={balance}
+          withdrawable={withdrawableBal}
+          nonWithdrawable={nonWithdrawableBal}
+        />
+        
+        <QuickActions
+          onWithdraw={() => { setReqError(''); setActiveSheet('withdraw'); }}
+          onDeposit={() => { setReqError(''); setActiveSheet('deposit'); }}
+        />
+        
+        <Transactions txList={txList} />
+      </main>
 
-      {/* BALANCE BREAKDOWN */}
-      <div className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderColor: 'var(--border-cyan)' }}>
-        <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid rgba(255,255,255,0.1)' }}>
-          <div style={{ fontSize: '11px', color: 'var(--cyan)', marginBottom: '4px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            💰 Total Balance
-          </div>
-          <div style={{ fontSize: '20px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
-            {(user?.balance || 0).toFixed(2)} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>ETB</span>
-          </div>
-        </div>
+      <div
+        className={'sheet-backdrop' + (activeSheet ? ' is-open' : '')}
+        onClick={() => setActiveSheet(null)}
+      />
 
-        <div style={{ textAlign: 'center', flex: 1 }}>
-          <div style={{ fontSize: '11px', color: 'var(--gold)', marginBottom: '4px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-            🏆 Withdrawable
-          </div>
-          <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--gold)', lineHeight: 1.1 }}>
-            {(user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0).toFixed(2)} <span style={{ fontSize: '10px', opacity: 0.8 }}>ETB</span>
-          </div>
-        </div>
-      </div>
+      <WithdrawSheet
+        open={activeSheet === 'withdraw'}
+        onClose={() => setActiveSheet(null)}
+        available={withdrawableBal}
+        onSubmit={handleWithdrawSubmit}
+        loading={loading}
+        reqError={reqError}
+      />
+      
+      <DepositSheet
+        open={activeSheet === 'deposit'}
+        onClose={() => setActiveSheet(null)}
+        onCopy={showToast}
+        onSubmit={handleDepositSubmit}
+        loading={loading}
+        reqError={reqError}
+      />
 
-      {/* TABS */}
-      <div className="glass-panel" style={{ display: 'flex', padding: '6px', gap: '6px' }}>
-        {[['deposit', '📥 Deposit'], ['withdraw', '📤 Withdraw'], ['history', '📋 History']].map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => { setActiveTab(activeTab === key ? null : key); resetDeposit(); resetWithdraw(); setMsg({ error: '', success: '' }); }}
-            style={{
-              flex: 1, padding: '12px 4px', borderRadius: '8px', border: 'none',
-              background: activeTab === key ? 'var(--bg-elevated)' : 'transparent',
-              color: activeTab === key ? 'var(--text-primary)' : 'var(--text-muted)',
-              fontWeight: activeTab === key ? '800' : '600',
-              cursor: 'pointer', fontSize: '14px', transition: 'all 0.2s',
-              boxShadow: activeTab === key ? '0 2px 8px rgba(0,0,0,0.2)' : 'none'
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {msg.error && (
-        <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', padding: '16px', borderRadius: '12px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <AlertCircle size={18} /> {msg.error}
-        </div>
-      )}
-
-      {/* DEPOSIT */}
-      {activeTab === 'deposit' && (
-        <div className="glass-panel" style={{ padding: '16px', minHeight: '320px' }}>
-          {depStep === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Payment Method</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px' }}>
-                  {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
-                    <button key={key} onClick={() => setDepMethod(key)}
-                      style={{
-                        padding: '8px', borderRadius: '10px', border: `2px solid ${depMethod === key ? acc.color : 'transparent'}`,
-                        background: depMethod === key ? `${acc.color}12` : 'var(--bg-elevated)',
-                        color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                        transition: 'all 0.2s', boxShadow: depMethod === key ? `0 0 12px ${acc.color}40` : 'none'
-                      }}>
-                      <img src={acc.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} />
-                      <span style={{ fontWeight: '800', fontSize: '13px', color: depMethod === key ? acc.color : 'var(--text-secondary)' }}>{acc.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Deposit Amount (ETB)</div>
-                <input type="number" className="input-field" style={{ fontSize: '20px', textAlign: 'center', fontWeight: '900', padding: '12px' }} placeholder="0.00" value={depAmount} onChange={e => setDepAmount(e.target.value)} min="10" />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '8px' }}>
-                  {['200', '500', '1000'].map(a => (
-                    <button key={a} onClick={() => setDepAmount(a)} className="btn-secondary" style={{ borderColor: depAmount === a ? 'var(--gold)' : '', color: depAmount === a ? 'var(--gold)' : '', fontSize: '13px', padding: '6px' }}>
-                      +{a}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button onClick={() => {
-                if (!depAmount || parseFloat(depAmount) < 10) { setMsg({ error: 'Minimum deposit is 10 ETB', success: '' }); return; }
-                setMsg({ error: '', success: '' });
-                setDepStep(2);
-              }} className="btn-gold" style={{ width: '100%', marginTop: '4px', padding: '12px', fontSize: '15px' }}>
-                Next
-              </button>
-            </div>
-          )}
-
-          {depStep === 2 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {depMethod && PAYMENT_ACCOUNTS[depMethod] && (() => {
-                const acc = PAYMENT_ACCOUNTS[depMethod];
-                return (
-                  <div style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '12px', border: `1px solid ${acc.color}40` }}>
-                    <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '700', textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <img src={acc.logo} alt="" style={{ height: '16px', borderRadius: '4px', background: '#fff', padding: '2px' }} /> Transfer to {acc.label}:
-                    </div>
-                    <div style={{ marginBottom: '12px' }}>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>ACCOUNT NAME</div>
-                      <div style={{ fontWeight: '900', fontSize: '14px' }}>{acc.name}</div>
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>ACCOUNT NUMBER</div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontWeight: '900', fontSize: '16px', color: acc.color, letterSpacing: '1px' }}>{acc.number}</span>
-                        <button onClick={() => copyToClipboard(acc.number, 'num')} className="btn-secondary" style={{ padding: '4px 10px', minHeight: '28px', fontSize: '12px' }}>
-                          {copied === 'num' ? '✅ Copied' : <><Copy size={12} /> Copy</>}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              <button onClick={() => {
-                setDepStep(3);
-              }} className="btn-gold" style={{ width: '100%', marginTop: '4px', padding: '12px', fontSize: '15px' }}>
-                Send
-              </button>
-            </div>
-          )}
-
-          {depStep === 3 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Verify Transfer</div>
-                <textarea rows={2} className="input-field" style={{ resize: 'vertical', padding: '10px', fontSize: '13px' }} placeholder={`Paste your ${depMethod} SMS receipt or transaction ID here...`} value={receiptSms} onChange={e => setReceiptSms(e.target.value)} />
-              </div>
-
-              <button onClick={() => {
-                if (!receiptSms.trim()) { setMsg({ error: 'Please enter your transaction SMS or confirmation text', success: '' }); return; }
-                handleDepositSubmit();
-              }} disabled={loading || !token} className="btn-gold" style={{ width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '4px', padding: '12px', fontSize: '15px' }}>
-                {loading ? '⏳ Verifying...' : 'Verify'}
-              </button>
-            </div>
-          )}
-
-          {depStep === 4 && (
-            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-              <div style={{ fontSize: '80px', marginBottom: '24px' }}>✅</div>
-              <h3 style={{ fontWeight: '900', fontSize: '28px', color: 'var(--green)', marginBottom: '16px' }}>Deposit Submitted!</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: '1.6', marginBottom: '40px' }}>
-                Your deposit of <strong style={{ color: 'var(--gold)' }}>{parseFloat(depAmount).toFixed(2)} ETB</strong> via <strong>{depMethod}</strong> has been submitted.<br /><br />
-                Admin will verify and credit your wallet shortly. ⚡
-              </p>
-              <button onClick={resetDeposit} className="btn-secondary" style={{ minWidth: '200px' }}>Make Another Deposit</button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* WITHDRAW */}
-      {activeTab === 'withdraw' && (
-        <div className="glass-panel" style={{ padding: '16px', minHeight: '320px' }}>
-          {withStep === 1 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              
-              <div style={{ textAlign: 'center', background: 'rgba(6,182,212,0.1)', border: '1px solid rgba(6,182,212,0.3)', borderRadius: '12px', padding: '12px' }}>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '4px', fontWeight: '700', textTransform: 'uppercase' }}>Available Winnings</div>
-                <div style={{ fontSize: '24px', fontWeight: '900', color: 'var(--cyan)' }}>{withdrawableBal.toFixed(2)} <span style={{ fontSize: '14px', opacity: 0.8 }}>ETB</span></div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Withdrawal Amount (ETB)</div>
-                <div style={{ position: 'relative' }}>
-                  <input type="number" className="input-field" style={{ fontSize: '20px', textAlign: 'center', fontWeight: '900', padding: '12px', width: '100%', boxSizing: 'border-box' }}
-                    placeholder="0.00" value={withAmount} onChange={e => setWithAmount(e.target.value)} min="200" max={withdrawableBal} />
-                  <button onClick={() => setWithAmount(String(Math.floor(withdrawableBal)))} className="btn-secondary" style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', padding: '4px 10px', fontSize: '11px' }}>
-                    MAX
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>Withdrawal Method</div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px' }}>
-                  {Object.entries(PAYMENT_ACCOUNTS).map(([key, acc]) => (
-                    <button key={key} onClick={() => setWithMethod(key)}
-                      style={{
-                        padding: '8px', borderRadius: '10px', border: `2px solid ${withMethod === key ? acc.color : 'transparent'}`,
-                        background: withMethod === key ? `${acc.color}12` : 'var(--bg-elevated)',
-                        color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                        transition: 'all 0.2s', boxShadow: withMethod === key ? `0 0 12px ${acc.color}40` : 'none'
-                      }}>
-                      <img src={acc.logo} alt="" style={{ height: '20px', borderRadius: '4px', background: '#fff', padding: '2px' }} />
-                      <span style={{ fontWeight: '800', fontSize: '13px', color: withMethod === key ? acc.color : 'var(--text-secondary)' }}>{acc.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '6px', fontWeight: '700' }}>
-                  Your {withMethod} Account Number / Phone
-                </div>
-                <input
-                  type="text"
-                  className="input-field"
-                  style={{ padding: '10px', fontSize: '14px' }}
-                  placeholder={withMethod === 'Telebirr' ? 'e.g. 0911223344' : 'e.g. 1000123456789'}
-                  value={withAccount}
-                  onChange={e => setWithAccount(e.target.value)}
-                />
-              </div>
-
-              <button onClick={() => {
-                if (!withAmount || parseFloat(withAmount) < 200) { setMsg({ error: 'Minimum withdrawal is 200 ETB', success: '' }); return; }
-                if (parseFloat(withAmount) > withdrawableBal) { setMsg({ error: `Insufficient withdrawable balance. Your withdrawable balance is ${withdrawableBal.toFixed(2)} ETB.`, success: '' }); return; }
-                handleWithdrawSubmit();
-              }} disabled={loading || !token} className="btn-gold" style={{ background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)', boxShadow: 'var(--shadow-cyan)', color: '#fff', width: '100%', opacity: (!token || loading) ? 0.7 : 1, marginTop: '4px', padding: '12px', fontSize: '15px' }}>
-                {loading ? '⏳ Submitting...' : !token ? '🔒 Session Loading...' : 'Submit Request'}
-              </button>
-            </div>
-          )}
-
-          {withStep === 2 && (
-            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-              <div style={{ fontSize: '80px', marginBottom: '24px' }}>✅</div>
-              <h3 style={{ fontWeight: '900', fontSize: '28px', color: 'var(--cyan)', marginBottom: '16px' }}>Withdrawal Submitted!</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '16px', lineHeight: '1.6', marginBottom: '40px' }}>
-                Your withdrawal of <strong style={{ color: 'var(--cyan)' }}>{parseFloat(withAmount).toFixed(2)} ETB</strong> via <strong>{withMethod}</strong> to account <strong>{withAccount}</strong> has been submitted.<br /><br />
-                Admin will process and transfer funds to your account shortly. ⚡
-              </p>
-              <button onClick={resetWithdraw} className="btn-secondary" style={{ minWidth: '200px' }}>Make Another Withdrawal</button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* HISTORY */}
-      {activeTab === 'history' && (
-        <div className="glass-panel" style={{ padding: '16px' }}>
-          <div style={{ fontSize: '13px', fontWeight: '800', marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Deposits</div>
-          {(transactions.deposits || []).length === 0
-            ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px', fontSize: '14px' }}>No deposits yet</div>
-            : (transactions.deposits || []).slice().reverse().map(d => (
-              <div key={d.id} style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '12px 16px', marginBottom: '8px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontWeight: '900', color: 'var(--green)', fontSize: '15px' }}>+{parseFloat(d.amount).toFixed(2)} ETB</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{d.method} · {new Date(d.created_at).toLocaleDateString()}</div>
-                </div>
-                {renderStatusBadge(d.status)}
-              </div>
-            ))
-          }
-
-          <div style={{ fontSize: '13px', fontWeight: '800', margin: '24px 0 12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Withdrawals</div>
-          {(transactions.withdrawals || []).length === 0
-            ? <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px', fontSize: '14px' }}>No withdrawals yet</div>
-            : (transactions.withdrawals || []).slice().reverse().map(w => (
-              <div key={w.id} style={{ background: 'var(--bg-elevated)', borderRadius: '12px', padding: '12px 16px', marginBottom: '8px', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontWeight: '900', color: 'var(--red)', fontSize: '15px' }}>-{parseFloat(w.amount).toFixed(2)} ETB</div>
-                  <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{w.method} · {new Date(w.created_at).toLocaleDateString()}</div>
-                </div>
-                {renderStatusBadge(w.status)}
-              </div>
-            ))
-          }
-        </div>
+      {toast && (
+        <Toast
+          key={toast.id}
+          message={toast.msg}
+          onDone={() => setToast(null)}
+        />
       )}
     </div>
   );
