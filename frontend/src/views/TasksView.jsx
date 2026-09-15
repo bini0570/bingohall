@@ -86,17 +86,14 @@ export default function TasksView({ lang }) {
         </header>
 
         {/* Daily Check-in Card (TotalCard style) */}
-        <section className="total-card" aria-label="Daily Check-In">
+        <section className="total-card" aria-label="Daily Check-In" style={{ padding: '16px' }}>
           <div className="total-card__top">
             <div>
-              <p className="total-card__label" style={{ color: 'rgba(255,255,255,0.85)' }}>Daily Check-In Streak</p>
-              <p className="total-card__amount" style={{ fontSize: '28px', marginTop: '4px' }}>
-                Day {streak} <span>/ 7</span>
-              </p>
+              <p className="total-card__label" style={{ color: '#fff', fontSize: '15px', fontWeight: 'bold' }}>Daily Check-In Streak</p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px', width: '100%', justifyContent: 'space-between', marginTop: '20px' }}>
+          <div style={{ display: 'flex', gap: '4px', width: '100%', justifyContent: 'space-between', marginTop: '14px' }}>
             {[1, 2, 3, 4, 5, 6, 7].map(day => {
               const isToday = day === streak; 
               const isClaimed = day < streak || (streak === 1 && cooldownEnd > Date.now() && day === 7); 
@@ -105,7 +102,7 @@ export default function TasksView({ lang }) {
 
               return (
                 <div key={day} style={{ 
-                  flex: 1, minWidth: 0, aspectRatio: '1 / 1.15', padding: '6px 2px', borderRadius: '12px',
+                  flex: 1, minWidth: 0, padding: '8px 0', borderRadius: '8px',
                   background: isToday ? '#fff' : (isClaimed ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'),
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px',
                   boxShadow: isToday ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
@@ -114,15 +111,15 @@ export default function TasksView({ lang }) {
                   <div style={{ fontSize: '10px', fontWeight: '800', color: isToday ? 'var(--brand-1)' : '#fff', lineHeight: '1' }}>D{day}</div>
                   
                   {isClaimed ? (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '14px' }}>
                       <Check size={14} color="#fff" strokeWidth={3} />
                     </div>
                   ) : isMystery ? (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '18px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '14px' }}>
                       <Gift size={14} color={isToday ? 'var(--brand-1)' : '#fff'} />
                     </div>
                   ) : (
-                    <div style={{ fontSize: '14px', fontWeight: '900', color: isToday ? 'var(--brand-1)' : '#fff', lineHeight: '1' }}>+{reward}</div>
+                    <div style={{ fontSize: '12px', fontWeight: '900', color: isToday ? 'var(--brand-1)' : '#fff', lineHeight: '1' }}>+{reward}</div>
                   )}
                 </div>
               );
@@ -133,16 +130,16 @@ export default function TasksView({ lang }) {
             onClick={handleClaim}
             disabled={!!timeLeft}
             style={{ 
-              width: '100%', padding: '14px', borderRadius: '16px', border: 'none',
+              width: '100%', padding: '10px', borderRadius: '12px', border: 'none',
               background: timeLeft ? 'rgba(255,255,255,0.2)' : '#fff', 
               color: timeLeft ? 'rgba(255,255,255,0.7)' : 'var(--brand-1)',
-              fontSize: '15px', fontWeight: '700', cursor: timeLeft ? 'not-allowed' : 'pointer', marginTop: '20px',
+              fontSize: '14px', fontWeight: '700', cursor: timeLeft ? 'not-allowed' : 'pointer', marginTop: '14px',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               transition: 'all 0.2s',
-              boxShadow: timeLeft ? 'none' : '0 8px 16px rgba(0,0,0,0.1)'
+              boxShadow: timeLeft ? 'none' : '0 4px 10px rgba(0,0,0,0.1)'
             }}>
             {timeLeft ? (
-              <>Come back in <span style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 'bold' }}>{timeLeft}</span></>
+              <>Come back in <span style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold' }}>{timeLeft}</span></>
             ) : (
               'Claim Reward'
             )}
