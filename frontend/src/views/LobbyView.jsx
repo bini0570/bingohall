@@ -139,11 +139,11 @@ export default function LobbyView({
           display: 'grid',
           gridTemplateColumns: '1fr 1fr 1fr 1fr',
           gap: '8px',
-          background: '#ffffff',
-          border: '1px solid #eceef4',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-subtle)',
           borderRadius: '16px',
           padding: '8px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.05)',
+          boxShadow: 'var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
           flexShrink: 0,
           marginBottom: '16px'
         }}
