@@ -6,9 +6,6 @@ import { resolve } from 'path';
 export default defineConfig(({ mode, command }) => {
   const backendUrl = process.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
-  // When building the admin SPA specifically (BUILD_TARGET=admin)
-  const isAdminBuild = process.env.BUILD_TARGET === 'admin';
-
   return {
     plugins: [
       react(),
@@ -22,11 +19,18 @@ export default defineConfig(({ mode, command }) => {
           theme_color: '#0B1120',
           background_color: '#0B1120',
           display: 'standalone',
+          start_url: '/',
           icons: [
             {
-              src: '/icon.jpg',
-              sizes: '192x192 512x512',
-              type: 'image/jpeg',
+              src: '/icon-192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable'
+            },
+            {
+              src: '/icon-512.png',
+              sizes: '512x512',
+              type: 'image/png',
               purpose: 'any maskable'
             }
           ]
@@ -34,20 +38,15 @@ export default defineConfig(({ mode, command }) => {
       })
     ],
 
-    // Root changes per build target:
-    //   player: frontend/  (default)
-    //   admin:  frontend/admin/
-    root: isAdminBuild ? resolve(__dirname, 'admin') : __dirname,
+    root: __dirname,
 
     build: {
-      outDir: isAdminBuild
-        ? resolve(__dirname, '../backend/admin-dist')
-        : resolve(__dirname, 'dist'),
+      outDir: resolve(__dirname, 'dist'),
       emptyOutDir: true,
     },
 
     server: {
-      port: isAdminBuild ? 3001 : 3000,
+      port: 3000,
       host: '0.0.0.0',
       proxy: {
         '/api':      { target: 'http://localhost:4000', changeOrigin: true },

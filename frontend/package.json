@@ -7,10 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "start": "vite build",
-    "preview": "vite preview",
-    "dev:admin": "cross-env BUILD_TARGET=admin vite",
-    "build:admin": "cross-env BUILD_TARGET=admin vite build",
-    "build:all": "vite build && cross-env BUILD_TARGET=admin vite build"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.3.0",

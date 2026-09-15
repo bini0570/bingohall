@@ -2,188 +2,160 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
   LayoutDashboard, CreditCard, Users, Gift, Tag, Radio, 
   Settings, AlertOctagon, Menu, X, ArrowUpRight, ArrowDownLeft, 
-  Activity, RefreshCw, LogOut, CheckCircle2, XCircle, Search, Eye
+  Activity, RefreshCw, LogOut, CheckCircle2, XCircle, Search, Eye,
+  Home, Zap, Send
 } from 'lucide-react';
 import { io } from 'socket.io-client';
+import './WalletView.css';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'https://bingohall-production.up.railway.app').replace(/\/$/, '');
 const apiFetch = async (path, options = {}) => fetch(`${API_BASE}${path}`, options);
+let adminSocket = null;
 
-// ─── Theme & Shared Styles ──────────────────────────────────────────────
+// Reusable UI
 const S = {
-  shell: { display: 'flex', minHeight: '100dvh', background: '#0B1120', color: '#F3F4F6', fontFamily: 'system-ui, sans-serif' },
-  sidebar: (open, isMobile) => ({
-    width: '260px',
-    background: '#111827',
-    borderRight: '1px solid rgba(255,255,255,0.05)',
-    display: 'flex', flexDirection: 'column',
-    position: isMobile ? 'fixed' : 'relative',
-    top: 0, bottom: 0, left: open ? 0 : '-260px',
-    transition: 'left 0.3s ease',
-    zIndex: 9999,
-  }),
-  main: { flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, height: '100dvh', overflow: 'hidden' },
-  topbar: { height: '64px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', padding: '0 20px', background: 'rgba(11,17,32,0.9)', backdropFilter: 'blur(10px)', zIndex: 10 },
-  content: { flex: 1, overflowY: 'auto', padding: '24px' },
-  
-  card: { background: '#111827', borderRadius: '16px', padding: '20px', border: '1px solid rgba(255,255,255,0.05)' },
-  btn: (v = 'primary') => ({
-    background: v === 'primary' ? '#06b6d4' : v === 'success' ? '#10b981' : v === 'danger' ? '#ef4444' : 'rgba(255,255,255,0.05)',
-    color: v === 'ghost' ? '#9CA3AF' : '#fff',
-    border: v === 'ghost' ? '1px solid rgba(255,255,255,0.1)' : 'none',
-    padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '14px',
-    display: 'inline-flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s'
-  }),
   pill: (status) => {
     const map = {
-      pending: { bg: 'rgba(245,158,11,0.1)', color: '#f59e0b' },
-      processing: { bg: 'rgba(59,130,246,0.1)', color: '#3b82f6' },
-      approved: { bg: 'rgba(16,185,129,0.1)', color: '#10b981' },
-      rejected: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444' },
-      cancelled: { bg: 'rgba(156,163,175,0.1)', color: '#9ca3af' },
+      pending: { bg: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: 'rgba(245,158,11,0.2)' },
+      approved: { bg: 'rgba(16,185,129,0.1)', color: '#10b981', border: 'rgba(16,185,129,0.2)' },
+      rejected: { bg: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'rgba(239,68,68,0.2)' },
+      DRAWING: { bg: 'rgba(16,185,129,0.15)', color: '#34d399', border: 'rgba(16,185,129,0.25)' },
+      COUNTDOWN: { bg: 'rgba(59,130,246,0.15)', color: '#60a5fa', border: 'rgba(59,130,246,0.25)' },
+      WAITING: { bg: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: 'rgba(245,158,11,0.25)' },
     };
-    const s = map[status?.toLowerCase()] || map.pending;
-    return { padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', background: s.bg, color: s.color };
+    const s = map[status] || map.pending;
+    return { padding: '4px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', background: s.bg, color: s.color, border: `1px solid ${s.border}` };
   },
-  input: { width: '100%', background: '#1F2937', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', padding: '10px 14px', borderRadius: '8px', boxSizing: 'border-box' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '14px' },
-  th: { textAlign: 'left', padding: '12px 16px', color: '#6B7280', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', borderBottom: '1px solid rgba(255,255,255,0.05)' },
-  td: { padding: '16px', borderBottom: '1px solid rgba(255,255,255,0.02)', color: '#E5E7EB' }
+  btn: (v = 'primary') => {
+    const bg = v === 'primary' ? 'var(--brand-1)' : v === 'success' ? '#10b981' : v === 'danger' ? '#ef4444' : 'rgba(255,255,255,0.05)';
+    return {
+      background: bg, color: v === 'ghost' ? '#9CA3AF' : '#fff', border: v === 'ghost' ? '1px solid rgba(255,255,255,0.1)' : 'none',
+      padding: '10px 14px', borderRadius: '12px', cursor: 'pointer', fontWeight: '700', fontSize: '13px',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s', width: '100%'
+    };
+  }
 };
 
 export default function AdminView({ token, onLogout, onBack }) {
   const [tab, setTab] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  const [metrics, setMetrics] = useState({});
+  
+  // Data State
+  const [metrics, setMetrics] = useState(null);
+  const [gameState, setGameState] = useState(null);
   const [deposits, setDeposits] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
   const [users, setUsers] = useState([]);
-  const [gameState, setGameState] = useState(null);
+  const [settings, setSettings] = useState({ ticket_price: '10', commission_pct: '20', countdown_sec: '40', draw_speed_sec: '3' });
 
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      if (!mobile) setSidebarOpen(true);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  // UI State
+  const [msg, setMsg] = useState({ error: '', success: '' });
+  const [refreshing, setRefreshing] = useState(false);
+
+  const flash = (key, text) => {
+    setMsg({ error: '', success: '', [key]: text });
+    setTimeout(() => setMsg({ error: '', success: '' }), 4000);
+  };
 
   const fetchData = useCallback(async () => {
     if (!token) return;
     const h = { Authorization: `Bearer ${token}` };
     try {
-      const [mR, dR, wR, uR, gR] = await Promise.all([
+      const [mR, dR, wR, uR, sR, gR] = await Promise.all([
         apiFetch('/api/admin/metrics', { headers: h }),
         apiFetch('/api/admin/deposits', { headers: h }),
         apiFetch('/api/admin/withdrawals', { headers: h }),
         apiFetch('/api/admin/users', { headers: h }),
+        apiFetch('/api/admin/settings', { headers: h }),
         apiFetch('/api/game/state'),
       ]);
       if (mR.ok) setMetrics(await mR.json());
       if (dR.ok) setDeposits(await dR.json());
       if (wR.ok) setWithdrawals(await wR.json());
       if (uR.ok) setUsers(await uR.json());
+      if (sR.ok) setSettings(await sR.json());
       if (gR.ok) setGameState(await gR.json());
     } catch (e) { console.error(e); }
   }, [token]);
 
   useEffect(() => {
     fetchData();
-    const intv = setInterval(fetchData, 15000);
-    return () => clearInterval(intv);
+    const interval = setInterval(fetchData, 15000);
+    adminSocket = io(API_BASE || window.location.origin, { transports: ['websocket', 'polling'] });
+    adminSocket.on('admin_data_changed', fetchData);
+    adminSocket.on('balance_updated', fetchData);
+    adminSocket.on('round_state', (state) => setGameState(state));
+    adminSocket.on('countdown_tick', (d) => setGameState(prev => prev ? { ...prev, secondsLeft: d.secondsLeft } : prev));
+    adminSocket.on('round_ended', fetchData);
+    return () => {
+      clearInterval(interval);
+      if (adminSocket) { adminSocket.disconnect(); adminSocket = null; }
+    };
   }, [fetchData]);
 
-  const NAV = [
-    { section: 'Overview' },
-    { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={18} /> },
-    { section: 'Payments' },
-    { key: 'deposits', label: 'Deposits', icon: <ArrowDownLeft size={18} />, badge: deposits.filter(d=>d.status==='pending').length },
-    { key: 'withdrawals', label: 'Withdrawals', icon: <ArrowUpRight size={18} />, badge: withdrawals.filter(w=>w.status==='pending').length },
-    { key: 'transactions', label: 'Transactions', icon: <Activity size={18} /> },
-    { section: 'Community' },
-    { key: 'players', label: 'Players', icon: <Users size={18} /> },
-    { section: 'Engagement' },
-    { key: 'tasks', label: 'Tasks', icon: <Gift size={18} /> },
-    { key: 'promos', label: 'Promo Codes', icon: <Tag size={18} /> },
-    { key: 'broadcast', label: 'Broadcast', icon: <Radio size={18} /> },
-    { section: 'System' },
-    { key: 'settings', label: 'Settings', icon: <Settings size={18} /> },
-    { key: 'maintenance', label: 'Maintenance', icon: <AlertOctagon size={18} /> },
-  ];
+  const manualRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setTimeout(() => setRefreshing(false), 600);
+  };
 
   const renderTab = () => {
     switch (tab) {
-      case 'dashboard': return <DashboardTab metrics={metrics} deposits={deposits} withdrawals={withdrawals} users={users} gameState={gameState} />;
-      case 'deposits': return <PaymentsTab type="deposits" data={deposits} token={token} onRefresh={fetchData} />;
-      case 'withdrawals': return <PaymentsTab type="withdrawals" data={withdrawals} token={token} onRefresh={fetchData} />;
-      case 'transactions': return <TransactionsTab token={token} />;
-      case 'players': return <PlayersTab users={users} token={token} />;
-      case 'tasks': return <TasksTab token={token} />;
-      case 'promos': return <PromosTab token={token} />;
-      case 'maintenance': return <MaintenanceTab />;
-      default: return <div style={{ color: '#9CA3AF' }}>Section under construction.</div>;
+      case 'dashboard': return <DashboardTab metrics={metrics} deposits={deposits} withdrawals={withdrawals} users={users} />;
+      case 'game': return <LiveGameTab gameState={gameState} token={token} flash={flash} refresh={manualRefresh} settings={settings} />;
+      case 'payments': return <PaymentsTab deposits={deposits} withdrawals={withdrawals} token={token} onRefresh={fetchData} flash={flash} />;
+      case 'users': return <UsersTab users={users} token={token} flash={flash} onRefresh={fetchData} />;
+      case 'settings': return <SettingsTab settings={settings} setSettings={setSettings} token={token} flash={flash} />;
+      default: return null;
     }
   };
 
   return (
-    <div style={S.shell}>
-      {isMobile && sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9998 }} />}
-      
-      <aside style={S.sidebar(sidebarOpen, isMobile)}>
-        <div style={{ padding: '24px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '32px', height: '32px', background: '#06b6d4', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '900' }}>B</div>
+    <div className="wallet-wrapper" style={{ paddingBottom: '70px', background: 'var(--bg-main)' }}>
+      <main className="wallet-card">
+        
+        <header className="wallet__header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontWeight: '800', fontSize: '16px', letterSpacing: '1px' }}>BINGO X</div>
-            <div style={{ fontSize: '10px', color: '#6B7280', textTransform: 'uppercase', letterSpacing: '2px' }}>Admin Panel</div>
+            <p className="greeting__label">Admin Portal</p>
+            <p className="greeting__name">Bingo Hall</p>
           </div>
-        </div>
-        
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 12px' }}>
-          {NAV.map((n, i) => {
-            if (n.section) return <div key={i} style={{ fontSize: '11px', fontWeight: '700', color: '#4B5563', textTransform: 'uppercase', letterSpacing: '1px', padding: '16px 8px 8px' }}>{n.section}</div>;
-            const active = tab === n.key;
-            return (
-              <button key={n.key} onClick={() => { setTab(n.key); if (isMobile) setSidebarOpen(false); }}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '10px 12px', background: active ? 'rgba(6,182,212,0.1)' : 'transparent',
-                  color: active ? '#06b6d4' : '#9CA3AF', border: 'none', borderRadius: '8px',
-                  cursor: 'pointer', transition: 'all 0.2s', marginBottom: '2px', fontWeight: active ? '700' : '500', fontSize: '13px'
-                }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  {n.icon} {n.label}
-                </div>
-                {n.badge > 0 && <span style={{ background: '#ef4444', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '2px 6px', borderRadius: '10px' }}>{n.badge}</span>}
-              </button>
-            );
-          })}
-        </div>
-        
-        <div style={{ padding: '20px' }}>
-          <div style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', padding: '12px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-            <span style={{ fontSize: '12px', color: '#10b981', fontWeight: '700' }}>System Online</span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={manualRefresh} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '8px', borderRadius: '10px', cursor: 'pointer' }}>
+              <RefreshCw size={18} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+            </button>
+            <button onClick={onLogout} style={{ background: 'rgba(239,68,68,0.2)', border: 'none', color: '#ef4444', padding: '8px', borderRadius: '10px', cursor: 'pointer' }}>
+              <LogOut size={18} />
+            </button>
           </div>
-          <button onClick={onLogout} style={{ ...S.btn('ghost'), width: '100%', justifyContent: 'center' }}><LogOut size={16} /> Sign Out</button>
-        </div>
-      </aside>
-
-      <main style={S.main}>
-        <header style={S.topbar}>
-          <button onClick={() => setSidebarOpen(o=>!o)} style={{ background: 'transparent', border: 'none', color: '#fff', padding: '8px', cursor: 'pointer', marginRight: '16px', display: isMobile ? 'block' : 'none' }}>
-            <Menu size={20} />
-          </button>
-          <div style={{ flex: 1, fontSize: '16px', fontWeight: '700' }}>{NAV.find(n=>n.key===tab)?.label}</div>
-          <button onClick={fetchData} style={{ background: 'transparent', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}><RefreshCw size={18} /></button>
         </header>
-        <div style={S.content}>
-          {renderTab()}
-        </div>
+
+        {msg.error && <div style={{ background: 'rgba(239,68,68,0.1)', color: '#fca5a5', padding: '12px', borderRadius: '12px', border: '1px solid rgba(239,68,68,0.2)', marginBottom: '16px', fontSize: '13px', fontWeight: '600' }}>{msg.error}</div>}
+        {msg.success && <div style={{ background: 'rgba(16,185,129,0.1)', color: '#6ee7b7', padding: '12px', borderRadius: '12px', border: '1px solid rgba(16,185,129,0.2)', marginBottom: '16px', fontSize: '13px', fontWeight: '600' }}>{msg.success}</div>}
+
+        {renderTab()}
+
       </main>
+
+      <nav className="mobile-bottom-nav" style={{ display: 'flex' }}>
+        {[
+          { key: 'dashboard', icon: LayoutDashboard, label: 'Overview' },
+          { key: 'game', icon: Zap, label: 'Game' },
+          { key: 'payments', icon: CreditCard, label: 'Payments', badge: deposits.filter(d=>d.status==='pending').length + withdrawals.filter(w=>w.status==='pending').length },
+          { key: 'users', icon: Users, label: 'Users' },
+          { key: 'settings', icon: Settings, label: 'Settings' }
+        ].map(t => {
+          const Icon = t.icon;
+          const active = tab === t.key;
+          return (
+            <button key={t.key} className={`mobile-nav-item ${active ? 'active' : ''}`} onClick={() => setTab(t.key)}>
+              <div style={{ position: 'relative' }}>
+                <Icon size={20} />
+                {t.badge > 0 && <span style={{ position: 'absolute', top: -5, right: -10, background: '#ef4444', color: '#fff', fontSize: '9px', fontWeight: '800', padding: '2px 5px', borderRadius: '10px' }}>{t.badge}</span>}
+              </div>
+              <span style={{ marginTop: '4px' }}>{t.label}</span>
+            </button>
+          )
+        })}
+      </nav>
     </div>
   );
 }
@@ -191,148 +163,295 @@ export default function AdminView({ token, onLogout, onBack }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // DASHBOARD
 // ─────────────────────────────────────────────────────────────────────────────
-function DashboardTab({ metrics, deposits, withdrawals, users, gameState }) {
+function DashboardTab({ metrics, deposits, withdrawals, users }) {
   const totDep = deposits.filter(d=>d.status==='approved').reduce((a,b)=>a+(parseFloat(b.amount)||0),0);
   const totWit = withdrawals.filter(w=>w.status==='approved').reduce((a,b)=>a+(parseFloat(b.amount)||0),0);
   const net = totDep - totWit;
-  const pDep = deposits.filter(d=>d.status==='pending').length;
-  const pWit = withdrawals.filter(w=>w.status==='pending').length;
-  
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-        <Kpi title="Total Deposits" value={totDep} color="#10b981" />
-        <Kpi title="Total Withdrawals" value={totWit} color="#ef4444" />
-        <Kpi title="Net Revenue" value={net} color="#06b6d4" />
-        <Kpi title="Pending Deposits" value={pDep} color="#f59e0b" suffix="" />
-        <Kpi title="Pending Withdrawals" value={pWit} color="#f59e0b" suffix="" />
-        <Kpi title="Active Players" value={users.length} color="#8b5cf6" suffix="" />
-      </div>
 
-      <div style={S.card}>
-        <div style={{ fontWeight: '700', marginBottom: '16px' }}>Recent Activity</div>
-        <div style={{ fontSize: '14px', color: '#9CA3AF' }}>Analytics charts will go here...</div>
-      </div>
-    </div>
-  );
-}
-
-function Kpi({ title, value, color, suffix = ' ETB' }) {
   return (
-    <div style={S.card}>
-      <div style={{ fontSize: '12px', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>{title}</div>
-      <div style={{ fontSize: '28px', fontWeight: '800', color }}>{typeof value === 'number' ? value.toLocaleString(undefined, {minimumFractionDigits:suffix===''?0:2, maximumFractionDigits:2}) : value}<span style={{ fontSize: '14px', opacity: 0.7 }}>{suffix}</span></div>
-    </div>
+    <>
+      <section className="total-card" aria-label="Total Revenue">
+        <div className="total-card__top">
+          <div>
+            <p className="total-card__label" style={{ color: 'rgba(255,255,255,0.7)' }}>Net Revenue</p>
+            <p className="total-card__amount" style={{ color: '#fff' }}>
+              <span>Br</span><span style={{ color: '#fff' }}>{net.toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+            </p>
+          </div>
+        </div>
+        <div className="total-card__meta">
+          <div className="total-card__chip" />
+          <span className="total-card__number">System Income</span>
+        </div>
+      </section>
+
+      <section className="split" aria-label="Deposit/Withdrawal Stats" style={{ marginTop: '16px' }}>
+        <article className="bal bal--withdraw">
+          <div className="bal__head">
+            <span className="bal__icon"><ArrowDownLeft size={13} /></span>
+            <p className="bal__label">Total Deposited</p>
+          </div>
+          <p className="bal__amount">Br {totDep.toLocaleString(undefined, {minimumFractionDigits:2})}</p>
+        </article>
+        <article className="bal bal--locked">
+          <div className="bal__head">
+            <span className="bal__icon"><ArrowUpRight size={13} /></span>
+            <p className="bal__label">Total Withdrawn</p>
+          </div>
+          <p className="bal__amount">Br {totWit.toLocaleString(undefined, {minimumFractionDigits:2})}</p>
+        </article>
+      </section>
+
+      <div className="section-head" style={{ marginTop: '24px' }}>
+        <h2>Platform Metrics</h2>
+      </div>
+      <div className="transactions-wrap" style={{ height: 'auto', paddingBottom: '20px' }}>
+        <ul className="transactions">
+          <li className="tx">
+            <span className="tx__avatar" style={{ background: 'var(--brand-1)' }}><Users size={16} /></span>
+            <div className="tx__body">
+              <p className="tx__name">Active Players</p>
+              <p className="tx__meta">Registered users</p>
+            </div>
+            <span className="tx__amount" style={{ color: '#fff' }}>{users.length}</span>
+          </li>
+          <li className="tx">
+            <span className="tx__avatar" style={{ background: '#10b981' }}><Activity size={16} /></span>
+            <div className="tx__body">
+              <p className="tx__name">System Balance</p>
+              <p className="tx__meta">Total user balances</p>
+            </div>
+            <span className="tx__amount" style={{ color: '#10b981' }}>{parseFloat(metrics?.totalSystemBalance||0).toFixed(2)}</span>
+          </li>
+        </ul>
+      </div>
+    </>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// PAYMENTS (Deposits & Withdrawals)
+// LIVE GAME
 // ─────────────────────────────────────────────────────────────────────────────
-function PaymentsTab({ type, data, token, onRefresh }) {
-  const [filter, setFilter] = useState('pending');
-  const [reviewItem, setReviewItem] = useState(null);
-
-  const filtered = data.filter(d => filter === 'all' || d.status === filter);
-
-  const handleAction = async (id, action) => {
+function LiveGameTab({ gameState, token, flash, refresh, settings }) {
+  const gameAction = async (endpoint, successMsg) => {
     try {
-      const res = await apiFetch(`/api/admin/${type}/${id}/${action}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      if (res.ok) { onRefresh(); setReviewItem(null); }
-      else alert((await res.json()).error);
-    } catch(e) { alert(e.message); }
+      const r = await apiFetch(endpoint, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      const d = await r.json();
+      r.ok ? flash('success', successMsg) : flash('error', d.error || d.message);
+      refresh();
+    } catch (e) { flash('error', e.message); }
   };
 
+  if (!gameState) return <div style={{ color: '#9CA3AF', textAlign: 'center', padding: '40px' }}>Loading game state...</div>;
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.02)', padding: '6px', borderRadius: '12px', width: 'fit-content' }}>
-        {['pending', 'approved', 'rejected', 'all'].map(f => (
-          <button key={f} onClick={() => setFilter(f)} style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: filter === f ? '#1F2937' : 'transparent', color: filter === f ? '#fff' : '#6B7280', fontWeight: filter === f ? '700' : '600', cursor: 'pointer', textTransform: 'capitalize' }}>
-            {f}
-          </button>
-        ))}
+    <>
+      <section className="total-card" aria-label="Game Status" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', border: '1px solid rgba(59,130,246,0.3)' }}>
+        <div className="total-card__top">
+          <div>
+            <p className="total-card__label" style={{ color: 'rgba(255,255,255,0.7)' }}>Live Game · Round #{gameState.roundId || '-'}</p>
+            <p className="total-card__amount" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={S.pill(gameState.status)}>{gameState.status}</span>
+              <span style={{ fontSize: '24px', color: '#fff' }}>
+                {gameState.status === 'DRAWING' ? `${gameState.calledNumbers?.length||0}/75 Balls` : `${gameState.secondsLeft??'-'}s`}
+              </span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="split" aria-label="Game Stats" style={{ marginTop: '16px' }}>
+        <article className="bal bal--withdraw" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+          <div className="bal__head"><p className="bal__label" style={{ color: '#10b981' }}>Prize Pool</p></div>
+          <p className="bal__amount" style={{ color: '#10b981' }}>Br {(gameState.prizePool||0).toFixed(2)}</p>
+        </article>
+        <article className="bal bal--locked" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
+          <div className="bal__head"><p className="bal__label" style={{ color: '#60a5fa' }}>Tickets Sold</p></div>
+          <p className="bal__amount" style={{ color: '#60a5fa' }}>{gameState.totalTickets||0}</p>
+        </article>
+      </section>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '24px' }}>
+        <button style={S.btn('primary')} onClick={() => gameAction('/api/admin/game/force-start', 'Draw started!')}><Zap size={16}/> Force Start</button>
+        <button style={S.btn('success')} onClick={() => gameAction('/api/admin/game/restart-countdown', 'Timer reset!')}><RefreshCw size={16}/> Reset Timer</button>
       </div>
 
-      <div style={{ ...S.card, padding: 0, overflowX: 'auto' }}>
-        <table style={S.table}>
-          <thead>
-            <tr>
-              <th style={S.th}>User</th>
-              <th style={S.th}>Amount</th>
-              <th style={S.th}>Method</th>
-              <th style={S.th}>Date</th>
-              <th style={S.th}>Status</th>
-              <th style={S.th}>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map(d => (
-              <tr key={d.id}>
-                <td style={S.td}><div style={{ fontWeight: '700' }}>{d.username}</div></td>
-                <td style={S.td}><div style={{ fontWeight: '800', color: type==='deposits'?'#10b981':'#ef4444' }}>{parseFloat(d.amount).toFixed(2)} ETB</div></td>
-                <td style={S.td}>{d.method}</td>
-                <td style={S.td}><div style={{ fontSize: '12px', color: '#9CA3AF' }}>{new Date(d.created_at).toLocaleString()}</div></td>
-                <td style={S.td}><span style={S.pill(d.status)}>{d.status}</span></td>
-                <td style={S.td}>
-                  <button onClick={() => setReviewItem(d)} style={S.btn('ghost')}>Review</button>
-                </td>
-              </tr>
-            ))}
-            {filtered.length === 0 && <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#6B7280' }}>No {filter} {type}.</td></tr>}
-          </tbody>
-        </table>
-      </div>
-
-      {reviewItem && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div style={{ background: '#111827', width: '100%', maxWidth: '400px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ fontSize: '16px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '1px' }}>{type.slice(0,-1)} #{reviewItem.id}</div>
-              <button onClick={() => setReviewItem(null)} style={{ background: 'transparent', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}><X size={20}/></button>
-            </div>
-            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <Row label="User" value={reviewItem.username} />
-              <Row label="Amount" value={`${parseFloat(reviewItem.amount).toFixed(2)} ETB`} valueColor={type==='deposits'?'#10b981':'#ef4444'} />
-              <Row label="Method" value={reviewItem.method} />
-              {type === 'withdrawals' && <Row label="Account" value={reviewItem.account_number} />}
-              <Row label="Submitted" value={new Date(reviewItem.created_at).toLocaleString()} />
-              <Row label="Status" value={<span style={S.pill(reviewItem.status)}>{reviewItem.status}</span>} />
-              
-              {type === 'deposits' && reviewItem.receipt_sms && (
-                <div style={{ marginTop: '8px' }}>
-                  <div style={{ fontSize: '12px', color: '#6B7280', marginBottom: '4px' }}>Receipt / SMS</div>
-                  <div style={{ background: '#1F2937', padding: '12px', borderRadius: '8px', fontSize: '13px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{reviewItem.receipt_sms}</div>
+      {gameState.calledNumbers?.length > 0 && (
+        <div style={{ marginTop: '24px' }}>
+          <div className="section-head"><h2>Called Numbers</h2></div>
+          <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {gameState.calledNumbers.map(n => {
+              const letter = n <= 15 ? 'B' : n <= 30 ? 'I' : n <= 45 ? 'N' : n <= 60 ? 'G' : 'O';
+              return (
+                <div key={n} style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '800' }}>
+                  <span style={{ fontSize: '8px', color: '#9CA3AF' }}>{letter}</span><span style={{ color: '#fff' }}>{n}</span>
                 </div>
-              )}
-
-              {reviewItem.status === 'pending' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
-                  <button onClick={() => handleAction(reviewItem.id, 'reject')} style={{ ...S.btn('danger'), justifyContent: 'center' }}>Reject</button>
-                  <button onClick={() => handleAction(reviewItem.id, 'approve')} style={{ ...S.btn('success'), justifyContent: 'center' }}>Approve</button>
-                </div>
-              )}
-            </div>
+              );
+            })}
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
 
-function Row({ label, value, valueColor = '#fff' }) {
+// ─────────────────────────────────────────────────────────────────────────────
+// PAYMENTS
+// ─────────────────────────────────────────────────────────────────────────────
+function PaymentsTab({ deposits, withdrawals, token, onRefresh, flash }) {
+  const [subTab, setSubTab] = useState('deposits');
+  const [filter, setFilter] = useState('pending');
+  
+  const activeData = subTab === 'deposits' ? deposits : withdrawals;
+  const filtered = activeData.filter(d => filter === 'all' || d.status === filter).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+
+  const handleAction = async (id, action) => {
+    try {
+      const res = await apiFetch(`/api/admin/${subTab}/${id}/${action}`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+      if (res.ok) { onRefresh(); flash('success', 'Action completed successfully.'); }
+      else flash('error', (await res.json()).error);
+    } catch(e) { flash('error', e.message); }
+  };
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-      <div style={{ fontSize: '14px', color: '#6B7280' }}>{label}</div>
-      <div style={{ fontSize: '14px', fontWeight: '600', color: valueColor, textAlign: 'right' }}>{value}</div>
-    </div>
+    <>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+        <button style={{ ...S.btn(subTab === 'deposits' ? 'primary' : 'ghost'), flex: 1 }} onClick={() => setSubTab('deposits')}>Deposits</button>
+        <button style={{ ...S.btn(subTab === 'withdrawals' ? 'primary' : 'ghost'), flex: 1 }} onClick={() => setSubTab('withdrawals')}>Withdrawals</button>
+      </div>
+
+      <div style={{ display: 'flex', gap: '8px', background: 'rgba(255,255,255,0.05)', padding: '6px', borderRadius: '12px', overflowX: 'auto', marginBottom: '16px' }}>
+        {['pending', 'approved', 'rejected', 'all'].map(f => (
+          <button key={f} onClick={() => setFilter(f)} style={{ padding: '8px 12px', borderRadius: '8px', border: 'none', background: filter === f ? '#fff' : 'transparent', color: filter === f ? '#000' : '#9CA3AF', fontWeight: '700', fontSize: '12px', cursor: 'pointer', textTransform: 'capitalize', flexShrink: 0 }}>{f}</button>
+        ))}
+      </div>
+
+      <div className="transactions-wrap" style={{ height: 'auto', paddingBottom: '20px' }}>
+        <ul className="transactions">
+          {filtered.length === 0 ? <li className="tx-empty" style={{ border: 'none' }}>No {filter} {subTab}.</li> : filtered.map(item => (
+            <li className="tx" key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span className="tx__avatar" style={{ background: subTab === 'deposits' ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)', color: subTab === 'deposits' ? '#10b981' : '#ef4444' }}>
+                    {subTab === 'deposits' ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
+                  </span>
+                  <div>
+                    <p className="tx__name" style={{ fontSize: '15px' }}>{item.username}</p>
+                    <p className="tx__meta" style={{ marginTop: '2px' }}>{item.method} {item.account_number ? `· ${item.account_number}` : ''}</p>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p className={`tx__amount tx__amount--${subTab === 'deposits' ? 'up' : 'down'}`} style={{ fontSize: '16px' }}>{parseFloat(item.amount).toFixed(2)}</p>
+                  <span style={{ ...S.pill(item.status), marginTop: '4px', display: 'inline-block' }}>{item.status}</span>
+                </div>
+              </div>
+              
+              {item.receipt_sms && (
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '10px', borderRadius: '8px', fontSize: '11px', color: '#9CA3AF', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                  {item.receipt_sms}
+                </div>
+              )}
+
+              {item.status === 'pending' && (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <button style={S.btn('danger')} onClick={() => handleAction(item.id, 'reject')}><XCircle size={16}/> Reject</button>
+                  <button style={S.btn('success')} onClick={() => handleAction(item.id, 'approve')}><CheckCircle2 size={16}/> Approve</button>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// STUBS FOR OTHER TABS (Players, Tasks, Promos, Transactions, Maintenance)
+// USERS
 // ─────────────────────────────────────────────────────────────────────────────
-function PlayersTab() { return <div style={S.card}>Players implementation coming next.</div>; }
-function TasksTab() { return <div style={S.card}>Tasks implementation coming next.</div>; }
-function PromosTab() { return <div style={S.card}>Promos implementation coming next.</div>; }
-function TransactionsTab() { return <div style={S.card}>Transactions Ledger implementation coming next.</div>; }
-function MaintenanceTab() { return <div style={S.card}>Emergency Controls coming next.</div>; }
+function UsersTab({ users, token, flash, onRefresh }) {
+  const [search, setSearch] = useState('');
+  
+  const filtered = users.filter(u => (u.username||'').toLowerCase().includes(search.toLowerCase()) || (u.phone||'').includes(search));
+
+  const adjustBal = async (uid, action) => {
+    const amt = prompt(`Enter amount to ${action}:`);
+    if (!amt || isNaN(amt) || amt <= 0) return;
+    try {
+      const res = await apiFetch(`/api/admin/users/${uid}/balance`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ action, amount: parseFloat(amt) }) });
+      if (res.ok) { onRefresh(); flash('success', 'Balance updated'); }
+      else flash('error', (await res.json()).error);
+    } catch(e) { flash('error', e.message); }
+  };
+
+  return (
+    <>
+      <div className="field">
+        <input className="input-field" type="text" placeholder="Search username or phone..." value={search} onChange={e=>setSearch(e.target.value)} />
+      </div>
+
+      <div className="transactions-wrap" style={{ height: 'auto', paddingBottom: '20px', marginTop: '16px' }}>
+        <ul className="transactions">
+          {filtered.map(u => (
+            <li className="tx" key={u.id} style={{ display: 'flex', flexDirection: 'column', padding: '16px', background: 'rgba(255,255,255,0.03)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '8px', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span className="tx__avatar" style={{ background: 'var(--brand-1)', color: '#fff' }}>{u.username?u.username[0].toUpperCase():'?'}</span>
+                  <div>
+                    <p className="tx__name" style={{ fontSize: '15px' }}>{u.username}</p>
+                    <p className="tx__meta" style={{ marginTop: '2px' }}>{u.phone}</p>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <p className="tx__amount" style={{ color: '#10b981' }}>{parseFloat(u.balance||0).toFixed(2)}</p>
+                  <p className="tx__meta">ETB</p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button style={S.btn('ghost')} onClick={() => adjustBal(u.id, 'add')}>+ Add</button>
+                <button style={S.btn('ghost')} onClick={() => adjustBal(u.id, 'deduct')}>- Deduct</button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+function SettingsTab({ settings, setSettings, token, flash }) {
+  const handleChange = (k, v) => setSettings(p => ({ ...p, [k]: v }));
+  
+  const save = async () => {
+    try {
+      const r = await apiFetch('/api/admin/settings', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(settings) });
+      if (r.ok) flash('success', 'Settings saved!');
+      else flash('error', (await r.json()).error);
+    } catch(e) { flash('error', e.message); }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="field">
+        <label className="field__label">Ticket Price (ETB)</label>
+        <input className="input-field" type="number" value={settings.ticket_price||''} onChange={e=>handleChange('ticket_price', e.target.value)} />
+      </div>
+      <div className="field">
+        <label className="field__label">House Commission (%)</label>
+        <input className="input-field" type="number" value={settings.commission_pct||''} onChange={e=>handleChange('commission_pct', e.target.value)} />
+      </div>
+      <div className="field">
+        <label className="field__label">Countdown Duration (sec)</label>
+        <input className="input-field" type="number" value={settings.countdown_sec||''} onChange={e=>handleChange('countdown_sec', e.target.value)} />
+      </div>
+      <div className="field">
+        <label className="field__label">Draw Speed (sec per ball)</label>
+        <input className="input-field" type="number" value={settings.draw_speed_sec||''} onChange={e=>handleChange('draw_speed_sec', e.target.value)} />
+      </div>
+      <button style={{ ...S.btn('primary'), marginTop: '8px' }} onClick={save}>Save Settings</button>
+    </div>
+  );
+}
