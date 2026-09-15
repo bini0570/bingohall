@@ -22,7 +22,7 @@ const PAYMENT_ACCOUNTS = {
 
 export default function WalletView({ lang, user, token, socket, onBalanceUpdated }) {
   const t = translations[lang];
-  const [activeTab, setActiveTab] = useState('deposit');
+  const [activeTab, setActiveTab] = useState(null);
 
   const [depStep, setDepStep] = useState(1);
   const [depMethod, setDepMethod] = useState('');
@@ -188,7 +188,7 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   };
 
   return (
-    <div style={{ maxWidth: '640px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ maxWidth: '480px', width: '100%', boxSizing: 'border-box', margin: '0 auto', padding: '60px 12px 10px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {!token && (
         <div className="glass-panel" style={{ background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.3)', padding: '20px', textAlign: 'center' }}>
           <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔒</div>
@@ -198,25 +198,23 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
       )}
 
       {/* BALANCE BREAKDOWN */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        <div className="glass-panel" style={{ padding: '24px 16px', textAlign: 'center', borderColor: 'var(--border-cyan)', boxShadow: 'var(--shadow-cyan)' }}>
-          <div style={{ fontSize: '12px', color: 'var(--cyan)', marginBottom: '8px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+      <div className="glass-panel" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', borderColor: 'var(--border-cyan)' }}>
+        <div style={{ textAlign: 'center', flex: 1, borderRight: '1px solid rgba(255,255,255,0.1)' }}>
+          <div style={{ fontSize: '11px', color: 'var(--cyan)', marginBottom: '4px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             💰 Total Balance
           </div>
-          <div style={{ fontSize: '32px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
-            {(user?.balance || 0).toFixed(2)}
+          <div style={{ fontSize: '20px', fontWeight: '900', color: '#fff', lineHeight: 1.1 }}>
+            {(user?.balance || 0).toFixed(2)} <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>ETB</span>
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: '700', marginTop: '6px' }}>ETB</div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '24px 16px', textAlign: 'center', borderColor: 'var(--border-gold)', boxShadow: 'var(--shadow-gold)' }}>
-          <div style={{ fontSize: '12px', color: 'var(--gold)', marginBottom: '8px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+        <div style={{ textAlign: 'center', flex: 1 }}>
+          <div style={{ fontSize: '11px', color: 'var(--gold)', marginBottom: '4px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
             🏆 Withdrawable
           </div>
-          <div style={{ fontSize: '32px', fontWeight: '900', color: 'var(--gold)', lineHeight: 1.1 }}>
-            {(user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0).toFixed(2)}
+          <div style={{ fontSize: '20px', fontWeight: '900', color: 'var(--gold)', lineHeight: 1.1 }}>
+            {(user?.withdrawableBalance ?? user?.withdrawable_balance ?? 0).toFixed(2)} <span style={{ fontSize: '10px', opacity: 0.8 }}>ETB</span>
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--gold)', opacity: 0.8, fontWeight: '700', marginTop: '6px' }}>ETB Winnings</div>
         </div>
       </div>
 
