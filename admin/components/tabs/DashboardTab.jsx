@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, Wallet, Activity, Zap, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Activity } from 'lucide-react';
 import { Card, CardHeader, Button, Badge, Table, Avatar } from '../ui';
 import { RevenueChart } from '../charts/RevenueChart';
 
@@ -11,18 +11,9 @@ export function DashboardTab({ metrics, deposits, withdrawals, users, gameState,
   const pendingWit = withdrawals.filter(w => w.status === 'pending').length;
   const isLive = gameState?.status === 'DRAWING';
 
-  const gameAction = async (endpoint, successMsg) => {
-    try {
-      const r = await apiFetch(endpoint, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-      const d = await r.json();
-      r.ok ? flash('success', successMsg) : flash('error', d.error || d.message);
-      refresh();
-    } catch (e) { flash('error', e.message); }
-  };
-
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
         <Card className="kpi-card" style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--success-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--success)' }}>
@@ -74,33 +65,7 @@ export function DashboardTab({ metrics, deposits, withdrawals, users, gameState,
 
       <RevenueChart deposits={deposits} withdrawals={withdrawals} />
 
-      <Card>
-        <CardHeader 
-          title="Live Game Control" 
-          subtitle={isLive ? `Drawing — ${gameState?.calledNumbers?.length||0}/75 balls` : `Countdown — ${gameState?.secondsLeft??'-'}s remaining`}
-          action={<Badge status={isLive ? 'active' : 'pending'}>{isLive ? '● LIVE' : '● WAITING'}</Badge>}
-        />
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <div style={{ flex: 1, minWidth: '200px', display: 'flex', gap: '24px' }}>
-            <div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Prize Pool</div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--success)' }}>Br {(gameState?.prizePool||0).toFixed(2)}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Tickets Sold</div>
-              <div style={{ fontSize: '14px', fontWeight: 600 }}>{gameState?.totalTickets||0}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>System Balance</div>
-              <div style={{ fontSize: '14px', fontWeight: 600 }}>Br {parseFloat(metrics?.totalSystemBalance||0).toFixed(2)}</div>
-            </div>
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Button variant="primary" onClick={() => gameAction('/api/admin/game/force-start', 'Draw started!')}><Zap size={14} /> Force Start</Button>
-            <Button variant="secondary" onClick={() => gameAction('/api/admin/game/restart-countdown', 'Timer reset!')}><RefreshCw size={14} /> Reset Timer</Button>
-          </div>
-        </div>
-      </Card>
+
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
         <Card>
