@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    BINGO X ADMIN — PREMIUM DESIGN SYSTEM
    ============================================================ */
 
@@ -190,18 +190,70 @@ button,input,select,textarea{font-family:var(--font)}
 
 /* RESPONSIVE */
 @media(max-width:768px){
-  .admin-sidebar{position:fixed;top:0;left:0;bottom:0;transform:translateX(-100%)}
-  .admin-sidebar.open{transform:translateX(0);box-shadow:var(--shadow-lg)}
-  .menu-btn{display:flex}
-  .admin-content{padding:16px}
-  .kpi-grid{grid-template-columns:1fr 1fr;gap:12px}
+  .admin-sidebar{display:none !important;}
+  .sidebar-overlay{display:none !important;}
+  .menu-btn{display:none;}
+  .bottom-nav-bar{display:flex;}
+  .admin-header{height:54px; padding:0 16px;}
+  .header-page-title{font-size:16px;}
+  .admin-content{padding:12px; padding-bottom:80px;}
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:10px}
   .two-col,.three-col{grid-template-columns:1fr}
-  .kpi-value{font-size:20px}
-  .data-table tbody td,.data-table thead th{padding:10px 10px;font-size:12px}
+  .kpi-value{font-size:18px}
+  .kpi-card{padding:16px;}
+  .card{padding:16px;}
+  .data-table tbody td,.data-table thead th{padding:10px 8px;font-size:12px}
   .header-page-sub{display:none}
   .search-wrap input{width:100px}
 }
 @media(max-width:480px){
-  .kpi-grid{grid-template-columns:1fr}
-  .admin-header{padding:0 16px}
+  .kpi-grid{grid-template-columns:1fr 1fr; gap:8px;}
+  .kpi-card{padding:12px 10px;}
+  .kpi-value{font-size:16px;}
+  .kpi-icon{width:32px; height:32px;}
+  .kpi-icon svg{width:16px; height:16px;}
+}
+/* BOTTOM NAV BAR (MOBILE) */
+.bottom-nav-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: var(--header-bg);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+  justify-content: space-around;
+  align-items: center;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 600;
+  transition: color var(--transition);
+  flex: 1;
+  height: 100%;
+}
+.bottom-nav-item.active {
+  color: var(--accent);
+}
+.bottom-nav-item svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* CHART CONTAINER */
+.chart-container {
+  height: 250px;
+  width: 100%;
+  margin-top: 16px;
 }

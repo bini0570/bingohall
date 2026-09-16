@@ -100,6 +100,7 @@ export default function AdminView({ token, onLogout }) {
 
   return (
     <div className={`admin-root theme-${theme}`}>
+      {/* DESKTOP SIDEBAR */}
       <div className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">🎯</div>
@@ -107,8 +108,9 @@ export default function AdminView({ token, onLogout }) {
           <span className="sidebar-logo-badge">ADMIN</span>
         </div>
         <nav className="sidebar-nav">
-          {NAV.map((item, i) => {
-            if (!item.key) return <div key={i} className="nav-section-label">{item.label}</div>;
+          <div className="nav-section-label">MAIN</div>
+          {NAV.map((item) => {
+            if (!item.key) return null;
             const Icon = item.icon;
             return (
               <div key={item.key} className={`nav-item ${tab === item.key ? 'active' : ''}`}
@@ -132,7 +134,6 @@ export default function AdminView({ token, onLogout }) {
       <div className="admin-main">
         <header className="admin-header">
           <div className="header-left">
-            <button className="menu-btn" onClick={() => setSidebarOpen(true)}><Menu size={20} /></button>
             <div>
               <div className="header-page-title">{pageInfo.title}</div>
               <div className="header-page-sub">{pageInfo.sub}</div>
@@ -145,8 +146,8 @@ export default function AdminView({ token, onLogout }) {
             <button className="header-icon-btn" onClick={toggleTheme} title="Toggle theme">
               {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <button className="header-icon-btn" onClick={onLogout} title="Sign out" style={{ color: 'var(--red)' }}>
-              <LogOut size={16} />
+            <button className="header-icon-btn menu-btn" onClick={onLogout} style={{ color: 'var(--red)', display: window.innerWidth <= 768 ? 'flex' : 'none', border: 'none' }}>
+              <LogOut size={18} />
             </button>
           </div>
         </header>
@@ -157,9 +158,89 @@ export default function AdminView({ token, onLogout }) {
           {renderTab()}
         </div>
       </div>
+
+      {/* MOBILE BOTTOM NAV BAR */}
+      <div className="bottom-nav-bar">
+        {NAV.map((item) => {
+          if (!item.key) return null;
+          const Icon = item.icon;
+          const isActive = tab === item.key;
+          return (
+            <div key={item.key} className={`bottom-nav-item ${isActive ? 'active' : ''}`} onClick={() => setTab(item.key)}>
+              <Icon strokeWidth={isActive ? 2.5 : 2} />
+              <span>{item.label}</span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
+
+// ─── DASHBOARD CHART COMPONENT ────────────────────────────────
+const SimpleChart = ({ deposits, withdrawals }) => {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  
+  const days = Array.from({length: 7}).map((_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() - (6 - i));
+    return {
+      date: d,
+      label: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      dep: 0,
+      wit: 0
+    };
+  });
+
+  deposits.filter(d => d.status === 'approved').forEach(d => {
+    const t = new Date(d.created_at);
+    const day = days.find(x => x.date.getDate() === t.getDate() && x.date.getMonth() === t.getMonth());
+    if (day) day.dep += parseFloat(d.amount) || 0;
+  });
+
+  withdrawals.filter(w => w.status === 'approved').forEach(w => {
+    const t = new Date(w.created_at);
+    const day = days.find(x => x.date.getDate() === t.getDate() && x.date.getMonth() === t.getMonth());
+    if (day) day.wit += parseFloat(w.amount) || 0;
+  });
+
+  const maxVal = Math.max(...days.map(d => Math.max(d.dep, d.wit)), 100);
+
+  return (
+    <div className="card">
+      <div className="card-header" style={{ marginBottom: '10px' }}>
+        <div>
+          <div className="card-title">Weekly Overview</div>
+          <div className="card-subtitle">Deposits vs Withdrawals</div>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', height: '180px', gap: '8px', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+        {days.map((d, i) => {
+          const depH = (d.dep / maxVal) * 100;
+          const witH = (d.wit / maxVal) * 100;
+          return (
+            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '4px', height: '100%', alignItems: 'flex-end', width: '100%', justifyContent: 'center' }}>
+                <div style={{ width: '12px', height: `${depH}%`, background: 'var(--green)', borderRadius: '4px 4px 0 0', minHeight: d.dep > 0 ? '4px' : '0', transition: 'height 0.5s ease' }}></div>
+                <div style={{ width: '12px', height: `${witH}%`, background: 'var(--red)', borderRadius: '4px 4px 0 0', minHeight: d.wit > 0 ? '4px' : '0', transition: 'height 0.5s ease' }}></div>
+              </div>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '8px' }}>{d.label}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: 'flex', gap: '16px', marginTop: '16px', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <div style={{ width: '10px', height: '10px', background: 'var(--green)', borderRadius: '2px' }}></div> Deposits
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+          <div style={{ width: '10px', height: '10px', background: 'var(--red)', borderRadius: '2px' }}></div> Withdrawals
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function DashboardTab({ metrics, deposits, withdrawals, users, gameState, token, flash, refresh }) {
   const totDep = deposits.filter(d => d.status === 'approved').reduce((a, b) => a + (parseFloat(b.amount) || 0), 0);
@@ -200,24 +281,14 @@ function DashboardTab({ metrics, deposits, withdrawals, users, gameState, token,
           <div className="kpi-sub">Deposits minus withdrawals</div>
         </div>
         <div className="kpi-card">
-          <div className="kpi-icon" style={{ background: 'var(--blue-soft)' }}><Users size={20} color="var(--blue)" /></div>
-          <div className="kpi-label">Players</div>
-          <div className="kpi-value">{users.length}</div>
-          <div className="kpi-sub">Registered accounts</div>
-        </div>
-        <div className="kpi-card">
           <div className="kpi-icon" style={{ background: 'var(--amber-soft)' }}><Activity size={20} color="var(--amber)" /></div>
           <div className="kpi-label">Pending Actions</div>
           <div className="kpi-value">{pendingDep + pendingWit}</div>
           <div className="kpi-sub">{pendingDep} deposits · {pendingWit} withdrawals</div>
         </div>
-        <div className="kpi-card">
-          <div className="kpi-icon" style={{ background: isLive ? 'var(--green-soft)' : 'var(--amber-soft)' }}><Gamepad2 size={20} color={isLive ? 'var(--green)' : 'var(--amber)'} /></div>
-          <div className="kpi-label">Game Status</div>
-          <div className="kpi-value" style={{ fontSize: '16px' }}><span className="live-dot" />{gameState?.status || 'WAITING'}</div>
-          <div className="kpi-sub">Round #{gameState?.roundId || '-'} · Br {(gameState?.prizePool||0).toFixed(0)} pool</div>
-        </div>
       </div>
+
+      <SimpleChart deposits={deposits} withdrawals={withdrawals} />
 
       <div className="card">
         <div className="card-header">
