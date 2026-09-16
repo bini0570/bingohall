@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardHeader, Table, Badge, Avatar } from '../ui';
 import { Search } from 'lucide-react';
 
-export function UsersTab({ users }) {
+export function UsersTab({ users, token, flash, apiFetch, onRefresh }) {
   const [query, setQuery] = useState('');
   
   const hasSearched = query.trim().length > 0;
@@ -16,6 +16,24 @@ export function UsersTab({ users }) {
       (u.id && u.id.toString() === q)
     );
   }) : [];
+
+  const toggleBan = async (uid) => {
+    try {
+      const res = await apiFetch(`/api/admin/users/${uid}/ban`, { 
+        method: 'POST', 
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) { 
+        const d = await res.json();
+        if (onRefresh) onRefresh(); 
+        flash('success', `Player has been ${d.isBanned ? 'blocked' : 'unblocked'}`); 
+      } else {
+        flash('error', (await res.json()).error || 'Failed to update player status');
+      }
+    } catch(e) { 
+      flash('error', e.message); 
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -51,7 +69,7 @@ export function UsersTab({ users }) {
       {hasSearched && (
         <Card>
           <CardHeader title="Search Results" subtitle={`${filtered.length} players found`} />
-          <Table headers={['Player', 'Phone', 'Balance', 'Withdrawable', 'Status']}>
+          <Table headers={['Player', 'Phone', 'Balance', 'Withdrawable', 'Status', 'Action']}>
             {filtered.map(u => (
               <tr key={u.id}>
                 <td data-label="Player">
@@ -67,13 +85,33 @@ export function UsersTab({ users }) {
                 <td data-label="Balance" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Br {parseFloat(u.balance||0).toFixed(2)}</td>
                 <td data-label="Withdrawable" style={{ color: 'var(--text-secondary)' }}>Br {parseFloat(u.withdrawable_balance||0).toFixed(2)}</td>
                 <td data-label="Status">
-                  <Badge status={u.is_banned ? 'rejected' : 'active'}>{u.is_banned ? 'Banned' : 'Active'}</Badge>
+                  <Badge status={u.is_banned ? 'rejected' : 'active'}>{u.is_banned ? 'Blocked' : 'Active'}</Badge>
+                </td>
+                <td data-label="Action">
+                  <button 
+                    onClick={() => toggleBan(u.id)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: u.is_banned ? 'var(--surface-high)' : 'var(--error-soft)',
+                      color: u.is_banned ? 'var(--text-primary)' : 'var(--error)',
+                      fontWeight: 600,
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      transition: 'opacity 0.2s'
+                    }}
+                    onMouseOver={(e) => e.target.style.opacity = 0.8}
+                    onMouseOut={(e) => e.target.style.opacity = 1}
+                  >
+                    {u.is_banned ? 'Unblock' : 'Block'}
+                  </button>
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--text-muted)' }}>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--text-muted)' }}>
                   <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><Search size={28} style={{ opacity: 0.4 }} /></div>
                   <div style={{ fontSize: '15px', fontWeight: 500 }}>No players found</div>
                 </td>
