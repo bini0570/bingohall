@@ -15,15 +15,15 @@
   "routes": [
     {
       "src": "/admin/assets/(.*)",
-      "dest": "/Admin/dist/assets/$1"
+      "dest": "/admin/dist/assets/$1"
     },
     {
       "src": "/admin/(manifest\\.json|sw\\.js|.*\\.png|.*\\.ico|.*\\.svg|.*\\.jpg)",
-      "dest": "/Admin/dist/$1"
+      "dest": "/admin/dist/$1"
     },
     {
       "src": "/admin/(.*)",
-      "dest": "/Admin/dist/index.html"
+      "dest": "/admin/dist/index.html"
     },
     {
       "handle": "filesystem"
