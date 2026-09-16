@@ -621,9 +621,41 @@ async function showBankInfo(chatId, method, amount, ioInstance) {
   );
 }
 
-function notifyAdminNewDeposit(deposit) {}
+async function notifyAdminNewDeposit(deposit) {
+  if (!bot) return;
+  try {
+    const admins = await all(`SELECT telegram_id FROM users WHERE is_admin = 1`);
+    for (const admin of admins) {
+      if (admin.telegram_id) {
+        bot.sendMessage(
+          admin.telegram_id,
+          `🚨 <b>NEW DEPOSIT REQUEST</b>\n\n👤 User: <code>${escapeHTML(deposit.username)}</code>\n📱 Phone: <code>${escapeHTML(deposit.phone)}</code>\n💰 Amount: <b>${deposit.amount.toFixed(2)} ETB</b>\n💳 Method: ${escapeHTML(deposit.method)}\n🧾 SMS/TxID: <code>${escapeHTML(deposit.receipt_sms)}</code>\n\n<i>Go to the Admin Panel to approve or reject.</i>`,
+          { parse_mode: 'HTML' }
+        ).catch(() => {});
+      }
+    }
+  } catch (e) {
+    console.error('[Telegram] Admin notification error:', e.message);
+  }
+}
 
-function notifyAdminNewWithdrawal(withdrawal) {}
+async function notifyAdminNewWithdrawal(withdrawal) {
+  if (!bot) return;
+  try {
+    const admins = await all(`SELECT telegram_id FROM users WHERE is_admin = 1`);
+    for (const admin of admins) {
+      if (admin.telegram_id) {
+        bot.sendMessage(
+          admin.telegram_id,
+          `🚨 <b>NEW WITHDRAWAL REQUEST</b>\n\n👤 User: <code>${escapeHTML(withdrawal.username)}</code>\n📱 Phone: <code>${escapeHTML(withdrawal.phone)}</code>\n💰 Amount: <b>${withdrawal.amount.toFixed(2)} ETB</b>\n💳 Method: ${escapeHTML(withdrawal.method)}\n🏦 Account: <code>${escapeHTML(withdrawal.account_number)}</code>\n\n<i>Go to the Admin Panel to approve or reject.</i>`,
+          { parse_mode: 'HTML' }
+        ).catch(() => {});
+      }
+    }
+  } catch (e) {
+    console.error('[Telegram] Admin notification error:', e.message);
+  }
+}
 
 async function processDeposit(chatId, telegramId, amount, smsText, method, ioInstance) {
   const user = await get(`SELECT * FROM users WHERE telegram_id = ?`, [telegramId]);
