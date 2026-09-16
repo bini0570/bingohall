@@ -1,5 +1,5 @@
 import React from 'react';
-import '../AdminTheme.css';
+import '../../AdminTheme.css';
 
 export function Card({ children, className = '' }) {
   return (
