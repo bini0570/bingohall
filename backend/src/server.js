@@ -870,6 +870,21 @@ app.post('/api/admin/broadcast', authenticateAdmin, async (req, res) => {
 });
 
 
+// -------------------------------------------------------------
+// PUBLIC SETTINGS API (For frontend wallet/game configurations)
+// -------------------------------------------------------------
+app.get('/api/public/settings', async (req, res) => {
+  try {
+    const rows = await all("SELECT * FROM game_settings");
+    const settings = {};
+    rows.forEach(r => (settings[r.key] = r.value));
+    res.json(settings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 // Player SPA catch-all — serves index.html for any non-API, non-admin route
 // Must be placed AFTER all API routes
 app.get('*', (req, res, next) => {

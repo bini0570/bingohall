@@ -311,7 +311,7 @@ function initTelegramBot(ioInstance) {
         userStates[chatId] = { action: 'awaiting_deposit_amount', method };
         bot.sendMessage(
           chatId,
-          `${ADMIN_ACCOUNTS[method]?.icon || '📱'} <b>${escapeHTML(method)} Deposit</b>\n\nTap a quick amount or type how much ETB to deposit:`,
+          `${''} <b>${escapeHTML(method)} Deposit</b>\n\nTap a quick amount or type how much ETB to deposit:`,
           {
             parse_mode: 'HTML',
             reply_markup: {
@@ -515,8 +515,7 @@ async function checkUserRegistered(chatId, telegramId) {
   return user;
 }
 
-const ADMIN_ACCOUNTS = {
-  Telebirr: { name: 'B. E.', number: '0993994168', icon: '📱' },
+,
   CBE:      { name: 'B. E.', number: '1000483719853', icon: '🏦' },
   CBEBirr:  { name: 'B. E.', number: '0993994168', icon: '💳' }
 };
@@ -599,8 +598,25 @@ async function startWithdrawFlow(chatId, telegramId) {
   );
 }
 
-function showBankInfo(chatId, method, amount, ioInstance) {
-  const acc = ADMIN_ACCOUNTS[method] || ADMIN_ACCOUNTS.Telebirr;
+async function getAdminAccount(method) {
+  const getSetting = async (key, def) => {
+    try {
+      const r = await get('SELECT value FROM game_settings WHERE key = ?', [key]);
+      return r ? r.value : def;
+    } catch(e) { return def; }
+  };
+  
+  if (method === 'Telebirr') {
+    return { name: await getSetting('telebirr_name', 'B. E.'), number: await getSetting('telebirr_number', '0993994168'), icon: '📱' };
+  } else if (method === 'CBEBirr') {
+    return { name: await getSetting('cbebirr_name', 'B. E.'), number: await getSetting('cbebirr_number', '0993994168'), icon: '💲' };
+  } else {
+    return { name: await getSetting('cbe_name', 'B. E.'), number: await getSetting('cbe_number', '1000483719853'), icon: '🏦' };
+  }
+}
+
+async function showBankInfo(chatId, method, amount, ioInstance) {
+  const acc = await getAdminAccount(method);
   userStates[chatId] = { ...userStates[chatId], action: 'awaiting_deposit_sms' };
 
   bot.sendMessage(

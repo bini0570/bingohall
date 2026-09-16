@@ -294,8 +294,8 @@ export default function App() {
   function attemptTelegramAuth(wa) {
     clearTimeout(loadingTimerRef.current);
     if (!wa || !wa.initData || wa.initData.length === 0) {
-      setGateMessage('Please open this game directly inside the Telegram Bot by clicking "PLAY BINGO". External browsers are not supported.');
-      setAuthStatus('needs_phone');
+      setAuthStatus('not_telegram');
+      setShowWebAuth(true);
       return;
     }
 

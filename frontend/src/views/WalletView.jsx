@@ -6,16 +6,31 @@ import './WalletView.css';
 /* ============================================================
    Constants & helpers
    ============================================================ */
-const MIN_DEPOSIT  = 10;
-const MAX_DEPOSIT  = 100000;
-const MIN_WITHDRAW = 10;
+let SYS_SETTINGS = {
+  MIN_DEPOSIT: 10,
+  MAX_DEPOSIT: 100000,
+  MIN_WITHDRAW: 10,
+  telebirr_name: 'Biniyam Eyoel',
+  telebirr_number: '0993994168',
+  cbebirr_name: 'Biniyam Eyoel',
+  cbebirr_number: '0993994168'
+};
+
+// Fetch dynamic settings from backend
+apiFetch('/api/public/settings').then(r => r.json()).then(d => {
+  if (d.min_deposit) SYS_SETTINGS.MIN_DEPOSIT = parseFloat(d.min_deposit);
+  if (d.min_withdraw) SYS_SETTINGS.MIN_WITHDRAW = parseFloat(d.min_withdraw);
+  if (d.telebirr_name) SYS_SETTINGS.telebirr_name = d.telebirr_name;
+  if (d.telebirr_number) SYS_SETTINGS.telebirr_number = d.telebirr_number;
+  if (d.cbebirr_name) SYS_SETTINGS.cbebirr_name = d.cbebirr_name;
+  if (d.cbebirr_number) SYS_SETTINGS.cbebirr_number = d.cbebirr_number;
+}).catch(e => console.error("Error loading settings:", e));
 
 const fmt = n => n.toLocaleString('en-US', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 });
 
-// Hardcoded based on previous config
 const W_METHODS = {
   telebirr: { name: 'Telebirr', numberLabel: 'Telebirr phone number',
               placeholder: 'e.g. 0911223344', type: 'tel' },
@@ -23,12 +38,12 @@ const W_METHODS = {
               placeholder: 'e.g. 1000123456789', type: 'text' }
 };
 
-const D_METHODS = {
-  telebirr: { name: 'Telebirr', sysName: 'Biniyam Eyoel', sysNumber: '0993994168',
+const getDMethods = () => ({
+  telebirr: { name: 'Telebirr', sysName: SYS_SETTINGS.telebirr_name, sysNumber: SYS_SETTINGS.telebirr_number,
               smsPlaceholder: 'Paste the SMS you received from Telebirr here…' },
-  cbebirr: { name: 'CBE Birr', sysName: 'Biniyam Eyoel', sysNumber: '0993994168',
+  cbebirr: { name: 'CBE Birr', sysName: SYS_SETTINGS.cbebirr_name, sysNumber: SYS_SETTINGS.cbebirr_number,
               smsPlaceholder: 'Paste the SMS you received from CBE Birr here…' }
-};
+});
 
 // Map backend method strings to keys used in design
 const methodKeyMap = {
@@ -361,7 +376,7 @@ function WithdrawSheet({ open, onClose, available, onSubmit, loading, reqError }
     if (!num) { e.number = 'Enter the account number'; ok = false; }
     
     if (!amt) { e.amount = 'Enter an amount to withdraw'; ok = false; }
-    else if (amt < MIN_WITHDRAW) { e.amount = 'Minimum withdrawal is Br ' + fmt(MIN_WITHDRAW); ok = false; }
+    else if (amt < SYS_SETTINGS.MIN_WITHDRAW) { e.amount = 'Minimum withdrawal is Br ' + fmt(SYS_SETTINGS.MIN_WITHDRAW); ok = false; }
     else if (amt > available) { e.amount = 'Amount exceeds your balance of Br ' + fmt(available); ok = false; }
 
     setErrors(e);
@@ -573,7 +588,7 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
 
   if (!mounted) return null;
 
-  const cfg = selected ? D_METHODS[selected] : null;
+  const cfg = selected ? getDMethods()[selected] : null;
   const amt = parseFloat(amount) || 0;
   const hasSms = sms.trim().length >= 8;
   const canSubmit = amt > 0 && hasSms && !loading;
@@ -618,8 +633,8 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
     const smsTrim = sms.trim();
 
     if (!amt) { e.amount = 'Enter the amount you sent'; ok = false; }
-    else if (amt < MIN_DEPOSIT) { e.amount = 'Minimum deposit is Br ' + fmt(MIN_DEPOSIT); ok = false; }
-    else if (amt > MAX_DEPOSIT) { e.amount = 'Maximum deposit is Br ' + fmt(MAX_DEPOSIT); ok = false; }
+    else if (amt < SYS_SETTINGS.MIN_DEPOSIT) { e.amount = 'Minimum deposit is Br ' + fmt(SYS_SETTINGS.MIN_DEPOSIT); ok = false; }
+    else if (amt > SYS_SETTINGS.MAX_DEPOSIT) { e.amount = 'Maximum deposit is Br ' + fmt(SYS_SETTINGS.MAX_DEPOSIT); ok = false; }
 
     if (!smsTrim) { e.sms = 'Paste the SMS you received from your bank'; ok = false; }
     else if (smsTrim.length < 8) { e.sms = 'That SMS looks too short — paste the full message'; ok = false; }
@@ -636,7 +651,7 @@ function DepositSheet({ open, onClose, onCopy, onSubmit, loading, reqError }) {
     if (resSuccess) {
       setSuccess({
         amount: 'Br ' + fmt(amt),
-        method: D_METHODS[selected].name,
+        method: getDMethods()[selected].name,
         ref: ''
       });
       setStep(3);

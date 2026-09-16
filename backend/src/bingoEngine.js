@@ -201,7 +201,7 @@ class BingoEngine {
 
     const user = await get(`SELECT balance, withdrawable_balance FROM users WHERE id = ?`, [userId]);
     if (!user || user.balance < this.ticketPrice) {
-      throw new Error('Insufficient wallet balance (10 ETB required)');
+      throw new Error(`Insufficient wallet balance (${this.ticketPrice} ETB required)`);
     }
 
     let withdrawableBal = parseFloat(user.withdrawable_balance) || 0;
