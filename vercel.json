@@ -5,12 +5,21 @@
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
+    },
+    {
+      "src": "Admin/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
     }
   ],
   "routes": [
     {
+      "src": "/admin/assets/(.*)",
+      "dest": "/Admin/dist/assets/$1"
+    },
+    {
       "src": "/admin/(.*)",
-      "dest": "/admin/index.html"
+      "dest": "/Admin/dist/index.html"
     },
     {
       "handle": "filesystem"

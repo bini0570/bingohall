@@ -135,14 +135,14 @@ export default function AdminLoginPage({ onLoginSuccess }) {
 
       <style>{`
         * { box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
-        body { margin: 0; background: #050505; color: #fff; overflow: hidden; }
+        body { margin: 0; background: #050505; color: #fff; }
         
         .admin-login-wrapper {
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 24px;
+          padding: 16px;
           position: relative;
           z-index: 1;
         }
@@ -175,7 +175,7 @@ export default function AdminLoginPage({ onLoginSuccess }) {
 
         .login-container {
           width: 100%;
-          maxWidth: 420px;
+          max-width: 420px;
           background: rgba(10, 10, 10, 0.85);
           border: 1px solid rgba(255, 255, 255, 0.08);
           border-top: 1px solid rgba(16, 185, 129, 0.3);

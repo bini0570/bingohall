@@ -515,11 +515,6 @@ async function checkUserRegistered(chatId, telegramId) {
   return user;
 }
 
-,
-  CBE:      { name: 'B. E.', number: '1000483719853', icon: '🏦' },
-  CBEBirr:  { name: 'B. E.', number: '0993994168', icon: '💳' }
-};
-
 function sendPlayPrompt(chatId, user) {
   if (!bot) return;
   bot.sendMessage(
