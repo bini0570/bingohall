@@ -2,6 +2,7 @@
   "name": "Bingo X Admin",
   "short_name": "Admin",
   "start_url": "/admin/",
+  "scope": "/admin/",
   "display": "standalone",
   "background_color": "#090d16",
   "theme_color": "#f59e0b",
