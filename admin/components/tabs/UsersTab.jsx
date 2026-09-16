@@ -152,7 +152,6 @@ export function UsersTab({ users, token, flash, apiFetch, onRefresh }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       <div>
-        <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '16px' }}>Players</h2>
         <div style={{ position: 'relative', maxWidth: '600px' }}>
           <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', display: 'flex' }}>
             <Search size={18} />

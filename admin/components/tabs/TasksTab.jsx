@@ -64,8 +64,7 @@ export function TasksTab({ token, flash, apiFetch }) {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--text-primary)' }}>Tasks</h2>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
         {!isCreating && (
           <Button variant="primary" onClick={() => setIsCreating(true)}>
             <Plus size={16} style={{ marginRight: '4px' }} /> Create Task
