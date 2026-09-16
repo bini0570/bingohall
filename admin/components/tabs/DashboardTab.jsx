@@ -92,43 +92,43 @@ export function DashboardTab({ metrics, deposits, withdrawals, users, gameState,
 
 
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-        <Card>
-          <CardHeader title="Recent Deposits" action={<Badge status="info">{pendingDep} pending</Badge>} />
-          <Table headers={['User', 'Amount', 'Status']}>
-            {deposits.slice(0, 5).map(d => (
-              <tr key={d.id}>
-                <td data-label="User">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Avatar label={(d.username||'?')[0].toUpperCase()} /> {d.username}
+      <Card>
+        <CardHeader title="Recent Activities" subtitle="Latest platform transactions" />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {[
+            ...deposits.map(d => ({ ...d, type: 'deposit', time: new Date(d.created_at).getTime() })),
+            ...withdrawals.map(w => ({ ...w, type: 'withdrawal', time: new Date(w.created_at).getTime() }))
+          ]
+          .sort((a, b) => b.time - a.time)
+          .slice(0, 6)
+          .map((item, i) => (
+            <div key={`${item.type}-${item.id}`} style={{ 
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+              padding: '12px 16px', borderBottom: i < 5 ? '1px solid var(--border-color)' : 'none',
+              background: 'var(--bg-elevated)', borderRadius: '8px', marginBottom: '8px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Avatar label={(item.username||'?')[0].toUpperCase()} />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)' }}>{item.username}</div>
+                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {item.type === 'deposit' ? 'Deposit' : 'Withdrawal'}
                   </div>
-                </td>
-                <td data-label="Amount" style={{ fontWeight: 600, color: 'var(--success)' }}>+Br {parseFloat(d.amount).toFixed(0)}</td>
-                <td data-label="Status"><Badge status={d.status}>{d.status}</Badge></td>
-              </tr>
-            ))}
-            {deposits.length === 0 && <tr><td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No deposits yet</td></tr>}
-          </Table>
-        </Card>
-
-        <Card>
-          <CardHeader title="Recent Withdrawals" action={<Badge status="pending">{pendingWit} pending</Badge>} />
-          <Table headers={['User', 'Amount', 'Status']}>
-            {withdrawals.slice(0, 5).map(w => (
-              <tr key={w.id}>
-                <td data-label="User">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Avatar label={(w.username||'?')[0].toUpperCase()} /> {w.username}
-                  </div>
-                </td>
-                <td data-label="Amount" style={{ fontWeight: 600, color: 'var(--error)' }}>-Br {parseFloat(w.amount).toFixed(0)}</td>
-                <td data-label="Status"><Badge status={w.status}>{w.status}</Badge></td>
-              </tr>
-            ))}
-            {withdrawals.length === 0 && <tr><td colSpan="3" style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No withdrawals yet</td></tr>}
-          </Table>
-        </Card>
-      </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                <div style={{ fontWeight: 700, color: item.type === 'deposit' ? 'var(--success)' : 'var(--error)' }}>
+                  {item.type === 'deposit' ? '+' : '-'}Br {parseFloat(item.amount).toFixed(0)}
+                </div>
+                <Badge status={item.status}>{item.status}</Badge>
+              </div>
+            </div>
+          ))}
+          {deposits.length === 0 && withdrawals.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '24px', color: 'var(--text-muted)' }}>No recent activities</div>
+          )}
+        </div>
+      </Card>
     </>
   );
 }

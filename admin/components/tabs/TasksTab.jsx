@@ -73,32 +73,28 @@ export function TasksTab({ token, flash, apiFetch }) {
       </div>
 
       {isCreating && (
-        <Card style={{ marginBottom: '24px' }}>
+        <Card style={{ marginBottom: '24px', maxWidth: '600px' }}>
           <CardHeader title="Create New Task" subtitle="Setup an engagement bounty for players" />
-          <form onSubmit={add} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '4px 0 8px 0' }}>
-            {/* Row 1: Type + Title */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <Select 
-                label="TYPE" 
-                value={form.type} 
-                onChange={e => setForm({...form, type: e.target.value})} 
-                options={[
-                  {label: 'Join Telegram', value: 'Join Telegram'}, 
-                  {label: 'Deposit', value: 'Deposit'}, 
-                  {label: 'Play Game', value: 'Play Game'},
-                  {label: 'Custom', value: 'Custom'}
-                ]} 
-              />
-              <Input 
-                label="TITLE" 
-                placeholder="e.g. Join GameZoneETH" 
-                value={form.title} 
-                onChange={e => setForm({...form, title: e.target.value})} 
-                required 
-              />
-            </div>
+          <form onSubmit={add} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '4px 0 8px 0' }}>
+            <Select 
+              label="TYPE" 
+              value={form.type} 
+              onChange={e => setForm({...form, type: e.target.value})} 
+              options={[
+                {label: 'Join Telegram', value: 'Join Telegram'}, 
+                {label: 'Deposit', value: 'Deposit'}, 
+                {label: 'Play Game', value: 'Play Game'},
+                {label: 'Custom', value: 'Custom'}
+              ]} 
+            />
+            <Input 
+              label="TITLE" 
+              placeholder="e.g. Join GameZoneETH" 
+              value={form.title} 
+              onChange={e => setForm({...form, title: e.target.value})} 
+              required 
+            />
             
-            {/* Telegram link — full width when shown */}
             {(form.type === 'Join Telegram' || form.type === 'Custom') && (
               <Input 
                 label="LINK" 
@@ -109,26 +105,28 @@ export function TasksTab({ token, flash, apiFetch }) {
               />
             )}
 
-            {/* Row 2: Button name + Reward */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <Input 
-                label="BUTTON" 
-                placeholder="Join Now" 
-                value={form.button_name} 
-                onChange={e => setForm({...form, button_name: e.target.value})} 
-                required 
-              />
-              <Input 
-                label="REWARD (ETB)" 
-                type="number" 
-                placeholder="50" 
-                value={form.reward} 
-                onChange={e => setForm({...form, reward: e.target.value})} 
-                required 
-              />
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ flex: 1 }}>
+                <Input 
+                  label="BUTTON TEXT" 
+                  placeholder="Join Now" 
+                  value={form.button_name} 
+                  onChange={e => setForm({...form, button_name: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <Input 
+                  label="REWARD (ETB)" 
+                  type="number" 
+                  placeholder="50" 
+                  value={form.reward} 
+                  onChange={e => setForm({...form, reward: e.target.value})} 
+                  required 
+                />
+              </div>
             </div>
 
-            {/* Row 3: Target full width */}
             <Select 
               label="TARGET" 
               value={form.target} 
@@ -141,7 +139,7 @@ export function TasksTab({ token, flash, apiFetch }) {
               ]} 
             />
 
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '8px' }}>
               <Button variant="secondary" type="button" onClick={() => setIsCreating(false)}>Cancel</Button>
               <Button variant="primary" type="submit" disabled={loading}>{loading ? 'Publishing...' : 'Create Task'}</Button>
             </div>
