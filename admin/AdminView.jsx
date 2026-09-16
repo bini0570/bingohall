@@ -118,12 +118,13 @@ export default function AdminView({ token, onLogout }) {
               </div>
             );
           })}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="nav-item" onClick={onLogout} style={{ color: 'var(--red)' }}>
-            <LogOut size={16} /> Sign Out
+          
+          <div className="nav-section-label">ACCOUNT</div>
+          <div className="nav-item" onClick={onLogout} style={{ color: 'var(--red)', marginTop: '4px' }}>
+            <LogOut size={16} />
+            Sign Out
           </div>
-        </div>
+        </nav>
       </div>
 
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
