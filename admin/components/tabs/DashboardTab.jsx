@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, Wallet, Activity } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Activity, Users, ArrowUp } from 'lucide-react';
 import { Card, CardHeader, Button, Badge, Table, Avatar } from '../ui';
 import { RevenueChart } from '../charts/RevenueChart';
 
@@ -9,7 +9,11 @@ export function DashboardTab({ metrics, deposits, withdrawals, users, gameState,
   const net = totDep - totWit;
   const pendingDep = deposits.filter(d => d.status === 'pending').length;
   const pendingWit = withdrawals.filter(w => w.status === 'pending').length;
-  const isLive = gameState?.status === 'DRAWING';
+
+  // Player stats — prefer metrics API, fallback to users array
+  const totalUsers    = metrics?.totalUsers    ?? users.length;
+  const todayReg      = metrics?.todayRegistered ?? 0;
+  const onlinePlayers = metrics?.onlinePlayers   ?? 0;
 
   return (
     <>
@@ -50,14 +54,35 @@ export function DashboardTab({ metrics, deposits, withdrawals, users, gameState,
           </div>
         </Card>
 
+        {/* Total Players card — with today's reg + online dot */}
         <Card className="kpi-card" style={{ marginBottom: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--warning-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--warning)' }}>
-              <Activity size={20} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--cyan-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cyan)' }}>
+              <Users size={20} />
             </div>
             <div>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Pending</div>
-              <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>{pendingDep + pendingWit}</div>
+              <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Total Players</div>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>{totalUsers.toLocaleString()}</div>
+            </div>
+          </div>
+          {/* Sub-row: today's registrations + online count */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '2px' }}>
+            {/* Today's new registrations — up arrow */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', fontSize: '12px', fontWeight: 600, color: 'var(--success)' }}>
+              <ArrowUp size={12} strokeWidth={2.5} />
+              <span>{todayReg} today</span>
+            </div>
+            {/* Online players — green dot */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 500, color: 'var(--text-secondary)' }}>
+              <span style={{
+                display: 'inline-block',
+                width: '8px', height: '8px',
+                borderRadius: '50%',
+                background: '#22c55e',
+                boxShadow: '0 0 6px #22c55e',
+                flexShrink: 0,
+              }} />
+              <span>{onlinePlayers} online</span>
             </div>
           </div>
         </Card>

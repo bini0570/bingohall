@@ -578,12 +578,21 @@ app.get('/api/admin/metrics', authenticateAdmin, async (req, res) => {
     const totalWithdrawalsRow = await get(`SELECT SUM(amount) as sum FROM withdrawals WHERE status = 'approved'`);
     const totalTicketsRow = await get(`SELECT SUM(total_tickets) as sum, SUM(commission_cut) as comm FROM game_rounds`);
 
+    // Count users registered today
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayRegisteredRow = await get(
+      `SELECT COUNT(*) as count FROM users WHERE created_at >= ?`,
+      [todayStart.toISOString()]
+    );
+
     const gameState = bingoEngine ? bingoEngine.getPublicState() : {};
 
     res.json({
       totalSystemBalance: totalSystemBalance || 0,
       totalUsers: usersCount,
-      onlinePlayers: io.engine.clientsCount || 1,
+      todayRegistered: todayRegisteredRow?.count || 0,
+      onlinePlayers: io.engine.clientsCount || 0,
       cartellasSoldThisRound: gameState.purchasedTickets ? gameState.purchasedTickets.length : 0,
       prizePool: gameState.prizePool || 0,
       gameStatus: gameState.status || 'WAITING',
