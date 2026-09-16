@@ -79,7 +79,6 @@ export default function AdminView({ token, onLogout }) {
       case 'dashboard': return <DashboardTab metrics={metrics} deposits={deposits} withdrawals={withdrawals} users={users} gameState={gameState} token={token} flash={flash} refresh={manualRefresh} />;
       case 'payments': return <PaymentsTab deposits={deposits} withdrawals={withdrawals} token={token} onRefresh={fetchData} flash={flash} />;
       case 'users': return <UsersTab users={users} token={token} flash={flash} onRefresh={fetchData} />;
-      case 'settings': return <SettingsTab settings={settings} setSettings={setSettings} token={token} flash={flash} />;
       case 'tasks': return <TasksTab token={token} flash={flash} />;
       case 'promos': return <PromosTab token={token} flash={flash} />;
       default: return null;
@@ -92,7 +91,6 @@ export default function AdminView({ token, onLogout }) {
     { key: 'payments', icon: CreditCard, label: 'Payments' },
     { key: 'users', icon: Users, label: 'Users' },
     { label: 'FEATURES' },
-    { key: 'settings', icon: Settings, label: 'Settings' },
     { key: 'tasks', icon: Tag, label: 'Tasks' },
     { key: 'promos', icon: Gift, label: 'Promos' },
   ];
@@ -371,105 +369,7 @@ function UsersTab({ users, token, flash, onRefresh }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SETTINGS
-// ─────────────────────────────────────────────────────────────────────────────
-function SettingsTab({ settings, setSettings, token, flash }) {
-  const handleChange = (k, v) => setSettings(p => ({ ...p, [k]: v }));
-  
-  const save = async () => {
-    try {
-      const r = await apiFetch('/api/admin/settings', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(settings) });
-      if (r.ok) flash('success', 'All settings saved to database successfully!');
-      else flash('error', (await r.json()).error);
-    } catch(e) { flash('error', e.message); }
-  };
-
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-      <div className="admin-card">
-        <div className="admin-card-header">🏦 Payment Methods</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Telebirr Name</label>
-            <input className="admin-input" type="text" value={settings.telebirr_name||''} onChange={e=>handleChange('telebirr_name', e.target.value)} placeholder="e.g. Biniyam Eyoel" />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Telebirr Number</label>
-            <input className="admin-input" type="text" value={settings.telebirr_number||''} onChange={e=>handleChange('telebirr_number', e.target.value)} placeholder="e.g. 0993994168" />
-          </div>
-          <hr style={{ border: 0, borderTop: '1px solid #f1f5f9' }} />
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>CBE Birr Name</label>
-            <input className="admin-input" type="text" value={settings.cbebirr_name||''} onChange={e=>handleChange('cbebirr_name', e.target.value)} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>CBE Birr Number</label>
-            <input className="admin-input" type="text" value={settings.cbebirr_number||''} onChange={e=>handleChange('cbebirr_number', e.target.value)} />
-          </div>
-        </div>
-      </div>
-
-      <div className="admin-card">
-        <div className="admin-card-header">💸 Limits & Bonuses</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Min Deposit</label>
-              <input className="admin-input" type="number" value={settings.min_deposit||'50'} onChange={e=>handleChange('min_deposit', e.target.value)} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Min Withdraw</label>
-              <input className="admin-input" type="number" value={settings.min_withdraw||'100'} onChange={e=>handleChange('min_withdraw', e.target.value)} />
-            </div>
-          </div>
-          <hr style={{ border: 0, borderTop: '1px solid #f1f5f9' }} />
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Registration Bonus (ETB)</label>
-            <input className="admin-input" type="number" value={settings.reg_bonus_amount||'20'} onChange={e=>handleChange('reg_bonus_amount', e.target.value)} />
-          </div>
-          <div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#333', cursor: 'pointer' }}>
-              <input type="checkbox" checked={settings.reg_bonus_enabled === 'true'} onChange={e=>handleChange('reg_bonus_enabled', e.target.checked ? 'true' : 'false')} />
-              Enable Registration Bonus
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <div className="admin-card">
-        <div className="admin-card-header">🎰 Game Rules</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Ticket Price (Stake Amount)</label>
-            <input className="admin-input" type="number" value={settings.ticket_price||''} onChange={e=>handleChange('ticket_price', e.target.value)} />
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Min Cartellas</label>
-              <input className="admin-input" type="number" value={settings.min_cartellas||'1'} onChange={e=>handleChange('min_cartellas', e.target.value)} />
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Max Cartellas</label>
-              <input className="admin-input" type="number" value={settings.max_cartellas||'4'} onChange={e=>handleChange('max_cartellas', e.target.value)} />
-            </div>
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>House Commission (%)</label>
-            <input className="admin-input" type="number" value={settings.commission_pct||''} onChange={e=>handleChange('commission_pct', e.target.value)} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '12px', color: '#64748b', marginBottom: '6px' }}>Draw Speed (sec/ball)</label>
-            <input className="admin-input" type="number" value={settings.draw_speed_sec||''} onChange={e=>handleChange('draw_speed_sec', e.target.value)} />
-          </div>
-        </div>
-      </div>
-
-      <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
-        <button className="admin-btn admin-btn-primary" style={{ padding: '12px 32px', fontSize: '16px' }} onClick={save}>💾 Save All Settings</button>
-      </div>
-    </div>
-  );
-}
+// SETTINGS (Removed)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TASKS
