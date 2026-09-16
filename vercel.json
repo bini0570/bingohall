@@ -7,7 +7,7 @@
       "config": { "distDir": "dist" }
     },
     {
-      "src": "Admin/package.json",
+      "src": "admin/package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
     }
