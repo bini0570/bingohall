@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Card, CardHeader, Table, Badge, Avatar } from '../ui';
-import { Search } from 'lucide-react';
+import { Card, CardHeader, Badge } from '../ui';
+import { Search, ChevronRight, ArrowLeft, User, Phone, Calendar, Shield, Wallet, Banknote, AtSign, MessageCircle } from 'lucide-react';
 
 export function UsersTab({ users, token, flash, apiFetch, onRefresh }) {
   const [query, setQuery] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
   
   const hasSearched = query.trim().length > 0;
   
@@ -27,6 +28,10 @@ export function UsersTab({ users, token, flash, apiFetch, onRefresh }) {
         const d = await res.json();
         if (onRefresh) onRefresh(); 
         flash('success', `Player has been ${d.isBanned ? 'blocked' : 'unblocked'}`); 
+        // Update local state for immediate feedback
+        if (selectedUser && selectedUser.id === uid) {
+          setSelectedUser({ ...selectedUser, is_banned: d.isBanned });
+        }
       } else {
         flash('error', (await res.json()).error || 'Failed to update player status');
       }
@@ -34,6 +39,115 @@ export function UsersTab({ users, token, flash, apiFetch, onRefresh }) {
       flash('error', e.message); 
     }
   };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Unknown';
+    return new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  if (selectedUser) {
+    const u = selectedUser;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div>
+          <button 
+            onClick={() => setSelectedUser(null)}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 0, marginBottom: '16px', fontSize: '14px', fontWeight: 500 }}
+          >
+            <ArrowLeft size={16} /> Back to Search
+          </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: 'var(--primary-soft)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', fontWeight: 'bold' }}>
+                {(u.name || u.username || '?')[0].toUpperCase()}
+              </div>
+              <div>
+                <h2 style={{ fontSize: '24px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{u.name || u.username || 'Unknown'}</h2>
+                <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '4px' }}>Player ID #{u.id}</div>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => toggleBan(u.id)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '8px',
+                border: 'none',
+                backgroundColor: u.is_banned ? 'var(--surface-high)' : 'var(--error-soft)',
+                color: u.is_banned ? 'var(--text-primary)' : 'var(--error)',
+                fontWeight: 600,
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'opacity 0.2s'
+              }}
+              onMouseOver={(e) => e.target.style.opacity = 0.8}
+              onMouseOut={(e) => e.target.style.opacity = 1}
+            >
+              <Shield size={16} />
+              {u.is_banned ? 'Unblock Player' : 'Block Player'}
+            </button>
+          </div>
+        </div>
+
+        <Card>
+          <CardHeader title="Profile Details" subtitle="Structured player information" />
+          <div style={{ padding: '0 24px 24px 24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}><User size={14} /> Full Name</span>
+                <span style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 500 }}>{u.name || u.username || '—'}</span>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}><AtSign size={14} /> Username</span>
+                <span style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 500 }}>{u.username || '—'}</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}><Phone size={14} /> Phone Number</span>
+                <span style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 500 }}>{u.phone || '—'}</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}><MessageCircle size={14} /> Telegram ID</span>
+                <span style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 500 }}>{u.telegram_id || 'Not Linked'}</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}><Calendar size={14} /> Registration Date</span>
+                <span style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 500 }}>{formatDate(u.created_at)}</span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}><Shield size={14} /> Account Status</span>
+                <div><Badge status={u.is_banned ? 'rejected' : 'active'}>{u.is_banned ? 'Blocked' : 'Active'}</Badge></div>
+              </div>
+            </div>
+
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color)', margin: '8px 0' }} />
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}><Wallet size={14} /> Total Balance</span>
+                <span style={{ fontSize: '20px', color: 'var(--text-primary)', fontWeight: 700 }}>Br {parseFloat(u.balance || 0).toFixed(2)}</span>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.05em' }}><Banknote size={14} /> Withdrawable Balance</span>
+                <span style={{ fontSize: '20px', color: 'var(--success)', fontWeight: 700 }}>Br {parseFloat(u.withdrawable_balance || u.balance || 0).toFixed(2)}</span>
+              </div>
+            </div>
+
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -45,7 +159,7 @@ export function UsersTab({ users, token, flash, apiFetch, onRefresh }) {
           </div>
           <input 
             type="text"
-            placeholder="Search by ID, phone, name or username..."
+            placeholder="Search by ID, phone number, name or username"
             value={query}
             onChange={e => setQuery(e.target.value)}
             style={{
@@ -67,58 +181,39 @@ export function UsersTab({ users, token, flash, apiFetch, onRefresh }) {
       </div>
 
       {hasSearched && (
-        <Card>
-          <CardHeader title="Search Results" subtitle={`${filtered.length} players found`} />
-          <Table headers={['Player', 'Phone', 'Balance', 'Withdrawable', 'Status', 'Action']}>
-            {filtered.map(u => (
-              <tr key={u.id}>
-                <td data-label="Player">
+        <div>
+          <h3 style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.05em' }}>Search Results</h3>
+          {filtered.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '600px' }}>
+              {filtered.map(u => (
+                <div 
+                  key={u.id}
+                  onClick={() => setSelectedUser(u)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 16px', borderRadius: '12px', backgroundColor: 'var(--surface-light)',
+                    border: '1px solid var(--border-color)', cursor: 'pointer', transition: 'border-color 0.2s, background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--primary-soft)'; e.currentTarget.style.backgroundColor = 'var(--surface-high)'; }}
+                  onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.backgroundColor = 'var(--surface-light)'; }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Avatar label={(u.username || u.name || '?')[0].toUpperCase()} />
-                    <div>
-                      <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{u.username || u.name || 'Unknown'}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>ID #{u.id}</div>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: 'var(--primary-soft)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                      {(u.name || u.username || '?')[0].toUpperCase()}
                     </div>
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{u.name || u.username || 'Unknown Player'}</span>
                   </div>
-                </td>
-                <td data-label="Phone" style={{ color: 'var(--text-secondary)' }}>{u.phone || '—'}</td>
-                <td data-label="Balance" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Br {parseFloat(u.balance||0).toFixed(2)}</td>
-                <td data-label="Withdrawable" style={{ color: 'var(--text-secondary)' }}>Br {parseFloat(u.withdrawable_balance||0).toFixed(2)}</td>
-                <td data-label="Status">
-                  <Badge status={u.is_banned ? 'rejected' : 'active'}>{u.is_banned ? 'Blocked' : 'Active'}</Badge>
-                </td>
-                <td data-label="Action">
-                  <button 
-                    onClick={() => toggleBan(u.id)}
-                    style={{
-                      padding: '6px 12px',
-                      borderRadius: '6px',
-                      border: 'none',
-                      backgroundColor: u.is_banned ? 'var(--surface-high)' : 'var(--error-soft)',
-                      color: u.is_banned ? 'var(--text-primary)' : 'var(--error)',
-                      fontWeight: 600,
-                      fontSize: '13px',
-                      cursor: 'pointer',
-                      transition: 'opacity 0.2s'
-                    }}
-                    onMouseOver={(e) => e.target.style.opacity = 0.8}
-                    onMouseOut={(e) => e.target.style.opacity = 1}
-                  >
-                    {u.is_banned ? 'Unblock' : 'Block'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--text-muted)' }}>
-                  <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}><Search size={28} style={{ opacity: 0.4 }} /></div>
-                  <div style={{ fontSize: '15px', fontWeight: 500 }}>No players found</div>
-                </td>
-              </tr>
-            )}
-          </Table>
-        </Card>
+                  <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ padding: '32px 0', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Search size={20} style={{ opacity: 0.5 }} />
+              <span style={{ fontSize: '15px', fontWeight: 500 }}>No players found</span>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
