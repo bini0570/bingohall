@@ -13,7 +13,7 @@ export function DashboardTab({ metrics, deposits, withdrawals, users, gameState,
 
   return (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '24px' }}>
+      <div className="kpi-grid">
         <Card className="kpi-card" style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--success-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--success)' }}>

@@ -1,78 +1,78 @@
-import React from 'react';
-import { Menu, Sun, Moon, LogOut, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Menu, Sun, Moon, LogOut, RefreshCw, X } from 'lucide-react';
 import '../../AdminTheme.css';
 
-export function Sidebar({ navItems, activeTab, setTab, onLogout }) {
+export function Sidebar({ navItems, activeTab, setTab, onLogout, open, onClose }) {
   return (
-    <div className={`admin-sidebar open`}>
-      <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">🎯</div>
-        <div>
-          <div className="sidebar-logo-text">BingoX</div>
-          <div className="text-muted" style={{ fontSize: '10px', letterSpacing: '0.5px' }}>ADMINISTRATION</div>
+    <>
+      {/* Overlay on mobile */}
+      {open && <div className="sidebar-overlay" onClick={onClose} />}
+
+      <div className={`admin-sidebar ${open ? 'open' : ''}`}>
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-icon">🎯</div>
+          <div>
+            <div className="sidebar-logo-text">BingoX</div>
+          </div>
+          <span className="sidebar-logo-badge">ADMIN</span>
+          {/* Close button on mobile */}
+          <button
+            onClick={onClose}
+            style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', borderRadius: '6px', display: 'flex' }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <nav className="sidebar-nav">
+          {navItems.map((item, i) => {
+            if (!item.key) return <div key={i} className="nav-section-label">{item.label}</div>;
+            const Icon = item.icon;
+            const isActive = activeTab === item.key;
+            return (
+              <div
+                key={item.key}
+                className={`nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => { setTab(item.key); onClose(); }}
+              >
+                <Icon size={17} strokeWidth={isActive ? 2.5 : 2} />
+                {item.label}
+              </div>
+            );
+          })}
+        </nav>
+
+        <div className="sidebar-bottom">
+          <div className="nav-item" onClick={onLogout} style={{ color: 'var(--error)' }}>
+            <LogOut size={17} /> Sign Out
+          </div>
         </div>
       </div>
-      <nav className="sidebar-nav" style={{ padding: '20px 12px', flex: 1, overflowY: 'auto' }}>
-        <div className="nav-section-label" style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px', paddingLeft: '12px' }}>MAIN MENU</div>
-        {navItems.map((item) => {
-          if (!item.key) return null;
-          const Icon = item.icon;
-          const isActive = activeTab === item.key;
-          return (
-            <div
-              key={item.key}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', cursor: 'pointer',
-                borderRadius: 'var(--radius-sm)', marginBottom: '4px',
-                color: isActive ? 'var(--primary)' : 'var(--text-secondary)',
-                background: isActive ? 'var(--primary-soft)' : 'transparent',
-                fontWeight: isActive ? 600 : 500,
-                transition: 'all var(--transition)'
-              }}
-              onClick={() => setTab(item.key)}
-            >
-              <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-              {item.label}
-            </div>
-          );
-        })}
-        
-        <div className="nav-section-label" style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', marginTop: '24px', marginBottom: '8px', paddingLeft: '12px' }}>ACCOUNT</div>
-        <div
-          style={{
-            display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', cursor: 'pointer',
-            borderRadius: 'var(--radius-sm)', color: 'var(--error)', fontWeight: 500
-          }}
-          onClick={onLogout}
-        >
-          <LogOut size={18} />
-          Sign Out
-        </div>
-      </nav>
-    </div>
+    </>
   );
 }
 
-export function Header({ pageInfo, theme, toggleTheme, onRefresh, refreshing, onLogout }) {
+export function Header({ pageInfo, theme, toggleTheme, onRefresh, refreshing, onLogout, onMenuOpen }) {
   return (
-    <header className="admin-header" style={{
-      height: 'var(--header-h)', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 24px', background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)', zIndex: 10
-    }}>
-      <div>
-        <h1 className="h-title">{pageInfo.title}</h1>
-        <p className="h-sub">{pageInfo.sub}</p>
+    <header className="admin-header">
+      <div className="header-left">
+        <button className="menu-btn" onClick={onMenuOpen} aria-label="Open menu">
+          <Menu size={20} />
+        </button>
+        <div>
+          <div className="header-page-title">{pageInfo.title}</div>
+          <div className="header-page-sub">{pageInfo.sub}</div>
+        </div>
       </div>
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button className={`btn btn-ghost ${refreshing ? 'spinning' : ''}`} onClick={onRefresh} style={{ padding: '0 8px' }}>
-          <RefreshCw size={18} />
+      <div className="header-right">
+        <button className={`header-icon-btn ${refreshing ? 'spinning' : ''}`} onClick={onRefresh} title="Refresh">
+          <RefreshCw size={17} />
         </button>
-        <button className="btn btn-ghost" onClick={toggleTheme} style={{ padding: '0 8px' }}>
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        <button className="header-icon-btn" onClick={toggleTheme} title="Toggle theme">
+          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
         </button>
-        {/* Mobile logout inside header since sidebar hides */}
-        <button className="btn btn-ghost" onClick={onLogout} style={{ padding: '0 8px', color: 'var(--error)', display: window.innerWidth <= 768 ? 'flex' : 'none' }}>
-          <LogOut size={18} />
+        <button className="header-icon-btn" onClick={onLogout} title="Sign out" style={{ color: 'var(--error)' }}>
+          <LogOut size={17} />
         </button>
       </div>
     </header>
@@ -81,49 +81,57 @@ export function Header({ pageInfo, theme, toggleTheme, onRefresh, refreshing, on
 
 export function BottomNav({ navItems, activeTab, setTab }) {
   return (
-    <div style={{
-      display: window.innerWidth <= 768 ? 'flex' : 'none',
-      position: 'fixed', bottom: 0, left: 0, right: 0, height: 'var(--bottom-nav-h)',
-      background: 'var(--bg-surface)', borderTop: '1px solid var(--border)',
-      zIndex: 100, justifyContent: 'space-around', alignItems: 'center',
-      paddingBottom: 'env(safe-area-inset-bottom)'
-    }}>
-      {navItems.map((item) => {
-        if (!item.key) return null;
+    <nav className="bottom-nav">
+      {navItems.filter(item => item.key).map(item => {
         const Icon = item.icon;
         const isActive = activeTab === item.key;
         return (
           <div
             key={item.key}
+            className={`bottom-nav-item ${isActive ? 'active' : ''}`}
             onClick={() => setTab(item.key)}
-            style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              flex: 1, height: '100%', gap: '4px', cursor: 'pointer',
-              color: isActive ? 'var(--primary)' : 'var(--text-muted)',
-              fontWeight: 600, fontSize: '10px', transition: 'color var(--transition)'
-            }}
           >
-            <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+            <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
             <span>{item.label}</span>
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }
 
-export function AdminLayout({ children, navItems, activeTab, setTab, onLogout, pageInfo, theme, toggleTheme, onRefresh, refreshing }) {
+export function AdminLayout({
+  children, navItems, activeTab, setTab, onLogout,
+  pageInfo, theme, toggleTheme, onRefresh, refreshing
+}) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <div className={`admin-root theme-${theme}`}>
-      {window.innerWidth > 768 && (
-        <Sidebar navItems={navItems} activeTab={activeTab} setTab={setTab} onLogout={onLogout} />
-      )}
+      <Sidebar
+        navItems={navItems}
+        activeTab={activeTab}
+        setTab={setTab}
+        onLogout={onLogout}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+
       <div className="admin-main">
-        <Header pageInfo={pageInfo} theme={theme} toggleTheme={toggleTheme} onRefresh={onRefresh} refreshing={refreshing} onLogout={onLogout} />
+        <Header
+          pageInfo={pageInfo}
+          theme={theme}
+          toggleTheme={toggleTheme}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          onLogout={onLogout}
+          onMenuOpen={() => setSidebarOpen(true)}
+        />
         <div className="admin-content fade-in">
           {children}
         </div>
       </div>
+
       <BottomNav navItems={navItems} activeTab={activeTab} setTab={setTab} />
     </div>
   );
