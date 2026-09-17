@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardList, CheckCircle2, Gift, Check, Share2, Users, Copy } from 'lucide-react';
+import { ClipboardList, CheckCircle2, Gift, Check, Share2, Users, Copy, HelpCircle, ArrowRight } from 'lucide-react';
 import { translations } from '../i18n/i18n';
-import './WalletView.css'; // Borrowing the same design tokens and card styles
+import { apiFetch } from '../api';
+import './WalletView.css';
 
 export default function TasksView({ lang }) {
   const [streak, setStreak] = useState(() => parseInt(localStorage.getItem('bingo_streak') || '1'));
   const [cooldownEnd, setCooldownEnd] = useState(() => parseInt(localStorage.getItem('bingo_cooldown') || '0'));
+  const [tasks, setTasks] = useState([]);
   
   const [timeLeft, setTimeLeft] = useState(() => {
     const end = parseInt(localStorage.getItem('bingo_cooldown') || '0');
@@ -23,6 +25,14 @@ export default function TasksView({ lang }) {
   });
 
   useEffect(() => {
+    // Fetch real tasks from backend
+    apiFetch('/api/tasks')
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data)) setTasks(data);
+      })
+      .catch(console.error);
+
     if (cooldownEnd > 0) {
       const now = Date.now();
       if (now > cooldownEnd + (24 * 60 * 60 * 1000)) {
@@ -115,7 +125,7 @@ export default function TasksView({ lang }) {
                       <Check size={14} color="#fff" strokeWidth={3} />
                     </div>
                   ) : isMystery ? (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '14px' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '14px' }}>
                       <Gift size={14} color={isToday ? 'var(--brand-1)' : '#fff'} />
                     </div>
                   ) : (
@@ -152,9 +162,21 @@ export default function TasksView({ lang }) {
 
         <div className="transactions-wrap" style={{ height: 'auto', paddingBottom: '20px' }}>
           <ul className="transactions">
-            <TaskCard icon={<CheckCircle2 size={18} />} title="Join Telegram Channel" reward="5 ETB" status="pending" />
-            <TaskCard icon={<Gift size={18} />} title="Play 5 Bingo Games" reward="10 ETB" status="in_progress" progress="2/5" />
-            <TaskCard icon={<ClipboardList size={18} />} title="Deposit First Time" reward="20 ETB" status="completed" />
+            {tasks.length > 0 ? (
+              tasks.map(t => (
+                <TaskCard 
+                  key={t.id} 
+                  icon={t.type === 'youtube' ? <Gift size={18} /> : t.type === 'tiktok' ? <CheckCircle2 size={18} /> : <Share2 size={18} />} 
+                  title={t.title || `Join our ${t.type || 'social'} channel`} 
+                  reward={`${t.reward || 0} ETB`} 
+                  url={t.url}
+                  button_name={t.button_name}
+                  status="pending" 
+                />
+              ))
+            ) : (
+              <li style={{ padding: '20px', textAlign: 'center', color: '#9CA3AF' }}>No tasks available right now.</li>
+            )}
           </ul>
         </div>
       </main>
@@ -162,7 +184,7 @@ export default function TasksView({ lang }) {
   );
 }
 
-function TaskCard({ icon, title, reward, status, progress }) {
+function TaskCard({ icon, title, reward, status, progress, url, button_name }) {
   const isCompleted = status === 'completed';
   return (
     <li className="tx" style={{ padding: '16px 0', borderBottom: '1px solid var(--line)' }}>
@@ -184,13 +206,17 @@ function TaskCard({ icon, title, reward, status, progress }) {
             Done
           </span>
         ) : (
-          <button style={{ 
+          <button 
+            onClick={() => {
+              if (url) window.open(url, '_blank');
+            }}
+            style={{ 
             background: 'var(--brand-1)', border: 'none', color: '#fff',
             padding: '8px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '700', cursor: 'pointer',
             transition: 'all 0.2s',
             boxShadow: '0 4px 10px rgba(109, 94, 252, 0.2)'
           }}>
-            {status === 'in_progress' ? progress : 'Go'}
+            {button_name || 'Go'}
           </button>
         )}
       </div>

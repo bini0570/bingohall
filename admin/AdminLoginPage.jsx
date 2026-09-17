@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://bingohall-production.up.railway.app';
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 async function apiFetch(path, options = {}) {
   return fetch(`${API_BASE}${path}`, options);

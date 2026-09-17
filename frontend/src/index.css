@@ -595,20 +595,11 @@ body {
   padding: 16px 12px;
   border: 1px solid var(--border-subtle);
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  height: fit-content;
-}
-
-/* ============================================================
    RESPONSIVE
    ============================================================ */
 @media (max-width: 768px) {
   .desktop-nav-tabs { display: none !important; }
   .mobile-bottom-nav { display: flex; }
-
-  .admin-layout { flex-direction: column; padding: 10px; gap: 12px; }
-  .admin-sidebar { width: 100%; flex-direction: row; overflow-x: auto; white-space: nowrap; padding: 8px; }
 
   .gameplay-layout { gap: 4px; }
   .gameplay-masterboard { flex: 1 1 50%; padding: 4px; }

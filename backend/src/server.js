@@ -448,6 +448,20 @@ app.get('/api/wallet/transactions', authenticateToken, async (req, res) => {
 });
 
 // -------------------------------------------------------------
+// TASKS ROUTE (User)
+// -------------------------------------------------------------
+app.get('/api/tasks', async (req, res) => {
+  try {
+    const { supabase } = require('./db');
+    const { data, error } = await supabase.from('tasks').select('*').order('id', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// -------------------------------------------------------------
 // REFERRAL ROUTE
 // -------------------------------------------------------------
 

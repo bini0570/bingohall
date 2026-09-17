@@ -5,8 +5,6 @@ import Navbar from './components/Navbar';
 import LobbyView from './views/LobbyView';
 import GameplayView from './views/GameplayView';
 import WalletView from './views/WalletView';
-import AuthView from './views/AuthView';
-import AdminView from './views/AdminView';
 import TasksView from './views/TasksView';
 import InviteView from './views/InviteView';
 
@@ -75,34 +73,6 @@ function TelegramGate({ message, onPlayWeb }) {
 
       {/* Main CTAs */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '320px' }}>
-        {/* Direct Play Web Link */}
-        <a
-          href="https://localhost:3000"
-          onClick={(e) => {
-            if (onPlayWeb) {
-              e.preventDefault();
-              onPlayWeb();
-            }
-          }}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '10px',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: '#fff',
-            textDecoration: 'none',
-            padding: '15px 28px',
-            borderRadius: '50px',
-            fontSize: '16px',
-            fontWeight: '800',
-            boxShadow: '0 8px 30px rgba(16, 185, 129, 0.5)',
-            transition: 'transform 0.2s, box-shadow 0.2s'
-          }}
-        >
-          🎮 Play Web App Now
-        </a>
-
         {/* Telegram Bot */}
         <a
           href="https://t.me/bingox2019_bot"
@@ -228,7 +198,10 @@ export default function App() {
   const [token, setToken] = useState(localStorage.getItem('bingo_token') || null);
   const [currentView, setCurrentView] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('view') === 'admin' ? 'admin' : 'lobby';
+    if (urlParams.get('view') === 'admin') {
+      window.location.href = '/admin';
+    }
+    return 'lobby';
   });
 
   const [gameState, setGameState] = useState(null);
@@ -514,15 +487,9 @@ export default function App() {
     );
   }
 
-  // Not inside Telegram — allow direct access to LobbyView instead of blocking with gate
-  if (authStatus === 'not_telegram' && showWebAuth) {
-    return (
-      <AuthView
-        lang={lang}
-        onLoginSuccess={handleWebLoginSuccess}
-        onToggleLang={() => setLang(lang === 'en' ? 'am' : 'en')}
-      />
-    );
+  // Not inside Telegram — show the Gate
+  if (authStatus === 'not_telegram') {
+    return <TelegramGate />;
   }
 
   // Inside Telegram but phone not registered
@@ -558,7 +525,7 @@ export default function App() {
         overflowY: currentView === 'lobby' ? 'hidden' : 'auto',
         overflowX: 'hidden',
         position: 'relative',
-        paddingBottom: currentView === 'admin' ? '0' : '74px'
+        paddingBottom: '74px'
       }}>
         {/* Toast Announcement */}
         {toastMessage && (
@@ -630,15 +597,6 @@ export default function App() {
             token={token}
             socket={socket}
             onBalanceUpdated={handleBalanceUpdate}
-          />
-        )}
-
-        {currentView === 'admin' && (
-          <AdminView
-            lang={lang}
-            token={token}
-            socket={socket}
-            onGoToLobby={() => setCurrentView('lobby')}
           />
         )}
       </div>

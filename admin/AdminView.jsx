@@ -7,7 +7,7 @@ import { AdminLayout } from './components/layout';
 import { ToastContainer } from './components/ui';
 import { DashboardTab, PaymentsTab, UsersTab, TasksTab, PromosTab } from './components/tabs';
 
-const API_BASE = (import.meta.env.VITE_API_URL || 'https://bingohall-production.up.railway.app').replace(/\/$/, '');
+const API_BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const apiFetch = async (path, options = {}) => fetch(`${API_BASE}${path}`, options);
 let adminSocket = null;
 
