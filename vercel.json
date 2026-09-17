@@ -14,19 +14,11 @@
   ],
   "routes": [
     {
-      "src": "/admin/assets/(.*)",
-      "dest": "/admin/assets/$1"
-    },
-    {
-      "src": "/admin/(manifest\\.json|sw\\.js|.*\\.png|.*\\.ico|.*\\.svg|.*\\.jpg)",
-      "dest": "/admin/$1"
+      "handle": "filesystem"
     },
     {
       "src": "/admin/(.*)",
       "dest": "/admin/index.html"
-    },
-    {
-      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
