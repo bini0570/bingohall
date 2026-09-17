@@ -35,7 +35,11 @@ app.use(express.json());
 const playerDistPath = fs.existsSync(path.join(__dirname, '../dist'))
   ? path.join(__dirname, '../dist')
   : path.join(__dirname, '../../frontend/dist');
-const adminDistPath = path.join(__dirname, '../admin-dist');
+const adminDistPath = fs.existsSync(path.join(__dirname, '../../Admin/dist'))
+  ? path.join(__dirname, '../../Admin/dist')
+  : fs.existsSync(path.join(__dirname, '../../admin/dist'))
+    ? path.join(__dirname, '../../admin/dist')
+    : path.join(__dirname, '../admin-dist');
 
 // Serve admin SPA FIRST so /admin/* is matched before the player catch-all
 if (fs.existsSync(adminDistPath)) {
