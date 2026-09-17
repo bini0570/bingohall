@@ -78,13 +78,22 @@ export default function TasksView({ lang }) {
     if (timeLeft) return;
     
     const nextStreak = streak >= 7 ? 1 : streak + 1;
-    const nextCooldown = Date.now() + (24 * 60 * 60 * 1000);
+    
+    // Calculate next midnight (local time)
+    const now = new Date();
+    const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const nextCooldown = nextMidnight.getTime();
     
     setStreak(nextStreak);
     setCooldownEnd(nextCooldown);
     localStorage.setItem('bingo_streak', nextStreak.toString());
     localStorage.setItem('bingo_cooldown', nextCooldown.toString());
-    setTimeLeft('24:00:00');
+    
+    const diff = nextCooldown - now.getTime();
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
   };
 
   return (
