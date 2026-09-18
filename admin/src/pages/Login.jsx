@@ -17,13 +17,13 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await axios.post('/api/auth/admin-login', { username, password });
-      if (data.token) {
+      const { data } = await axios.post('/api/auth/login', { identifier: username, password });
+      if (data.token && data.user?.isAdmin) {
         login(data.token);
         toast.success('Logged in successfully');
         navigate('/');
       } else {
-        toast.error('Invalid credentials');
+        toast.error('You do not have admin privileges');
       }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Login failed');
