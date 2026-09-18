@@ -16,7 +16,7 @@ export default function Payments() {
 
   const handleAction = async (type, id, action) => {
     try {
-      await axios.post(/api/admin/+type+/+id+/+action);
+      await axios.post(/api/admin/ + type + / + id + / + action);
       toast.success(action + ' successful');
       if (type === 'deposits') mutateDep();
       if (type === 'withdrawals') mutateWit();
