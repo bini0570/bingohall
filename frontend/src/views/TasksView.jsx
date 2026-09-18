@@ -29,7 +29,14 @@ export default function TasksView({ lang }) {
     apiFetch('/api/tasks')
       .then(r => r.json())
       .then(data => {
-        if (Array.isArray(data)) setTasks(data);
+        if (Array.isArray(data)) {
+          const filteredTasks = data.filter(t => {
+            const title = t.title || '';
+            const type = t.type || '';
+            return !title.toLowerCase().includes('telegram') && type.toLowerCase() !== 'telegram';
+          });
+          setTasks(filteredTasks);
+        }
       })
       .catch(console.error);
 
@@ -99,20 +106,9 @@ export default function TasksView({ lang }) {
   return (
     <div className="wallet-wrapper">
       <main className="wallet-card">
-        <header className="wallet__header">
-          <p className="greeting__label">Rewards</p>
-          <p className="greeting__name">Daily Tasks & Check-in</p>
-        </header>
-
         {/* Daily Check-in Card (TotalCard style) */}
         <section className="total-card" aria-label="Daily Check-In" style={{ padding: '16px' }}>
-          <div className="total-card__top">
-            <div>
-              <p className="total-card__label" style={{ color: '#fff', fontSize: '15px', fontWeight: 'bold' }}>Daily Check-In Streak</p>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '4px', width: '100%', justifyContent: 'space-between', marginTop: '14px' }}>
+          <div style={{ display: 'flex', gap: '4px', width: '100%', justifyContent: 'space-between' }}>
             {[1, 2, 3, 4, 5, 6, 7].map(day => {
               const isToday = day === streak; 
               const isClaimed = day < streak || (streak === 1 && cooldownEnd > Date.now() && day === 7); 
