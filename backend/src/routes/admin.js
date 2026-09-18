@@ -10,9 +10,9 @@ router.get('/tasks', async (req, res) => {
 });
 
 router.post('/tasks', async (req, res) => {
-  const { type, title, url, button_name, reward, target } = req.body;
+  const { type, title, telegram_link, button_name, reward, target, required_invites, required_games } = req.body;
   const { data, error } = await supabase.from('tasks').insert([{
-    type, title, url, button_name, reward, target
+    type, title, telegram_link, button_name, reward, target, required_invites, required_games
   }]).select().single();
   
   if (error) return res.status(500).json({ error: error.message });

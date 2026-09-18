@@ -53,8 +53,12 @@ async function initDB() {
         target TEXT DEFAULT 'All Players',
         status TEXT DEFAULT 'active',
         claim_count INTEGER DEFAULT 0,
+        required_invites INTEGER DEFAULT 5,
+        required_games INTEGER DEFAULT 10,
         created_at TIMESTAMPTZ DEFAULT NOW()
       )`,
+      `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS required_invites INTEGER DEFAULT 5;`,
+      `ALTER TABLE tasks ADD COLUMN IF NOT EXISTS required_games INTEGER DEFAULT 10;`,
       `CREATE TABLE IF NOT EXISTS promos (
         id SERIAL PRIMARY KEY,
         code TEXT UNIQUE NOT NULL,

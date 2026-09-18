@@ -143,6 +143,25 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+app.post('/api/admin/change-password', authenticateAdmin, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const user = await get(`SELECT * FROM users WHERE id = ?`, [req.user.id]);
+    
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) return res.status(400).json({ error: 'Incorrect current password' });
+    
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await run(`UPDATE users SET password_hash = ? WHERE id = ?`, [hashed, req.user.id]);
+    
+    res.json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { identifier, password } = req.body;
@@ -937,7 +956,15 @@ app.get('/api/admin/metrics', authenticateAdmin, async (req, res) => {
 
 app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
   try {
-    const users = await all("SELECT id, username, phone, balance, is_admin, is_banned, created_at FROM users ORDER BY id DESC");
+    const search = req.query.search;
+    if (!search) {
+      return res.json([]);
+    }
+    const q = `%${search}%`;
+    const users = await all(
+      "SELECT id, username, phone, balance, is_admin, is_banned, created_at FROM users WHERE id LIKE ? OR username LIKE ? OR phone LIKE ? ORDER BY id DESC LIMIT 100", 
+      [q, q, q]
+    );
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });

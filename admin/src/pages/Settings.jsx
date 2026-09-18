@@ -1,127 +1,136 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+﻿import React, { useState, useEffect } from 'react';
 import { Card, Button, Input } from '../components/ui';
+import { Moon, Sun, Lock, LogOut } from 'lucide-react';
+import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Save } from 'lucide-react';
+import { useAuth } from '../AuthContext';
 
 export default function Settings() {
-  const [settings, setSettings] = useState({
-    ticket_price: '10',
-    countdown_sec: '40',
-    commission_pct: '20',
-    referral_reward_etb: '10',
-    auto_start: 'true'
+  const { logout } = useAuth();
+  
+  // Theme state
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+  
+  // Password state
+  const [passData, setPassData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  const fetchSettings = async () => {
-    try {
-      const { data } = await axios.get('/api/public/settings');
-      if (data) {
-        setSettings(prev => ({ ...prev, ...data }));
-      }
-    } catch (err) {
-      toast.error('Failed to load settings');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [passLoading, setPassLoading] = useState(false);
 
   useEffect(() => {
-    fetchSettings();
-  }, []);
+    localStorage.setItem('theme', theme);
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [theme]);
 
-  const handleSubmit = async (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true);
+    if (passData.newPassword !== passData.confirmPassword) {
+      return toast.error('New passwords do not match');
+    }
+    
+    setPassLoading(true);
     try {
-      await axios.post('/api/admin/settings', settings);
-      toast.success('Settings updated successfully');
+      await axios.post('/api/admin/change-password', {
+        currentPassword: passData.currentPassword,
+        newPassword: passData.newPassword
+      });
+      toast.success('Password changed successfully');
+      setPassData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (err) {
-      toast.error('Failed to update settings');
+      toast.error(err.response?.data?.error || 'Failed to change password');
     } finally {
-      setSaving(false);
+      setPassLoading(false);
     }
   };
 
-  if (loading) return <div className="text-gray-500">Loading settings...</div>;
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to log out?')) {
+      logout();
+    }
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">System Settings</h1>
-        <p className="text-gray-500">Configure core game and operational parameters</p>
+        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+        <p className="text-gray-500">Manage your admin preferences and account</p>
       </div>
 
-      <div className="max-w-2xl">
-        <Card className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Game Configuration</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Ticket Price (ETB)</label>
-                  <Input 
-                    type="number" min="1" 
-                    value={settings.ticket_price} 
-                    onChange={e => setSettings({...settings, ticket_price: e.target.value})} 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Countdown Duration (sec)</label>
-                  <Input 
-                    type="number" min="10" 
-                    value={settings.countdown_sec} 
-                    onChange={e => setSettings({...settings, countdown_sec: e.target.value})} 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">House Commission (%)</label>
-                  <Input 
-                    type="number" min="0" max="100" 
-                    value={settings.commission_pct} 
-                    onChange={e => setSettings({...settings, commission_pct: e.target.value})} 
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Auto Start Next Round</label>
-                  <select 
-                    className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    value={settings.auto_start}
-                    onChange={e => setSettings({...settings, auto_start: e.target.value})}
-                  >
-                    <option value="true">Enabled</option>
-                    <option value="false">Disabled</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+      <Card className="p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <Lock className="w-5 h-5 text-gray-400" />
+          <h2 className="text-lg font-bold text-gray-900">Change Password</h2>
+        </div>
+        
+        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+            <Input 
+              type="password" 
+              required 
+              value={passData.currentPassword}
+              onChange={e => setPassData({...passData, currentPassword: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+            <Input 
+              type="password" 
+              required 
+              value={passData.newPassword}
+              onChange={e => setPassData({...passData, newPassword: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+            <Input 
+              type="password" 
+              required 
+              value={passData.confirmPassword}
+              onChange={e => setPassData({...passData, confirmPassword: e.target.value})}
+            />
+          </div>
+          <div className="pt-2">
+            <Button type="submit" disabled={passLoading}>
+              {passLoading ? 'Saving...' : 'Change Password'}
+            </Button>
+          </div>
+        </form>
+      </Card>
 
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Rewards</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Referral Reward (ETB)</label>
-                  <Input 
-                    type="number" min="0" 
-                    value={settings.referral_reward_etb} 
-                    onChange={e => setSettings({...settings, referral_reward_etb: e.target.value})} 
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Given to referrer when invited user deposits</p>
-                </div>
-              </div>
-            </div>
+      <Card className="p-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Theme Preferences</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <button
+            onClick={() => setTheme('light')}
+            className={p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors }
+          >
+            <Sun className="w-6 h-6" />
+            <span className="font-medium">Light Mode</span>
+          </button>
+          <button
+            onClick={() => setTheme('dark')}
+            className={p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors }
+          >
+            <Moon className="w-6 h-6" />
+            <span className="font-medium">Dark Mode</span>
+          </button>
+        </div>
+      </Card>
 
-            <div className="pt-4 flex justify-end">
-              <Button type="submit" disabled={saving} className="px-6">
-                {saving ? 'Saving...' : <><Save className="w-4 h-4 mr-2" /> Save Settings</>}
-              </Button>
-            </div>
-          </form>
-        </Card>
-      </div>
+      <Card className="p-6">
+        <h2 className="text-lg font-bold text-gray-900 mb-2">Logout</h2>
+        <p className="text-sm text-gray-500 mb-4">Securely end your session and log out of the admin panel.</p>
+        <Button variant="danger" onClick={handleLogout}>
+          <LogOut className="w-4 h-4 mr-2" /> Logout
+        </Button>
+      </Card>
     </div>
   );
 }
