@@ -43,15 +43,15 @@ export default function Dashboard() {
         <p className="text-gray-500">System overview and key metrics</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {stats.map((stat, i) => (
-          <Card key={i} className="p-5 flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}>
-              <stat.icon className="w-6 h-6" />
+          <Card key={i} className="p-4 flex flex-col gap-2">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${stat.bg} ${stat.color}`}>
+              <stat.icon className="w-5 h-5" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">{stat.label}</p>
-              <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+            <div className="mt-1">
+              <p className="text-xs font-medium text-gray-500">{stat.label}</p>
+              <p className="text-base sm:text-xl font-bold text-gray-900 truncate">{stat.value}</p>
             </div>
           </Card>
         ))}
