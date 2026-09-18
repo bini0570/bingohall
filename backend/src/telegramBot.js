@@ -350,7 +350,6 @@ function initTelegramBot(ioInstance) {
             reply_markup: {
               inline_keyboard: [
                 [{ text: '📱 Telebirr', callback_data: 'cb_with_method_Telebirr' }],
-                [{ text: '🏦 CBE Bank', callback_data: 'cb_with_method_CBE' }],
                 [{ text: '💳 CBE Birr', callback_data: 'cb_with_method_CBEBirr' }]
               ]
             }
@@ -458,7 +457,6 @@ function initTelegramBot(ioInstance) {
             reply_markup: {
               inline_keyboard: [
                 [{ text: '📱 Telebirr', callback_data: 'cb_with_method_Telebirr' }],
-                [{ text: '🏦 CBE Bank', callback_data: 'cb_with_method_CBE' }],
                 [{ text: '💳 CBE Birr', callback_data: 'cb_with_method_CBEBirr' }]
               ]
             }
@@ -543,7 +541,6 @@ function startDepositFlow(chatId) {
       reply_markup: {
         inline_keyboard: [
           [{ text: '📱 Telebirr', callback_data: 'cb_dep_method_Telebirr' }],
-          [{ text: '🏦 CBE Bank', callback_data: 'cb_dep_method_CBE' }],
           [{ text: '💳 CBE Birr', callback_data: 'cb_dep_method_CBEBirr' }]
         ]
       }
