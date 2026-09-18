@@ -10,10 +10,10 @@ let SYS_SETTINGS = {
   MIN_DEPOSIT: 10,
   MAX_DEPOSIT: 100000,
   MIN_WITHDRAW: 10,
-  telebirr_name: 'Biniyam Eyoel',
-  telebirr_number: '0993994168',
-  cbebirr_name: 'Biniyam Eyoel',
-  cbebirr_number: '0993994168'
+  telebirr_name: 'Biniyam',
+  telebirr_number: '0979827836',
+  cbebirr_name: 'Biniyam',
+  cbebirr_number: '0979827836'
 };
 
 // Fetch dynamic settings from backend
