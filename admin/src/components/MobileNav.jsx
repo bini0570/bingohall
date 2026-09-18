@@ -6,15 +6,15 @@ import { useAuth } from '../AuthContext';
 import { useThemeMode } from '../ThemeContext';
 
 const bottomTabs = [
-  { to: '/', label: 'Home', icon: <Dashboard fontSize="small" /> },
-  { to: '/payments', label: 'Payments', icon: <CreditCard fontSize="small" /> },
-  { to: '/players', label: 'Players', icon: <People fontSize="small" /> },
+  { to: '/', label: 'Home', icon: <Dashboard /> },
+  { to: '/payments', label: 'Payments', icon: <CreditCard /> },
+  { to: '/players', label: 'Players', icon: <People /> },
 ];
 
 const moreItems = [
-  { to: '/tasks', label: 'Tasks', icon: <Assignment fontSize="small" /> },
-  { to: '/promos', label: 'Promos', icon: <CardGiftcard fontSize="small" /> },
-  { to: '/broadcast', label: 'Broadcast', icon: <Campaign fontSize="small" /> },
+  { to: '/tasks', label: 'Tasks', icon: <Assignment /> },
+  { to: '/promos', label: 'Promos', icon: <CardGiftcard /> },
+  { to: '/broadcast', label: 'Broadcast', icon: <Campaign /> },
 ];
 
 export default function MobileNav() {
@@ -49,20 +49,20 @@ export default function MobileNav() {
         display: { xs: 'flex', md: 'none' }, 
         alignItems: 'center', 
         justifyContent: 'space-between', 
-        p: 1.5, 
+        p: 2, 
         position: 'sticky', 
         top: 0, 
         zIndex: 1100,
-        bgcolor: mode === 'light' ? 'rgba(248, 250, 252, 0.85)' : 'rgba(2, 6, 23, 0.85)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: mode === 'light' ? '1px solid rgba(15, 23, 42, 0.04)' : '1px solid rgba(255, 255, 255, 0.04)',
+        bgcolor: 'background.paper',
+        borderBottom: '1px solid',
+        borderColor: 'divider',
       }}>
-        <IconButton onClick={() => setIsDrawerOpen(true)} edge="start" sx={{ color: 'text.primary', p: 1 }}>
-          <Menu fontSize="small" />
+        <IconButton onClick={() => setIsDrawerOpen(true)} edge="start" sx={{ color: 'text.primary' }}>
+          <Menu />
         </IconButton>
-        <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{getPageTitle()}</Typography>
-        <IconButton onClick={toggleTheme} sx={{ color: 'text.primary', p: 1 }}>
-          {mode === 'dark' ? <Brightness7 fontSize="small" /> : <Brightness4 fontSize="small" />}
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>{getPageTitle()}</Typography>
+        <IconButton onClick={toggleTheme} sx={{ color: 'text.primary' }}>
+          {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
         </IconButton>
       </Box>
 
@@ -74,7 +74,9 @@ export default function MobileNav() {
           left: 0, 
           right: 0, 
           zIndex: 1100,
-          pb: 'env(safe-area-inset-bottom)'
+          pb: 'env(safe-area-inset-bottom)',
+          borderTop: '1px solid',
+          borderColor: 'divider'
         }} 
         elevation={0}
       >
@@ -85,10 +87,7 @@ export default function MobileNav() {
               label={tab.label} 
               value={tab.to} 
               icon={tab.icon} 
-              sx={{ 
-                '& .MuiBottomNavigationAction-label': { fontWeight: 700, mt: 0.5, fontSize: '0.65rem' },
-                color: location.pathname === tab.to ? 'primary.main' : 'text.secondary'
-              }}
+              sx={{ color: location.pathname === tab.to ? 'primary.main' : 'text.secondary' }}
             />
           ))}
         </BottomNavigation>
@@ -98,52 +97,49 @@ export default function MobileNav() {
         anchor="left"
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        PaperProps={{ sx: { width: 260, p: 2, borderTopRightRadius: 20, borderBottomRightRadius: 20 } }}
+        PaperProps={{ sx: { width: 260 } }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, pl: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 800 }}>Menu</Typography>
-          <IconButton onClick={() => setIsDrawerOpen(false)} sx={{ bgcolor: 'action.hover', p: 1 }}>
-            <Close fontSize="small" />
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Menu</Typography>
+          <IconButton onClick={() => setIsDrawerOpen(false)}>
+            <Close />
           </IconButton>
         </Box>
-        <List sx={{ flex: 1 }}>
+        <Divider />
+        <List sx={{ flex: 1, p: 2 }}>
           {moreItems.map((item) => (
-            <ListItem key={item.to} disablePadding sx={{ mb: 0.5 }}>
+            <ListItem key={item.to} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
                 component={NavLink}
                 to={item.to}
                 onClick={() => setIsDrawerOpen(false)}
-                style={({ isActive }) => ({
-                  borderRadius: '12px',
-                  backgroundColor: isActive ? 'action.selected' : 'transparent',
-                  color: isActive ? 'text.primary' : 'text.secondary',
-                })}
-                sx={{ py: 1, minHeight: 40 }}
+                sx={{
+                  borderRadius: '8px',
+                  bgcolor: location.pathname === item.to ? 'action.selected' : 'transparent',
+                  color: location.pathname === item.to ? 'primary.main' : 'text.primary',
+                }}
               >
-                <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }} />
+                <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.label} />
               </ListItemButton>
             </ListItem>
           ))}
         </List>
-        <Divider sx={{ my: 1 }} />
-        <List>
+        <Divider />
+        <Box sx={{ p: 2 }}>
           <ListItem disablePadding>
             <ListItemButton
               onClick={handleLogout}
               sx={{
-                borderRadius: '12px',
-                color: '#ef4444',
-                py: 1,
-                minHeight: 40,
-                '&:hover': { backgroundColor: 'rgba(239, 68, 68, 0.05)' },
+                borderRadius: '8px',
+                color: 'error.main',
               }}
             >
-              <ListItemIcon sx={{ minWidth: 36, color: 'inherit' }}><Logout fontSize="small" /></ListItemIcon>
-              <ListItemText primary="Sign Out" primaryTypographyProps={{ fontWeight: 700, fontSize: '0.9rem' }} />
+              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}><Logout /></ListItemIcon>
+              <ListItemText primary="Sign Out" />
             </ListItemButton>
           </ListItem>
-        </List>
+        </Box>
       </Drawer>
     </>
   );

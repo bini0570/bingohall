@@ -1,19 +1,20 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box } from '@mui/material';
+﻿import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Avatar, Divider } from '@mui/material';
 import { Dashboard, CreditCard, People, Assignment, CardGiftcard, Campaign, Logout } from '@mui/icons-material';
 import { useAuth } from '../AuthContext';
 
-const navItems = [
-  { to: '/', label: 'Dashboard', icon: <Dashboard fontSize="small" /> },
-  { to: '/payments', label: 'Payments', icon: <CreditCard fontSize="small" /> },
-  { to: '/players', label: 'Players', icon: <People fontSize="small" /> },
-  { to: '/tasks', label: 'Tasks', icon: <Assignment fontSize="small" /> },
-  { to: '/promos', label: 'Promos', icon: <CardGiftcard fontSize="small" /> },
-  { to: '/broadcast', label: 'Broadcast', icon: <Campaign fontSize="small" /> },
+const menuItems = [
+  { to: '/', label: 'Dashboard', icon: <Dashboard /> },
+  { to: '/payments', label: 'Payments', icon: <CreditCard /> },
+  { to: '/players', label: 'Players', icon: <People /> },
+  { to: '/tasks', label: 'Tasks', icon: <Assignment /> },
+  { to: '/promos', label: 'Promos', icon: <CardGiftcard /> },
+  { to: '/broadcast', label: 'Broadcast', icon: <Campaign /> },
 ];
 
 export default function Sidebar() {
+  const location = useLocation();
   const { setToken } = useAuth();
 
   const handleLogout = () => {
@@ -23,102 +24,83 @@ export default function Sidebar() {
   };
 
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        display: { xs: 'none', md: 'block' },
-        width: { xs: 0, md: 250 },
-        flexShrink: 0,
-        '& .MuiDrawer-paper': { 
-          position: 'relative',
-          width: 250, 
-          boxSizing: 'border-box',
-          border: 'none',
-          backgroundColor: 'transparent',
-          padding: 2,
-        },
-      }}
-    >
+    <Box sx={{
+      display: { xs: 'none', md: 'flex' },
+      width: 250,
+      flexShrink: 0
+    }}>
       <Box sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: 'calc(100vh - 32px)',
+        height: '100vh',
+        width: 250,
         bgcolor: 'background.paper',
-        borderRadius: '24px',
-        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.04)',
-        border: '1px solid',
+        borderRight: '1px solid',
         borderColor: 'divider',
-        overflow: 'hidden'
+        position: 'fixed',
+        top: 0,
+        left: 0
       }}>
-        <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{
-            width: 32, height: 32, 
-            background: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)',
-            borderRadius: '10px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'white', fontWeight: 900, fontSize: '1rem'
-          }}>
-            B
+        <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1.5, mt: 1 }}>
+          <Avatar sx={{ bgcolor: 'primary.main', fontWeight: 'bold' }}>B</Avatar>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', lineHeight: 1.2 }}>Bingo Admin</Typography>
+            <Typography variant="caption" color="text.secondary">Management System</Typography>
           </Box>
-          <Typography variant="h5" sx={{ fontWeight: 900, letterSpacing: '-0.02em' }}>Bingo</Typography>
         </Box>
         
+        <Divider sx={{ mb: 2 }} />
+
         <List sx={{ px: 2, flex: 1 }}>
-          {navItems.map((item) => (
-            <ListItem key={item.to} disablePadding sx={{ mb: 0.5 }}>
-              <ListItemButton
-                component={NavLink}
-                to={item.to}
-                style={({ isActive }) => ({
-                  borderRadius: '10px',
-                  backgroundColor: isActive ? 'rgba(15, 23, 42, 0.05)' : 'transparent',
-                  color: isActive ? '#0f172a' : '#64748b',
-                })}
-                sx={{
-                  py: 1,
-                  minHeight: 36,
-                  '&:hover': {
-                    backgroundColor: 'rgba(15, 23, 42, 0.05)',
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText 
-                  primary={item.label} 
-                  primaryTypographyProps={{ fontWeight: 700, fontSize: '0.85rem' }} 
-                />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = location.pathname === item.to;
+            return (
+              <ListItem key={item.to} disablePadding sx={{ mb: 0.5 }}>
+                <ListItemButton
+                  component={NavLink}
+                  to={item.to}
+                  sx={{
+                    borderRadius: '8px',
+                    bgcolor: isActive ? 'action.selected' : 'transparent',
+                    color: isActive ? 'primary.main' : 'text.primary',
+                    '&:hover': {
+                      bgcolor: isActive ? 'action.selected' : 'action.hover',
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={item.label} 
+                    primaryTypographyProps={{ fontWeight: isActive ? 600 : 400 }} 
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
         </List>
 
-        <Box sx={{ p: 2, borderTop: '1px solid rgba(15, 23, 42, 0.06)' }}>
-          <ListItem disablePadding>
-            <ListItemButton
-              onClick={handleLogout}
-              sx={{
-                borderRadius: '10px',
-                color: '#ef4444',
-                py: 1,
-                minHeight: 36,
-                '&:hover': {
-                  backgroundColor: 'rgba(239, 68, 68, 0.05)',
-                },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 32, color: 'inherit' }}>
-                <Logout fontSize="small" />
-              </ListItemIcon>
-              <ListItemText 
-                primary="Sign Out" 
-                primaryTypographyProps={{ fontWeight: 700, fontSize: '0.85rem' }} 
-              />
-            </ListItemButton>
-          </ListItem>
+        <Box sx={{ p: 2 }}>
+          <List disablePadding>
+            <ListItem disablePadding>
+              <ListItemButton
+                onClick={handleLogout}
+                sx={{
+                  borderRadius: '8px',
+                  color: 'error.main',
+                  '&:hover': { bgcolor: 'error.light', color: 'error.contrastText' },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
+                  <Logout />
+                </ListItemIcon>
+                <ListItemText primary="Sign Out" />
+              </ListItemButton>
+            </ListItem>
+          </List>
         </Box>
       </Box>
-    </Drawer>
+    </Box>
   );
 }
