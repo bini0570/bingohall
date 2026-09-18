@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, Button, Input, Select, cn } from '../components/ui';
 import toast from 'react-hot-toast';
@@ -59,7 +59,7 @@ export default function Tasks() {
   const handleToggleStatus = async (task) => {
     try {
       const newStatus = task.status === 'active' ? 'disabled' : 'active';
-      await axios.put(/api/admin/tasks//status, { status: newStatus });
+      await axios.put(`/api/admin/tasks/${task.id}/status`, { status: newStatus });
       fetchTasks();
     } catch (err) {
       toast.error('Failed to update task');
@@ -69,7 +69,7 @@ export default function Tasks() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this task?')) return;
     try {
-      await axios.delete(/api/admin/tasks/);
+      await axios.delete(`/api/admin/tasks/${id}`);
       toast.success('Task deleted');
       fetchTasks();
     } catch (err) {
