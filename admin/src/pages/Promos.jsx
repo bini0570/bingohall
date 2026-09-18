@@ -54,7 +54,7 @@ export default function Promos() {
 
   return (
     <AnimatedPage>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h3">Promo Codes</Typography>
           <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>Manage bonus codes</Typography>
@@ -69,8 +69,8 @@ export default function Promos() {
       <AnimatePresence>
         {creating && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <Card sx={{ p: { xs: 3, md: 4 }, mb: 4, borderTop: '4px solid #4f46e5' }}>
-              <Typography variant="h5" sx={{ mb: 4 }}>Create Promo Code</Typography>
+            <Card sx={{ p: { xs: 2, md: 3 }, mb: 3, borderTop: '4px solid #4f46e5' }}>
+              <Typography variant="h5" sx={{ mb: 3 }}>Create Promo Code</Typography>
               <Box component="form" onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
@@ -108,7 +108,7 @@ export default function Promos() {
           <Grid item xs={12} md={6} lg={4} key={promo.id}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} style={{ height: '100%' }}>
               <Card sx={{ 
-                p: 3, 
+                p: 2.5, 
                 height: '100%', 
                 display: 'flex', 
                 flexDirection: 'column', 
@@ -132,7 +132,7 @@ export default function Promos() {
                     <Typography variant="h5" color="secondary.main" sx={{ fontWeight: 900 }}>+{promo.reward} ETB</Typography>
                   </Box>
 
-                  <Grid container spacing={2} sx={{ mb: 4, mt: 2 }}>
+                  <Grid container spacing={2} sx={{ mb: 3, mt: 2 }}>
                     <Grid item xs={6}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Used / Max</Typography>
                       <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{promo.current_uses} / {promo.max_uses}</Typography>

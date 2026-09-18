@@ -62,7 +62,7 @@ export default function Tasks() {
 
   return (
     <AnimatedPage>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h3">Tasks</Typography>
           <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>Manage reward campaigns</Typography>
@@ -77,8 +77,8 @@ export default function Tasks() {
       <AnimatePresence>
         {creating && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <Card sx={{ p: { xs: 3, md: 4 }, mb: 4, borderTop: '4px solid #4f46e5' }}>
-              <Typography variant="h5" sx={{ mb: 4 }}>Create New Task</Typography>
+            <Card sx={{ p: { xs: 2, md: 3 }, mb: 3, borderTop: '4px solid #4f46e5' }}>
+              <Typography variant="h5" sx={{ mb: 3 }}>Create New Task</Typography>
               <Box component="form" onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
@@ -170,7 +170,7 @@ export default function Tasks() {
           <Grid item xs={12} md={6} lg={4} key={task.id}>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} style={{ height: '100%' }}>
               <Card sx={{ 
-                p: 3, 
+                p: 2.5, 
                 height: '100%', 
                 display: 'flex', 
                 flexDirection: 'column', 
@@ -191,7 +191,7 @@ export default function Tasks() {
                     {task.type === 'Game Played' && 'Requires ' + (task.required_games || 10) + ' games'}
                   </Typography>
 
-                  <Grid container spacing={2} sx={{ mb: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+                  <Grid container spacing={2} sx={{ mb: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
                     <Grid item xs={6}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Target</Typography>
                       <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{task.target}</Typography>

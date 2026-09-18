@@ -27,8 +27,8 @@ export default function Broadcast() {
 
   return (
     <AnimatedPage>
-      <Box sx={{ maxWidth: 600, mx: 'auto', mt: { xs: 2, md: 8 } }}>
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
+      <Box sx={{ maxWidth: 600, mx: 'auto', mt: { xs: 2, md: 4 } }}>
+        <Box sx={{ textAlign: 'center', mb: 4 }}>
           <Box sx={{ 
             width: 80, height: 80, 
             bgcolor: 'rgba(79, 70, 229, 0.1)', 
@@ -45,7 +45,7 @@ export default function Broadcast() {
           </Typography>
         </Box>
 
-        <Card sx={{ p: { xs: 3, md: 4 } }}>
+        <Card sx={{ p: { xs: 2, md: 3 } }}>
           <form onSubmit={handleSend}>
             <TextField
               fullWidth

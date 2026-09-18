@@ -32,8 +32,8 @@ export default function Login() {
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         style={{ width: '100%', maxWidth: 400 }}
       >
-        <Card sx={{ p: { xs: 4, sm: 5 }, borderRadius: '32px' }}>
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <Card sx={{ p: { xs: 3, sm: 4 }, borderRadius: '32px' }}>
+          <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Box sx={{ 
               width: 56, height: 56, 
               background: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)',
@@ -64,7 +64,7 @@ export default function Login() {
               variant="outlined"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              sx={{ mb: 4 }}
+              sx={{ mb: 3 }}
             />
             <Button type="submit" variant="contained" color="primary" fullWidth size="large" sx={{ py: 1.5, fontSize: '1.1rem' }}>
               Sign In

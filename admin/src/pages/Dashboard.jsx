@@ -19,7 +19,7 @@ export default function Dashboard() {
 
   return (
     <AnimatedPage>
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 3 }}>
         <Typography variant="h3">Overview</Typography>
         <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>
           Platform statistics and live metrics.
@@ -29,7 +29,7 @@ export default function Dashboard() {
       <Grid container spacing={3}>
         {stats.map((stat, i) => (
           <Grid item xs={6} md={3} key={i}>
-            <Card sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Card sx={{ p: 2.5, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
                 <Box sx={{ 
                   p: 1.5, 

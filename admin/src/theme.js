@@ -4,43 +4,48 @@ export const theme = createTheme({
   palette: {
     mode: 'light',
     background: {
-      default: '#f8fafc', // slate-50
+      default: '#f8fafc',
       paper: '#ffffff',
     },
     primary: {
-      main: '#0f172a', // slate-900
+      main: '#0f172a',
       light: '#334155',
     },
     secondary: {
-      main: '#4f46e5', // indigo-600
+      main: '#4f46e5',
       light: '#6366f1',
     },
     text: {
       primary: '#0f172a',
-      secondary: '#64748b', // slate-500
+      secondary: '#64748b',
     },
     divider: 'rgba(15, 23, 42, 0.06)',
   },
   typography: {
     fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
-    h1: { fontWeight: 900, letterSpacing: '-0.02em' },
-    h2: { fontWeight: 800, letterSpacing: '-0.01em' },
-    h3: { fontWeight: 800 },
-    h4: { fontWeight: 700 },
-    h5: { fontWeight: 700 },
-    h6: { fontWeight: 700 },
-    subtitle1: { fontWeight: 600 },
-    button: { fontWeight: 700, textTransform: 'none' },
+    fontSize: 13, // Smaller base font size
+    h1: { fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.02em' },
+    h2: { fontSize: '1.5rem', fontWeight: 800, letterSpacing: '-0.01em' },
+    h3: { fontSize: '1.25rem', fontWeight: 800 }, // Used for page headers
+    h4: { fontSize: '1.1rem', fontWeight: 700 },
+    h5: { fontSize: '1rem', fontWeight: 700 }, // Used for card titles
+    h6: { fontSize: '0.9rem', fontWeight: 700 },
+    subtitle1: { fontSize: '0.8rem', fontWeight: 600 },
+    subtitle2: { fontSize: '0.75rem', fontWeight: 700 },
+    body1: { fontSize: '0.8125rem' },
+    body2: { fontSize: '0.75rem' },
+    caption: { fontSize: '0.65rem' },
+    button: { fontSize: '0.8rem', fontWeight: 700, textTransform: 'none' },
   },
   shape: {
-    borderRadius: 16,
+    borderRadius: 12, // Slightly smaller border radius for compactness
   },
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: '24px',
-          boxShadow: '0 8px 32px rgba(15, 23, 42, 0.04)',
+          borderRadius: '16px',
+          boxShadow: '0 4px 20px rgba(15, 23, 42, 0.03)',
           border: '1px solid rgba(15, 23, 42, 0.04)',
           backgroundImage: 'none',
         },
@@ -49,8 +54,8 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: '16px',
-          padding: '10px 24px',
+          borderRadius: '10px',
+          padding: '6px 16px',
           boxShadow: 'none',
           '&:active': {
             transform: 'scale(0.96)',
@@ -74,7 +79,7 @@ export const theme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: '16px',
+          borderRadius: '10px',
           backgroundColor: '#f8fafc',
           '& fieldset': {
             borderColor: 'transparent',
@@ -92,7 +97,7 @@ export const theme = createTheme({
     MuiBottomNavigation: {
       styleOverrides: {
         root: {
-          height: '70px',
+          height: '60px', // Tighter bottom nav
           backgroundColor: 'rgba(255, 255, 255, 0.85)',
           backdropFilter: 'blur(12px)',
           borderTop: '1px solid rgba(15, 23, 42, 0.06)',
@@ -103,7 +108,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           minWidth: 'auto',
-          padding: '8px 0',
+          padding: '4px 0',
           '&.Mui-selected': {
             color: '#4f46e5',
           },

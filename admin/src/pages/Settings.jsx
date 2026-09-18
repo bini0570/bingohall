@@ -40,7 +40,7 @@ export default function Settings() {
 
   return (
     <AnimatedPage>
-      <Box sx={{ mb: 4, maxWidth: 600 }}>
+      <Box sx={{ mb: 3, maxWidth: 600 }}>
         <Typography variant="h3">Settings</Typography>
         <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>
           Manage your admin preferences and account
@@ -52,7 +52,7 @@ export default function Settings() {
           <Box 
             onClick={() => setIsPasswordOpen(!isPasswordOpen)}
             sx={{ 
-              p: 3, 
+              p: 2.5, 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between',
@@ -74,7 +74,7 @@ export default function Settings() {
           </Box>
           
           <Collapse in={isPasswordOpen}>
-            <Box component="form" onSubmit={handlePasswordChange} sx={{ p: 3, pt: 0, borderTop: '1px solid', borderColor: 'divider' }}>
+            <Box component="form" onSubmit={handlePasswordChange} sx={{ p: 2.5, pt: 0, borderTop: '1px solid', borderColor: 'divider' }}>
               <Stack spacing={2} sx={{ mt: 3 }}>
                 <TextField
                   label="Current Password"
@@ -108,7 +108,7 @@ export default function Settings() {
           </Collapse>
         </Card>
 
-        <Card sx={{ p: 3 }}>
+        <Card sx={{ p: 2.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Box sx={{ p: 1.5, bgcolor: '#fef2f2', color: '#ef4444', borderRadius: '12px', display: 'flex' }}>

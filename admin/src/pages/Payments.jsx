@@ -47,7 +47,7 @@ export default function Payments() {
 
   return (
     <AnimatedPage>
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { sm: 'center' }, mb: 4, gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { sm: 'center' }, mb: 3, gap: 2 }}>
         <Box>
           <Typography variant="h3">Payments</Typography>
           <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>Process deposits and withdrawals</Typography>
@@ -136,7 +136,7 @@ export default function Payments() {
         {/* Mobile View */}
         <Box sx={{ display: { xs: 'block', md: 'none' } }}>
           {currentData?.map((item) => (
-            <Box key={item.id} sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
+            <Box key={item.id} sx={{ p: 2.5, borderBottom: '1px solid', borderColor: 'divider' }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Box>
                   <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>{item.username}</Typography>

@@ -57,7 +57,7 @@ export default function Players() {
           </Button>
           
           <Card sx={{ p: { xs: 3, md: 5 } }}>
-            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: { md: 'center' } }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: { md: 'center' } }}>
               <Avatar sx={{ width: 80, height: 80, bgcolor: 'secondary.main', fontSize: '2rem', fontWeight: 800 }}>
                 {selectedPlayer.username.charAt(0).toUpperCase()}
               </Avatar>
@@ -76,18 +76,18 @@ export default function Players() {
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', gap: 3, mt: 5, pt: 5, borderTop: '1px solid', borderColor: 'divider' }}>
-              <Box sx={{ flex: 1, p: 3, bgcolor: 'background.default', borderRadius: '20px' }}>
+            <Box sx={{ display: 'flex', gap: 2.5, mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Box sx={{ flex: 1, p: 2.5, bgcolor: 'background.default', borderRadius: '20px' }}>
                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 700 }}>Main Balance</Typography>
                 <Typography variant="h4" sx={{ mt: 1 }}>{selectedPlayer.balance} ETB</Typography>
               </Box>
-              <Box sx={{ flex: 1, p: 3, bgcolor: 'background.default', borderRadius: '20px' }}>
+              <Box sx={{ flex: 1, p: 2.5, bgcolor: 'background.default', borderRadius: '20px' }}>
                 <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 700 }}>Withdrawable</Typography>
                 <Typography variant="h4" sx={{ mt: 1 }}>{selectedPlayer.withdrawable_balance || 0} ETB</Typography>
               </Box>
             </Box>
 
-            <Box sx={{ mt: 5, pt: 5, borderTop: '1px solid', borderColor: 'divider' }}>
+            <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
               <Typography variant="h6" sx={{ mb: 3 }}>Admin Actions</Typography>
               <Button 
                 variant="contained" 
@@ -150,10 +150,10 @@ export default function Players() {
               >
                 <Card 
                   sx={{ 
-                    p: 3, 
+                    p: 2.5, 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: 3,
+                    gap: 2.5,
                     cursor: 'pointer',
                     opacity: user.is_banned ? 0.6 : 1,
                     '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 12px 40px rgba(15, 23, 42, 0.08)' },
