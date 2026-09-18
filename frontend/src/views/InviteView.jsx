@@ -28,16 +28,10 @@ export default function InviteView({ lang, user }) {
   return (
     <div className="wallet-wrapper">
       <main className="wallet-card">
-        <header className="wallet__header">
-          <p className="greeting__label">Referrals</p>
-          <p className="greeting__name">Invite Friends</p>
-        </header>
-
         {/* Invite Card styled like TotalCard */}
         <section className="total-card" aria-label="Invite Link">
           <div className="total-card__top">
             <div>
-              <p className="total-card__label" style={{ color: 'rgba(255,255,255,0.85)' }}>Your Invite Link</p>
               <div style={{
                 background: 'rgba(255,255,255,0.2)',
                 padding: '12px 14px',
@@ -45,7 +39,6 @@ export default function InviteView({ lang, user }) {
                 color: '#fff',
                 fontSize: '14px',
                 fontFamily: 'monospace',
-                marginTop: '12px',
                 border: '1px solid rgba(255,255,255,0.1)',
                 display: 'flex',
                 alignItems: 'center',
