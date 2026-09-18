@@ -911,6 +911,151 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 
 
 // -------------------------------------------------------------
+// ADMIN GENERAL APIs (Metrics, Users, Payments, Broadcast)
+// -------------------------------------------------------------
+app.get('/api/admin/metrics', authenticateAdmin, async (req, res) => {
+  try {
+    const totalUsers = (await get("SELECT COUNT(*) as count FROM users")).count;
+    const todayUsers = (await get("SELECT COUNT(*) as count FROM users WHERE date(created_at) = date('now')")).count;
+    const onlineUsers = Array.from(io.sockets.sockets.values()).length;
+    
+    const pendingDeposits = (await get("SELECT COUNT(*) as count FROM deposits WHERE status = 'pending'")).count;
+    const pendingWithdrawals = (await get("SELECT COUNT(*) as count FROM withdrawals WHERE status = 'pending'")).count;
+    
+    const totalDeposits = (await get("SELECT SUM(amount) as total FROM deposits WHERE status = 'approved'")).total || 0;
+    const totalWithdrawals = (await get("SELECT SUM(amount) as total FROM withdrawals WHERE status = 'approved'")).total || 0;
+    
+    res.json({
+      totalUsers, todayUsers, onlineUsers,
+      pendingDeposits, pendingWithdrawals,
+      totalDeposits, totalWithdrawals,
+      revenue: totalDeposits - totalWithdrawals
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
+  try {
+    const users = await all("SELECT id, username, phone, balance, is_admin, is_banned, created_at FROM users ORDER BY id DESC");
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/users/:id/ban', authenticateAdmin, async (req, res) => {
+  try {
+    const user = await get("SELECT is_banned FROM users WHERE id = ?", [req.params.id]);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    await run("UPDATE users SET is_banned = ? WHERE id = ?", [user.is_banned ? 0 : 1, req.params.id]);
+    io.emit('admin_data_changed');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/deposits', authenticateAdmin, async (req, res) => {
+  try {
+    const deposits = await all(`
+      SELECT d.*, u.username, u.phone 
+      FROM deposits d 
+      JOIN users u ON d.user_id = u.id 
+      ORDER BY d.id DESC
+    `);
+    res.json(deposits);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/deposits/:id/:action', authenticateAdmin, async (req, res) => {
+  try {
+    const { id, action } = req.params;
+    const status = action === 'approve' ? 'approved' : 'rejected';
+    const deposit = await get("SELECT * FROM deposits WHERE id = ?", [id]);
+    if (!deposit || deposit.status !== 'pending') return res.status(400).json({ error: 'Invalid deposit' });
+
+    await run("UPDATE deposits SET status = ? WHERE id = ?", [status, id]);
+    
+    if (status === 'approved') {
+      await run("UPDATE users SET balance = balance + ? WHERE id = ?", [deposit.amount, deposit.user_id]);
+      
+      // Referral logic
+      const user = await get("SELECT referred_by FROM users WHERE id = ?", [deposit.user_id]);
+      if (user && user.referred_by) {
+        const referrer = await get("SELECT id FROM users WHERE referral_code = ?", [user.referred_by]);
+        if (referrer) {
+          const settingsRows = await all("SELECT * FROM game_settings");
+          const settings = {};
+          settingsRows.forEach(r => settings[r.key] = r.value);
+          const reward = parseFloat(settings.referral_reward_etb || 10);
+          
+          await run("UPDATE users SET balance = balance + ? WHERE id = ?", [reward, referrer.id]);
+          await run("UPDATE referrals SET status = 'completed' WHERE referrer_id = ? AND referee_id = ?", [referrer.id, deposit.user_id]);
+          
+          io.to(`user_${referrer.id}`).emit('balance_update', { reason: 'referral_bonus' });
+        }
+      }
+    }
+    
+    io.to(`user_${deposit.user_id}`).emit('balance_update', { reason: `deposit_${status}` });
+    io.emit('admin_data_changed');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/withdrawals', authenticateAdmin, async (req, res) => {
+  try {
+    const withdrawals = await all(`
+      SELECT w.*, u.username, u.phone 
+      FROM withdrawals w 
+      JOIN users u ON w.user_id = u.id 
+      ORDER BY w.id DESC
+    `);
+    res.json(withdrawals);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/withdrawals/:id/:action', authenticateAdmin, async (req, res) => {
+  try {
+    const { id, action } = req.params;
+    const status = action === 'approve' ? 'approved' : 'rejected';
+    const withdrawal = await get("SELECT * FROM withdrawals WHERE id = ?", [id]);
+    if (!withdrawal || withdrawal.status !== 'pending') return res.status(400).json({ error: 'Invalid withdrawal' });
+
+    await run("UPDATE withdrawals SET status = ? WHERE id = ?", [status, id]);
+    
+    if (status === 'rejected') {
+      await run("UPDATE users SET balance = balance + ? WHERE id = ?", [withdrawal.amount, withdrawal.user_id]);
+    }
+    
+    io.to(`user_${withdrawal.user_id}`).emit('balance_update', { reason: `withdrawal_${status}` });
+    io.emit('admin_data_changed');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/broadcast', authenticateAdmin, async (req, res) => {
+  try {
+    const { message } = req.body;
+    if (!message) return res.status(400).json({ error: 'Message required' });
+    io.emit('system_notification', { message });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// -------------------------------------------------------------
 // ADMIN TASKS API
 // -------------------------------------------------------------
 app.get('/api/admin/tasks', authenticateAdmin, async (req, res) => {
