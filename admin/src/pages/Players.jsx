@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { Card, Button, Input, cn, Skeleton } from '../components/ui';
@@ -27,7 +27,7 @@ export default function Players() {
   const handleBanToggle = async (user) => {
     try {
       const action = user.is_banned ? 'unban' : 'ban';
-      if (!window.confirm(Are you sure you want to +action+ +user.username+?)) return;
+      if (!window.confirm('Are you sure you want to ' + action + ' ' + user.username + '?')) return;
       
       const updatedUser = { ...user, is_banned: user.is_banned ? 0 : 1 };
       
@@ -35,9 +35,8 @@ export default function Players() {
       if (selectedPlayer?.id === user.id) setSelectedPlayer(updatedUser);
       if (users) mutate(users.map(u => u.id === user.id ? updatedUser : u), false);
 
-      await axios.post(/api/admin/users/+user.id+/ban);
-      toast.success(User +action+
-ed successfully);
+      await axios.post('/api/admin/users/' + user.id + '/ban');
+      toast.success('User ' + action + 'ed successfully');
       mutate();
     } catch (err) {
       toast.error('Failed to update user status');

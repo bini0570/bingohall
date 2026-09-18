@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { Card, Button, Input, Select, cn, Skeleton } from '../components/ui';
@@ -32,7 +32,7 @@ export default function Tasks() {
       const newStatus = task.status === 'active' ? 'disabled' : 'active';
       // optimistic update
       mutate(tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t), false);
-      await axios.put(/api/admin/tasks/ + task.id + /status, { status: newStatus });
+      await axios.put('/api/admin/tasks/' + task.id + '/status', { status: newStatus });
       mutate();
     } catch (err) {
       toast.error('Failed to update task');
@@ -44,7 +44,7 @@ export default function Tasks() {
     if (!window.confirm('Are you sure you want to delete this task?')) return;
     try {
       mutate(tasks.filter(t => t.id !== id), false);
-      await axios.delete(/api/admin/tasks/${id}`);
+      await axios.delete('/api/admin/tasks/' + id);
       toast.success('Task deleted');
       mutate();
     } catch (err) {

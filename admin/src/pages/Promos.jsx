@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { Card, Button, Input, cn, Skeleton } from '../components/ui';
@@ -29,7 +29,7 @@ export default function Promos() {
     try {
       const newStatus = promo.status === 'active' ? 'disabled' : 'active';
       mutate(promos.map(p => p.id === promo.id ? { ...p, status: newStatus } : p), false);
-      await axios.put(/api/admin/promos/ + promo.id + /status, { status: newStatus });
+      await axios.put('/api/admin/promos/' + promo.id + '/status', { status: newStatus });
       mutate();
     } catch (err) {
       toast.error('Failed to update promo');
@@ -41,7 +41,7 @@ export default function Promos() {
     if (!window.confirm('Are you sure you want to delete this promo code?')) return;
     try {
       mutate(promos.filter(p => p.id !== id), false);
-      await axios.delete(/api/admin/promos/ + id);
+      await axios.delete('/api/admin/promos/' + id);
       toast.success('Promo deleted');
       mutate();
     } catch (err) {
