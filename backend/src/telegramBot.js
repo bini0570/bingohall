@@ -310,7 +310,7 @@ function initTelegramBot(ioInstance) {
         const method = data.replace('cb_dep_method_', '');
         userStates[chatId] = { action: 'awaiting_deposit_amount', method };
         bot.editMessageText(
-          `📥 <b>${escapeHTML(method)} Deposit</b>\n\nPlease enter the amount you want to deposit in ETB (e.g. 100):`,
+          `📥 <b>${escapeHTML(method)} Deposit</b>\n\nenter the amount (min 20)`,
           { chat_id: chatId, message_id: messageId, parse_mode: 'HTML' }
         ).catch(() => {});
       } else if (data.startsWith('cb_dep_preset_')) {
@@ -584,11 +584,11 @@ async function getAdminAccount(method) {
   };
   
   if (method === 'Telebirr') {
-    return { name: await getSetting('telebirr_name', 'B. E.'), number: await getSetting('telebirr_number', '0993994168'), icon: '📱' };
+    return { name: await getSetting('telebirr_name', 'Biniyam'), number: await getSetting('telebirr_number', '0979827836'), icon: '📱' };
   } else if (method === 'CBEBirr') {
-    return { name: await getSetting('cbebirr_name', 'B. E.'), number: await getSetting('cbebirr_number', '0993994168'), icon: '💲' };
+    return { name: await getSetting('cbebirr_name', 'Biniyam'), number: await getSetting('cbebirr_number', '0979827836'), icon: '💲' };
   } else {
-    return { name: await getSetting('cbe_name', 'B. E.'), number: await getSetting('cbe_number', '1000483719853'), icon: '🏦' };
+    return { name: await getSetting('cbe_name', 'Biniyam'), number: await getSetting('cbe_number', '0979827836'), icon: '🏦' };
   }
 }
 
