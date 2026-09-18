@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { Card, Skeleton } from '../components/ui';
@@ -27,7 +27,7 @@ export default function Dashboard() {
         {stats.map((stat, i) => (
           <Card key={i} className="p-5 md:p-6 flex flex-col justify-between aspect-square md:aspect-auto">
             <div className="flex items-start justify-between">
-              <div className={p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 }>
+              <div className={`p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 ${stat.color}`}>
                 <stat.icon className="w-6 h-6 md:w-8 md:h-8" />
               </div>
             </div>
