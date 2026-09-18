@@ -80,17 +80,7 @@ export default function InviteView({ lang, user }) {
           </div>
         </section>
 
-        <section className="split" aria-label="Referral Stats" style={{ marginTop: '24px' }}>
-          <article className="bal bal--locked">
-            <div className="bal__head">
-              <span className="bal__icon">
-                <Users size={13} strokeWidth={2.5} />
-              </span>
-              <p className="bal__label">Invited Friends</p>
-            </div>
-            <p className="bal__amount">{user?.referrals?.length || 0}</p>
-          </article>
-        </section>
+
 
         <div className="section-head" style={{ marginTop: '28px' }}>
           <h2>Friends List</h2>
