@@ -32,7 +32,7 @@ export default function Tasks() {
       const newStatus = task.status === 'active' ? 'disabled' : 'active';
       // optimistic update
       mutate(tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t), false);
-      await axios.put(/api/admin/tasks/${task.id}/status, { status: newStatus });
+      await axios.put(/api/admin/tasks/ + task.id + /status, { status: newStatus });
       mutate();
     } catch (err) {
       toast.error('Failed to update task');
