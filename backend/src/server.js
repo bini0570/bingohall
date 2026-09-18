@@ -11,7 +11,7 @@ const multer = require('multer');
 
 const { initDB, run, get, all } = require('./db');
 const BingoEngine = require('./bingoEngine');
-const { initTelegramBot, sendTelegramNotification, notifyAdminNewDeposit, notifyAdminNewWithdrawal } = require('./telegramBot');
+const { initTelegramBot, sendTelegramNotification } = require('./telegramBot');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'bingo_secret_key_2026';
 const PORT = process.env.PORT || 4000;
@@ -367,14 +367,6 @@ app.post('/api/wallet/deposit', authenticateToken, upload.single('proofImage'), 
     );
 
     io.emit('admin_data_changed');
-    notifyAdminNewDeposit({
-      id: result.lastID,
-      username: user.username,
-      phone: user.phone,
-      method,
-      amount: parseFloat(amount),
-      receipt_sms: receiptSms
-    });
 
     res.json({ success: true, depositId: result.lastID, message: 'Deposit request submitted for Admin review.' });
   } catch (err) {
@@ -425,14 +417,6 @@ app.post('/api/wallet/withdraw', authenticateToken, async (req, res) => {
     // Notify admin panel in real time
     io.emit('admin_data_changed');
 
-    notifyAdminNewWithdrawal({
-      id: result.lastID,
-      username: user.username,
-      phone: user.phone,
-      method,
-      amount: withdrawAmount,
-      account_number: accountNumber
-    });
 
     res.json({ success: true, withdrawalId: result.lastID, message: 'Withdrawal request submitted for Admin review.' });
   } catch (err) {
