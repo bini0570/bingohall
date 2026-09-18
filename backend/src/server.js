@@ -42,12 +42,11 @@ const adminDistPath = fs.existsSync(path.join(__dirname, '../../Admin/dist'))
     : path.join(__dirname, '../admin-dist');
 
 // Serve admin SPA FIRST so /admin/* is matched before the player catch-all
-if (fs.existsSync(adminDistPath)) {
-  app.use('/admin', express.static(adminDistPath));
-  // SPA fallback — any /admin/* path that isn't a file serves admin index.html
-  app.get('/admin', (req, res) => res.sendFile(path.join(adminDistPath, 'index.html')));
-  app.get('/admin/*', (req, res) => res.sendFile(path.join(adminDistPath, 'index.html')));
-}
+app.use('/admin', express.static(adminDistPath));
+// SPA fallback — any /admin/* path that isn't a file serves admin index.html
+app.get('/admin', (req, res) => res.sendFile(path.join(adminDistPath, 'index.html')));
+app.get('/admin/*', (req, res) => res.sendFile(path.join(adminDistPath, 'index.html')));
+
 
 // Serve player SPA
 if (fs.existsSync(playerDistPath)) {

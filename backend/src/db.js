@@ -67,10 +67,10 @@ async function initDB() {
     ];
 
     for (const sql of migrations) {
-      const { error } = await supabase.rpc('exec_sql', { sql }).catch(() => ({ error: null }));
-      if (error) {
-        // Try direct SQL via supabase admin if rpc not available
-        await supabase.from('_migrations_dummy').select().limit(0).catch(() => {});
+      try {
+        await supabase.rpc('exec_sql', { sql });
+      } catch (err) {
+        // ignore
       }
     }
 
