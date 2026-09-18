@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, Button, Input } from '../components/ui';
 import { Moon, Sun, Lock, LogOut } from 'lucide-react';
 import axios from 'axios';
@@ -109,14 +109,22 @@ export default function Settings() {
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => setTheme('light')}
-            className={p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors }
+            className={`p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors ${
+              theme === 'light' 
+                ? 'bg-blue-50 border-blue-200 text-blue-700' 
+                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
           >
             <Sun className="w-6 h-6" />
             <span className="font-medium">Light Mode</span>
           </button>
           <button
             onClick={() => setTheme('dark')}
-            className={p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors }
+            className={`p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors ${
+              theme === 'dark' 
+                ? 'bg-gray-800 border-gray-700 text-white' 
+                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+            }`}
           >
             <Moon className="w-6 h-6" />
             <span className="font-medium">Dark Mode</span>
