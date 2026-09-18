@@ -19,7 +19,7 @@ const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
   if (!token) return <Navigate to="/login" replace />;
   return (
-    <div className="flex min-h-[100dvh] bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="flex min-h-[100dvh] bg-slate-50 dark:bg-slate-950 transition-colors">
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-[100dvh] overflow-hidden">
         <MobileNav />

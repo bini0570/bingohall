@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -7,29 +7,29 @@ export function cn(...inputs) {
 }
 
 export const Card = ({ className, children }) => (
-  <div className={cn("bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden", className)}>
+  <div className={cn("bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none overflow-hidden", className)}>
     {children}
   </div>
 );
 
 export const Button = React.forwardRef(({ className, variant = 'primary', size = 'md', disabled, ...props }, ref) => {
-  const base = "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
+  const base = "inline-flex items-center justify-center font-bold rounded-2xl transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-950";
   
   const variants = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-    secondary: "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-gray-500",
-    danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
-    ghost: "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 focus:ring-gray-500"
+    primary: "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-indigo-500/30",
+    secondary: "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700",
+    danger: "bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white shadow-lg shadow-red-500/30",
+    ghost: "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
   };
 
   const sizes = {
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-4 py-2 text-sm",
-    lg: "px-5 py-2.5 text-base"
+    sm: "px-4 py-2 text-xs",
+    md: "px-5 py-3 text-sm",
+    lg: "px-6 py-4 text-base"
   };
 
   return (
-    <button ref={ref} disabled={disabled} className={cn(base, variants[variant], sizes[size], disabled && 'opacity-50 cursor-not-allowed', className)} {...props} />
+    <button ref={ref} disabled={disabled} className={cn(base, variants[variant], sizes[size], disabled && 'opacity-50 cursor-not-allowed active:scale-100', className)} {...props} />
   );
 });
 
@@ -37,7 +37,7 @@ export const Input = React.forwardRef(({ className, ...props }, ref) => (
   <input
     ref={ref}
     className={cn(
-      "w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+      "w-full rounded-2xl border-none bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow",
       className
     )}
     {...props}
@@ -48,9 +48,13 @@ export const Select = React.forwardRef(({ className, ...props }, ref) => (
   <select
     ref={ref}
     className={cn(
-      "w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+      "w-full rounded-2xl border-none bg-slate-100 dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-shadow",
       className
     )}
     {...props}
   />
 ));
+
+export const Skeleton = ({ className }) => (
+  <div className={cn("animate-pulse bg-slate-200 dark:bg-slate-800 rounded-2xl", className)} />
+);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Card, Button, Input } from '../components/ui';
 import { Moon, Sun, Lock, LogOut } from 'lucide-react';
 import axios from 'axios';
@@ -57,28 +57,28 @@ export default function Settings() {
   };
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-8 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
-        <p className="text-gray-500 dark:text-gray-400">Manage your admin preferences and account</p>
+        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Settings</h1>
+        <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Manage your admin preferences and account</p>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-6 md:p-8">
         <button 
           onClick={() => setIsPasswordOpen(!isPasswordOpen)}
           className="flex items-center justify-between w-full text-left"
         >
           <div className="flex items-center gap-3">
-            <Lock className="w-5 h-5 text-gray-400" />
-            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Change Password</h2>
+            <Lock className="w-5 h-5 text-slate-400" />
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Change Password</h2>
           </div>
-          <span className="text-gray-400 text-sm">{isPasswordOpen ? 'Hide' : 'Show'}</span>
+          <span className="text-slate-400 text-sm">{isPasswordOpen ? 'Hide' : 'Show'}</span>
         </button>
         
         {isPasswordOpen && (
           <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-6 animate-in fade-in slide-in-from-top-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Password</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Current Password</label>
               <Input 
                 type="password" 
                 required 
@@ -87,7 +87,7 @@ export default function Settings() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Password</label>
               <Input 
                 type="password" 
                 required 
@@ -96,7 +96,7 @@ export default function Settings() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm New Password</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm New Password</label>
               <Input 
                 type="password" 
                 required 
@@ -114,14 +114,14 @@ export default function Settings() {
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Theme Preferences</h2>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Theme Preferences</h2>
         <div className="grid grid-cols-2 gap-4">
           <button
             onClick={() => setTheme('light')}
             className={`p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors ${
               theme === 'light' 
                 ? 'bg-blue-50 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400' 
-                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
           >
             <Sun className="w-6 h-6" />
@@ -131,8 +131,8 @@ export default function Settings() {
             onClick={() => setTheme('dark')}
             className={`p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors ${
               theme === 'dark' 
-                ? 'bg-gray-800 dark:bg-gray-900 border-gray-700 text-white' 
-                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                ? 'bg-slate-800 dark:bg-slate-900 border-slate-700 text-white' 
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
             }`}
           >
             <Moon className="w-6 h-6" />
@@ -142,8 +142,8 @@ export default function Settings() {
       </Card>
 
       <Card className="p-6">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Logout</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Securely end your session and log out of the admin panel.</p>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Logout</h2>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Securely end your session and log out of the admin panel.</p>
         <Button variant="danger" onClick={handleLogout}>
           <LogOut className="w-4 h-4 mr-2" /> Logout
         </Button>

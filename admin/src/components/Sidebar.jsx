@@ -1,7 +1,6 @@
-import React from 'react';
+﻿import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, CreditCard, Users, CheckSquare, Gift, Radio, Settings, LogOut } from 'lucide-react';
-import { useAuth } from '../AuthContext';
+import { LayoutDashboard, CreditCard, Users, CheckSquare, Gift, Radio, Settings } from 'lucide-react';
 import clsx from 'clsx';
 
 const navItems = [
@@ -15,33 +14,30 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const { logout } = useAuth();
-
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-0 transition-colors">
-      <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center gap-3">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white">B</div>
-        <span className="font-bold text-xl tracking-tight text-gray-900 dark:text-gray-100">Bingo Admin</span>
+    <aside className="hidden md:flex flex-col w-64 bg-slate-50/50 dark:bg-slate-950/50 border-r border-slate-200/50 dark:border-slate-800/50 h-screen sticky top-0 transition-colors backdrop-blur-xl">
+      <div className="p-8 pb-4 flex items-center gap-3">
+        <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-lg shadow-indigo-500/30 rounded-2xl flex items-center justify-center font-black text-white text-lg">B</div>
+        <span className="font-bold text-2xl tracking-tight text-slate-900 dark:text-white">Bingo</span>
       </div>
       
-      <nav className="flex-1 overflow-y-auto py-4 px-3 flex flex-col gap-1">
+      <nav className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-2">
         {navItems.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) => clsx(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+              'flex items-center gap-4 px-4 py-3.5 rounded-2xl text-sm font-bold transition-all active:scale-95',
               isActive 
-                ? 'bg-blue-50 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300' 
-                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100'
+                ? 'bg-white dark:bg-slate-900 shadow-xl shadow-slate-200/50 dark:shadow-none text-indigo-600 dark:text-indigo-400' 
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50'
             )}
           >
-            <item.icon className="w-5 h-5" />
+            <item.icon className={clsx("w-5 h-5", "transition-transform")} />
             {item.label}
           </NavLink>
         ))}
       </nav>
-
     </aside>
   );
 }
