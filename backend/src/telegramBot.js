@@ -311,22 +311,8 @@ function initTelegramBot(ioInstance) {
         userStates[chatId] = { action: 'awaiting_deposit_amount', method };
         bot.sendMessage(
           chatId,
-          `${''} <b>${escapeHTML(method)} Deposit</b>\n\nTap a quick amount or type how much ETB to deposit:`,
-          {
-            parse_mode: 'HTML',
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  { text: '100 ETB', callback_data: 'cb_dep_preset_100' },
-                  { text: '200 ETB', callback_data: 'cb_dep_preset_200' }
-                ],
-                [
-                  { text: '500 ETB', callback_data: 'cb_dep_preset_500' },
-                  { text: '1000 ETB', callback_data: 'cb_dep_preset_1000' }
-                ]
-              ]
-            }
-          }
+          `📥 <b>${escapeHTML(method)} Deposit</b>\n\nPlease enter the amount you want to deposit in ETB (e.g. 100):`,
+          { parse_mode: 'HTML' }
         );
       } else if (data.startsWith('cb_dep_preset_')) {
         const amt = parseFloat(data.replace('cb_dep_preset_', ''));
