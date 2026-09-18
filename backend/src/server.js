@@ -931,6 +931,29 @@ app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
 // -------------------------------------------------------------
 // ADMIN GENERAL APIs (Metrics, Users, Payments, Broadcast)
 // -------------------------------------------------------------
+app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
+  try {
+    const usersCountRow = await get('SELECT COUNT(*) as count FROM users');
+    const depositsRow = await get("SELECT SUM(amount) as sum FROM deposits WHERE status = 'approved'");
+    const withdrawalsRow = await get("SELECT SUM(amount) as sum FROM withdrawals WHERE status = 'approved'");
+    
+    const users = await all("SELECT id, username, created_at, 'registration' as type FROM users ORDER BY created_at DESC LIMIT 15");
+    const deposits = await all("SELECT id, username, amount, created_at, 'deposit' as type FROM deposits ORDER BY created_at DESC LIMIT 15");
+    const withdrawals = await all("SELECT id, username, amount, created_at, 'withdrawal' as type FROM withdrawals ORDER BY created_at DESC LIMIT 15");
+    
+    const activities = [...users, ...deposits, ...withdrawals].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 15);
+    
+    res.json({
+      totalPlayers: usersCountRow?.count || 0,
+      totalDeposits: depositsRow?.sum || 0,
+      totalWithdrawals: withdrawalsRow?.sum || 0,
+      recentActivities: activities
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get('/api/admin/metrics', authenticateAdmin, async (req, res) => {
   try {
     const totalUsers = (await get("SELECT COUNT(*) as count FROM users")).count;
