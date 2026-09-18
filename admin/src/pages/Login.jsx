@@ -1,74 +1,77 @@
 import React, { useState } from 'react';
+import { useAuth } from '../AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth } from '../AuthContext';
-import { Card, Input, Button } from '../components/ui';
+import { Card, Box, Typography, Button, TextField } from '@mui/material';
 import toast from 'react-hot-toast';
-import { Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { setToken } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     try {
-      const { data } = await axios.post('/api/auth/login', { identifier: username, password });
-      if (data.token && data.user?.isAdmin) {
-        login(data.token);
-        toast.success('Logged in successfully');
-        navigate('/');
-      } else {
-        toast.error('You do not have admin privileges');
-      }
+      const res = await axios.post('/api/admin/login', { username, password });
+      setToken(res.data.token);
+      toast.success('Welcome back!');
+      navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Login failed');
-    } finally {
-      setLoading(false);
+      toast.error('Invalid credentials');
     }
   };
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md p-8 border-t-4 border-t-blue-600">
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4">
-            <Lock className="w-6 h-6" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-          <p className="text-gray-500 text-sm mt-1">Sign in to manage the platform</p>
-        </div>
+    <Box sx={{ minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'background.default', p: 2 }}>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        style={{ width: '100%', maxWidth: 400 }}
+      >
+        <Card sx={{ p: { xs: 4, sm: 5 }, borderRadius: '32px' }}>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Box sx={{ 
+              width: 56, height: 56, 
+              background: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)',
+              borderRadius: '16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: 'white', fontWeight: 900, fontSize: '1.5rem',
+              mx: 'auto', mb: 2
+            }}>
+              B
+            </Box>
+            <Typography variant="h4" sx={{ fontWeight: 900 }}>Admin Login</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Sign in to manage the platform</Typography>
+          </Box>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-            <Input 
-              type="text" 
-              required
-              value={username} 
+          <form onSubmit={handleSubmit}>
+            <TextField
+              fullWidth
+              label="Username"
+              variant="outlined"
+              value={username}
               onChange={e => setUsername(e.target.value)}
-              placeholder="Enter admin username"
+              sx={{ mb: 3 }}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <Input 
-              type="password" 
-              required
-              value={password} 
+            <TextField
+              fullWidth
+              label="Password"
+              type="password"
+              variant="outlined"
+              value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
+              sx={{ mb: 4 }}
             />
-          </div>
-          <Button type="submit" className="w-full mt-2" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In'}
-          </Button>
-        </form>
-      </Card>
-    </div>
+            <Button type="submit" variant="contained" color="primary" fullWidth size="large" sx={{ py: 1.5, fontSize: '1.1rem' }}>
+              Sign In
+            </Button>
+          </form>
+        </Card>
+      </motion.div>
+    </Box>
   );
 }

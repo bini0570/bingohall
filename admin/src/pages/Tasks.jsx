@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
-import { Card, Button, Input, Select, cn, Skeleton } from '../components/ui';
+import { Card, Box, Typography, Button, TextField, Select, MenuItem, Stack, FormControl, InputLabel, Chip, Grid } from '@mui/material';
+import { Add, PowerSettingsNew, Delete, EmojiEvents } from '@mui/icons-material';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, Power, PowerOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import AnimatedPage from '../components/AnimatedPage';
 
 const fetcher = url => axios.get(url).then(res => res.data);
 
@@ -11,7 +13,14 @@ export default function Tasks() {
   const { data: tasks, error, isLoading, mutate } = useSWR('/api/admin/tasks', fetcher);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState({
-    type: 'Telegram', title: '', telegram_link: '', button_name: 'Join Channel', reward: 10, target: 'All Players', required_invites: 5, required_games: 10
+    title: '',
+    type: 'Telegram',
+    telegram_link: '',
+    button_name: 'Join Channel',
+    required_invites: 5,
+    required_games: 10,
+    reward: '',
+    target: 'All Players'
   });
 
   const handleSubmit = async (e) => {
@@ -21,7 +30,6 @@ export default function Tasks() {
       toast.success('Task created successfully');
       setCreating(false);
       mutate();
-      setFormData({ type: 'Telegram', title: '', telegram_link: '', button_name: 'Join Channel', reward: 10, target: 'All Players', required_invites: 5, required_games: 10 });
     } catch (err) {
       toast.error('Failed to create task');
     }
@@ -30,13 +38,12 @@ export default function Tasks() {
   const handleToggleStatus = async (task) => {
     try {
       const newStatus = task.status === 'active' ? 'disabled' : 'active';
-      // optimistic update
       mutate(tasks.map(t => t.id === task.id ? { ...t, status: newStatus } : t), false);
       await axios.put('/api/admin/tasks/' + task.id + '/status', { status: newStatus });
       mutate();
     } catch (err) {
       toast.error('Failed to update task');
-      mutate(); // rollback
+      mutate();
     }
   };
 
@@ -54,139 +61,167 @@ export default function Tasks() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Tasks</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Manage player reward tasks</p>
-        </div>
+    <AnimatedPage>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Box>
+          <Typography variant="h3">Tasks</Typography>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>Manage reward campaigns</Typography>
+        </Box>
         {!creating && (
-          <Button onClick={() => setCreating(true)}><Plus className="w-5 h-5 mr-1" /> Create Task</Button>
+          <Button variant="contained" startIcon={<Add />} onClick={() => setCreating(true)}>
+            Create Task
+          </Button>
         )}
-      </div>
+      </Box>
 
-      {creating && (
-        <Card className="p-6 md:p-8 border-t-4 border-t-indigo-500">
-          <h2 className="text-xl font-black mb-6 text-slate-900 dark:text-white">Create New Task</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Task Type</label>
-              <Select value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
-                <option value="Telegram">Telegram</option>
-                <option value="Invite">Invite</option>
-                <option value="Game Played">Game Played</option>
-              </Select>
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Task Title</label>
-              <Input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="e.g. Join our Telegram" />
-            </div>
-            {formData.type === 'Telegram' && (
-              <>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Telegram Link</label>
-                  <Input required type="url" value={formData.telegram_link} onChange={e => setFormData({...formData, telegram_link: e.target.value})} placeholder="https://t.me/..." />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Button Name</label>
-                  <Input required value={formData.button_name} onChange={e => setFormData({...formData, button_name: e.target.value})} />
-                </div>
-              </>
-            )}
-            {formData.type === 'Invite' && (
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Required Invites</label>
-                <Input required type="number" min="1" value={formData.required_invites} onChange={e => setFormData({...formData, required_invites: e.target.value})} />
-              </div>
-            )}
-            {formData.type === 'Game Played' && (
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Required Games</label>
-                <Input required type="number" min="1" value={formData.required_games} onChange={e => setFormData({...formData, required_games: e.target.value})} />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Reward (ETB)</label>
-              <Input required type="number" min="0" step="0.1" value={formData.reward} onChange={e => setFormData({...formData, reward: e.target.value})} />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Target Audience</label>
-              <Select value={formData.target} onChange={e => setFormData({...formData, target: e.target.value})}>
-                <option value="All Players">All Players</option>
-                <option value="New Players">New Players</option>
-                <option value="Active Players">Active Players</option>
-                <option value="VIP Depositors">VIP Depositors</option>
-              </Select>
-            </div>
-            <div className="md:col-span-2 flex justify-end gap-3 mt-4">
-              <Button type="button" variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>
-              <Button type="submit">Create Task</Button>
-            </div>
-          </form>
-        </Card>
-      )}
+      <AnimatePresence>
+        {creating && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+            <Card sx={{ p: { xs: 3, md: 4 }, mb: 4, borderTop: '4px solid #4f46e5' }}>
+              <Typography variant="h5" sx={{ mb: 4 }}>Create New Task</Typography>
+              <Box component="form" onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Task Type</InputLabel>
+                      <Select
+                        label="Task Type"
+                        value={formData.type}
+                        onChange={e => setFormData({...formData, type: e.target.value})}
+                      >
+                        <MenuItem value="Telegram">Telegram</MenuItem>
+                        <MenuItem value="Invite">Invite</MenuItem>
+                        <MenuItem value="Game Played">Game Played</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth required label="Task Title"
+                      value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})}
+                    />
+                  </Grid>
+                  {formData.type === 'Telegram' && (
+                    <>
+                      <Grid item xs={12} md={6}>
+                        <TextField
+                          fullWidth required type="url" label="Telegram Link"
+                          value={formData.telegram_link} onChange={e => setFormData({...formData, telegram_link: e.target.value})}
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <TextField
+                          fullWidth required label="Button Name"
+                          value={formData.button_name} onChange={e => setFormData({...formData, button_name: e.target.value})}
+                        />
+                      </Grid>
+                    </>
+                  )}
+                  {formData.type === 'Invite' && (
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth required type="number" inputProps={{ min: 1 }} label="Required Invites"
+                        value={formData.required_invites} onChange={e => setFormData({...formData, required_invites: e.target.value})}
+                      />
+                    </Grid>
+                  )}
+                  {formData.type === 'Game Played' && (
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth required type="number" inputProps={{ min: 1 }} label="Required Games"
+                        value={formData.required_games} onChange={e => setFormData({...formData, required_games: e.target.value})}
+                      />
+                    </Grid>
+                  )}
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth required type="number" inputProps={{ min: 0, step: 0.1 }} label="Reward (ETB)"
+                      value={formData.reward} onChange={e => setFormData({...formData, reward: e.target.value})}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Target Audience</InputLabel>
+                      <Select
+                        label="Target Audience"
+                        value={formData.target}
+                        onChange={e => setFormData({...formData, target: e.target.value})}
+                      >
+                        <MenuItem value="All Players">All Players</MenuItem>
+                        <MenuItem value="New Players">New Players</MenuItem>
+                        <MenuItem value="Active Players">Active Players</MenuItem>
+                        <MenuItem value="VIP Depositors">VIP Depositors</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+                <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                  <Button onClick={() => setCreating(false)} color="inherit">Cancel</Button>
+                  <Button type="submit" variant="contained" color="secondary">Create Task</Button>
+                </Box>
+              </Box>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="p-6">
-              <Skeleton className="h-6 w-20 mb-4" />
-              <Skeleton className="h-8 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-1/2 mb-6" />
-              <div className="flex gap-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-12" /></div>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tasks?.map(task => (
-            <Card key={task.id} className={cn("p-6 flex flex-col justify-between transition-all", task.status !== 'active' && 'opacity-60 scale-95')}>
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-black bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300">
-                    {task.type || 'Telegram'}
-                  </span>
-                  <span className="text-xl font-black text-slate-900 dark:text-white">+{task.reward} ETB</span>
-                </div>
-                <h3 className="font-black text-slate-900 dark:text-white text-xl leading-tight mb-2">{task.title}</h3>
+      <Grid container spacing={3}>
+        {tasks?.map((task, i) => (
+          <Grid item xs={12} md={6} lg={4} key={task.id}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} style={{ height: '100%' }}>
+              <Card sx={{ 
+                p: 3, 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'space-between',
+                opacity: task.status === 'active' ? 1 : 0.6,
+                transform: task.status === 'active' ? 'none' : 'scale(0.98)',
+                transition: 'all 0.2s'
+              }}>
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+                    <Chip label={task.type || 'Telegram'} color="primary" sx={{ borderRadius: '8px', fontWeight: 800 }} />
+                    <Typography variant="h5" color="secondary.main" sx={{ fontWeight: 900 }}>+{task.reward} ETB</Typography>
+                  </Box>
+                  <Typography variant="h5" sx={{ mb: 1, fontWeight: 800 }}>{task.title}</Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                    {task.type === 'Telegram' && task.telegram_link}
+                    {task.type === 'Invite' && 'Requires ' + (task.required_invites || 5) + ' invites'}
+                    {task.type === 'Game Played' && 'Requires ' + (task.required_games || 10) + ' games'}
+                  </Typography>
+
+                  <Grid container spacing={2} sx={{ mb: 4, pt: 3, borderTop: '1px solid', borderColor: 'divider' }}>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Target</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{task.target}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Claims</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{task.claim_count || 0}</Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
                 
-                {task.type === 'Telegram' && <p className="text-sm font-medium text-slate-500 line-clamp-1">{task.telegram_link}</p>}
-                {task.type === 'Invite' && <p className="text-sm font-medium text-slate-500">Requires {task.required_invites || 5} invites</p>}
-                {task.type === 'Game Played' && <p className="text-sm font-medium text-slate-500">Requires {task.required_games || 10} games</p>}
-                
-                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-slate-400 font-medium mb-1">Target</p>
-                    <p className="font-bold text-slate-900 dark:text-white">{task.target}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-400 font-medium mb-1">Claims</p>
-                    <p className="font-bold text-slate-900 dark:text-white">{task.claim_count || 0}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-6 flex gap-3">
-                <Button 
-                  variant={task.status === 'active' ? "secondary" : "primary"}
-                  className="flex-1"
-                  onClick={() => handleToggleStatus(task)}
-                >
-                  {task.status === 'active' ? <><PowerOff className="w-4 h-4 mr-2"/> Disable</> : <><Power className="w-4 h-4 mr-2"/> Enable</>}
-                </Button>
-                <Button variant="danger" className="px-4" onClick={() => handleDelete(task.id)}>
-                  <Trash2 className="w-5 h-5" />
-                </Button>
-              </div>
-            </Card>
-          ))}
-          {tasks?.length === 0 && !creating && (
-            <div className="col-span-full py-16 text-center text-slate-500 font-bold text-lg">
-              No tasks created yet.
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button 
+                    variant={task.status === 'active' ? 'outlined' : 'contained'} 
+                    color="primary" 
+                    fullWidth 
+                    startIcon={<PowerSettingsNew />}
+                    onClick={() => handleToggleStatus(task)}
+                  >
+                    {task.status === 'active' ? 'Disable' : 'Enable'}
+                  </Button>
+                  <Button variant="outlined" color="error" sx={{ minWidth: '48px', px: 0 }} onClick={() => handleDelete(task.id)}>
+                    <Delete />
+                  </Button>
+                </Box>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    </AnimatedPage>
   );
 }

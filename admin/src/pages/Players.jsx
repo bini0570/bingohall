@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
-import { Card, Button, Input, cn, Skeleton } from '../components/ui';
+import { Card, Box, Typography, Button, TextField, InputAdornment, Avatar, Chip, Stack } from '@mui/material';
+import { Search, Block, CheckCircle, ArrowBack } from '@mui/icons-material';
 import toast from 'react-hot-toast';
-import { Search, Ban, ShieldCheck, ArrowLeft, User as UserIcon } from 'lucide-react';
-import { format } from 'date-fns';
+import { motion } from 'framer-motion';
+import AnimatedPage from '../components/AnimatedPage';
 
 const fetcher = url => axios.get(url).then(res => res.data);
 
@@ -31,7 +32,6 @@ export default function Players() {
       
       const updatedUser = { ...user, is_banned: user.is_banned ? 0 : 1 };
       
-      // Optimistic update
       if (selectedPlayer?.id === user.id) setSelectedPlayer(updatedUser);
       if (users) mutate(users.map(u => u.id === user.id ? updatedUser : u), false);
 
@@ -40,138 +40,146 @@ export default function Players() {
       mutate();
     } catch (err) {
       toast.error('Failed to update user status');
-      mutate(); // rollback
+      mutate();
     }
   };
 
   if (selectedPlayer) {
     return (
-      <div className="max-w-3xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => setSelectedPlayer(null)} className="mb-2">
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Search
-        </Button>
-        
-        <Card className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row gap-6 md:items-center">
-            <div className="w-20 h-20 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
-              <UserIcon className="w-10 h-10" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-black text-slate-900 dark:text-white">{selectedPlayer.username}</h1>
-              <p className="text-slate-500 dark:text-slate-400 font-medium">ID: {selectedPlayer.id} • Phone: {selectedPlayer.phone_number}</p>
-            </div>
-            <div>
-              <span className={cn(
-                "px-4 py-2 rounded-2xl text-sm font-black",
-                selectedPlayer.is_banned ? "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300" : "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
-              )}>
-                {selectedPlayer.is_banned ? 'BANNED' : 'ACTIVE'}
-              </span>
-            </div>
-          </div>
+      <AnimatedPage>
+        <Box sx={{ maxWidth: 800, mx: 'auto' }}>
+          <Button 
+            startIcon={<ArrowBack />} 
+            onClick={() => setSelectedPlayer(null)} 
+            sx={{ mb: 3, color: 'text.secondary' }}
+          >
+            Back to Search
+          </Button>
+          
+          <Card sx={{ p: { xs: 3, md: 5 } }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, alignItems: { md: 'center' } }}>
+              <Avatar sx={{ width: 80, height: 80, bgcolor: 'secondary.main', fontSize: '2rem', fontWeight: 800 }}>
+                {selectedPlayer.username.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h3">{selectedPlayer.username}</Typography>
+                <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 0.5 }}>
+                  ID: {selectedPlayer.id} &bull; Phone: {selectedPlayer.phone_number}
+                </Typography>
+              </Box>
+              <Box>
+                <Chip 
+                  label={selectedPlayer.is_banned ? 'BANNED' : 'ACTIVE'} 
+                  color={selectedPlayer.is_banned ? 'error' : 'success'}
+                  sx={{ fontWeight: 800, borderRadius: '12px', px: 1 }}
+                />
+              </Box>
+            </Box>
 
-          <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
-              <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Main Balance</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{selectedPlayer.balance} ETB</p>
-            </div>
-            <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
-              <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Withdrawable</p>
-              <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{selectedPlayer.withdrawable_balance || 0} ETB</p>
-            </div>
-          </div>
+            <Box sx={{ display: 'flex', gap: 3, mt: 5, pt: 5, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Box sx={{ flex: 1, p: 3, bgcolor: 'background.default', borderRadius: '20px' }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 700 }}>Main Balance</Typography>
+                <Typography variant="h4" sx={{ mt: 1 }}>{selectedPlayer.balance} ETB</Typography>
+              </Box>
+              <Box sx={{ flex: 1, p: 3, bgcolor: 'background.default', borderRadius: '20px' }}>
+                <Typography variant="subtitle2" color="text.secondary" sx={{ fontWeight: 700 }}>Withdrawable</Typography>
+                <Typography variant="h4" sx={{ mt: 1 }}>{selectedPlayer.withdrawable_balance || 0} ETB</Typography>
+              </Box>
+            </Box>
 
-          <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
-            <h3 className="font-bold text-slate-900 dark:text-white mb-4">Admin Actions</h3>
-            <Button 
-              variant={selectedPlayer.is_banned ? "secondary" : "danger"} 
-              className="w-full md:w-auto"
-              onClick={() => handleBanToggle(selectedPlayer)}
-            >
-              {selectedPlayer.is_banned ? <><ShieldCheck className="w-5 h-5 mr-2" /> Unban Player</> : <><Ban className="w-5 h-5 mr-2" /> Ban Player</>}
-            </Button>
-          </div>
-        </Card>
-      </div>
+            <Box sx={{ mt: 5, pt: 5, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Typography variant="h6" sx={{ mb: 3 }}>Admin Actions</Typography>
+              <Button 
+                variant="contained" 
+                color={selectedPlayer.is_banned ? "primary" : "error"}
+                size="large"
+                startIcon={selectedPlayer.is_banned ? <CheckCircle /> : <Block />}
+                onClick={() => handleBanToggle(selectedPlayer)}
+                fullWidth={false}
+              >
+                {selectedPlayer.is_banned ? 'Unban Player' : 'Ban Player'}
+              </Button>
+            </Box>
+          </Card>
+        </Box>
+      </AnimatedPage>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="text-center py-8">
-        <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-3">Player Search</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium max-w-lg mx-auto">Find players by their ID, username, or phone number to manage their accounts.</p>
-      </div>
+    <AnimatedPage>
+      <Box sx={{ maxWidth: 800, mx: 'auto', textAlign: 'center', py: 4 }}>
+        <Typography variant="h2" sx={{ mb: 1 }}>Player Search</Typography>
+        <Typography variant="subtitle1" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto' }}>
+          Find players by their ID, username, or phone number to manage their accounts.
+        </Typography>
+      </Box>
 
-      <Card className="p-3 md:p-4 max-w-2xl mx-auto">
-        <form onSubmit={handleSearch} className="flex gap-2 md:gap-3">
-          <Input 
-            value={searchTerm} 
-            onChange={e => setSearchTerm(e.target.value)} 
-            placeholder="Search ID, phone, or username..." 
-            className="flex-1 text-base md:text-lg px-6 bg-transparent dark:bg-transparent"
+      <Card sx={{ p: 2, maxWidth: 600, mx: 'auto', borderRadius: '24px' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: '12px' }}>
+          <TextField
+            fullWidth
+            placeholder="Search ID, phone, or username..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><Search color="action" /></InputAdornment>,
+            }}
           />
-          <Button type="submit" size="lg" disabled={isLoading} className="px-8 rounded-xl shadow-lg">
-            <Search className="w-5 h-5 mr-2" /> Search
+          <Button type="submit" variant="contained" color="primary" disabled={isLoading} sx={{ px: 4 }}>
+            Search
           </Button>
         </form>
       </Card>
 
-      {query && isLoading && (
-        <div className="space-y-4">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="p-6">
-              <div className="flex gap-4">
-                <Skeleton className="w-12 h-12 rounded-xl shrink-0" />
-                <div className="flex-1 space-y-3">
-                  <Skeleton className="h-6 w-1/3" />
-                  <Skeleton className="h-4 w-1/4" />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+      <Box sx={{ mt: 6, maxWidth: 800, mx: 'auto' }}>
+        {query && !isLoading && users?.length === 0 && (
+          <Box sx={{ textAlign: 'center', py: 8 }}>
+            <Typography variant="h6" color="text.secondary">No player found for "{query}"</Typography>
+          </Box>
+        )}
 
-      {query && !isLoading && users?.length === 0 && (
-        <Card className="p-16 text-center border-dashed bg-slate-50/50 dark:bg-slate-800/30">
-          <UserIcon className="w-16 h-16 mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No player found</h3>
-          <p className="text-slate-500 dark:text-slate-400 font-medium">We couldn't find anyone matching "+query+". Try a different search term.</p>
-        </Card>
-      )}
-
-      {query && !isLoading && users?.length > 0 && (
-        <div className="space-y-4">
-          <p className="text-sm font-bold text-slate-500 uppercase tracking-wider px-2">Results ({users.length})</p>
-          {users.map(user => (
-            <Card 
-              key={user.id} 
-              className={cn("p-4 md:p-6 cursor-pointer hover:shadow-2xl transition-all hover:-translate-y-0.5", user.is_banned && 'opacity-60')}
-              onClick={() => setSelectedPlayer(user)}
-            >
-              <div className="flex items-center gap-4 md:gap-6">
-                <div className="w-12 h-12 md:w-16 md:h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 shrink-0">
-                  <UserIcon className="w-6 h-6 md:w-8 md:h-8" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg md:text-xl font-black text-slate-900 dark:text-white truncate">{user.username}</h3>
-                  <p className="text-sm font-medium text-slate-500 truncate">ID: {user.id} • {user.phone_number}</p>
-                </div>
-                <div className="text-right shrink-0 hidden md:block">
-                  <p className="text-lg font-black text-slate-900 dark:text-white">{user.balance} ETB</p>
-                  <p className="text-sm font-medium text-slate-500">Balance</p>
-                </div>
-                {user.is_banned && (
-                  <div className="shrink-0 px-3 py-1 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-400 rounded-xl text-xs font-black">
-                    BANNED
-                  </div>
-                )}
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+        {query && users?.length > 0 && (
+          <Stack spacing={2}>
+            {users.map((user, i) => (
+              <motion.div
+                key={user.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <Card 
+                  sx={{ 
+                    p: 3, 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: 3,
+                    cursor: 'pointer',
+                    opacity: user.is_banned ? 0.6 : 1,
+                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 12px 40px rgba(15, 23, 42, 0.08)' },
+                    transition: 'transform 0.2s, box-shadow 0.2s'
+                  }}
+                  onClick={() => setSelectedPlayer(user)}
+                >
+                  <Avatar sx={{ width: 56, height: 56, bgcolor: 'background.default', color: 'text.secondary', fontWeight: 800 }}>
+                    {user.username.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h6">{user.username}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      ID: {user.id} &bull; {user.phone_number}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ textAlign: 'right' }}>
+                    <Typography variant="h6">{user.balance} ETB</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Balance</Typography>
+                  </Box>
+                </Card>
+              </motion.div>
+            ))}
+          </Stack>
+        )}
+      </Box>
+    </AnimatedPage>
   );
 }

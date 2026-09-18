@@ -1,153 +1,130 @@
-﻿import React, { useState, useEffect } from 'react';
-import { Card, Button, Input } from '../components/ui';
-import { Moon, Sun, Lock, LogOut } from 'lucide-react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import React, { useState } from 'react';
 import { useAuth } from '../AuthContext';
+import axios from 'axios';
+import { Card, Box, Typography, Button, TextField, Stack, Collapse, Switch } from '@mui/material';
+import { Settings as SettingsIcon, VpnKey, Logout, ExpandMore, ExpandLess } from '@mui/icons-material';
+import toast from 'react-hot-toast';
+import AnimatedPage from '../components/AnimatedPage';
 
 export default function Settings() {
-  const { logout } = useAuth();
-  
-  // Theme state
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
-  
-  // Password state
+  const { setToken } = useAuth();
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
-  const [passData, setPassData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  const [passLoading, setPassLoading] = useState(false);
+  const [passwords, setPasswords] = useState({ current: '', new: '' });
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    localStorage.setItem('theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
-
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    if (passData.newPassword !== passData.confirmPassword) {
-      return toast.error('New passwords do not match');
-    }
-    
-    setPassLoading(true);
-    try {
-      await axios.post('/api/admin/change-password', {
-        currentPassword: passData.currentPassword,
-        newPassword: passData.newPassword
-      });
-      toast.success('Password changed successfully');
-      setPassData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to change password');
-    } finally {
-      setPassLoading(false);
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      setToken(null);
     }
   };
 
-  const handleLogout = () => {
-    if (window.confirm('Are you sure you want to log out?')) {
-      logout();
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (!passwords.current || !passwords.new) return;
+    
+    setLoading(true);
+    try {
+      await axios.post('/api/admin/change-password', {
+        currentPassword: passwords.current,
+        newPassword: passwords.new
+      });
+      toast.success('Password updated successfully');
+      setPasswords({ current: '', new: '' });
+      setIsPasswordOpen(false);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update password');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8 max-w-3xl">
-      <div>
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Settings</h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Manage your admin preferences and account</p>
-      </div>
+    <AnimatedPage>
+      <Box sx={{ mb: 4, maxWidth: 600 }}>
+        <Typography variant="h3">Settings</Typography>
+        <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>
+          Manage your admin preferences and account
+        </Typography>
+      </Box>
 
-      <Card className="p-6 md:p-8">
-        <button 
-          onClick={() => setIsPasswordOpen(!isPasswordOpen)}
-          className="flex items-center justify-between w-full text-left"
-        >
-          <div className="flex items-center gap-3">
-            <Lock className="w-5 h-5 text-slate-400" />
-            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Change Password</h2>
-          </div>
-          <span className="text-slate-400 text-sm">{isPasswordOpen ? 'Hide' : 'Show'}</span>
-        </button>
-        
-        {isPasswordOpen && (
-          <form onSubmit={handlePasswordSubmit} className="space-y-4 mt-6 animate-in fade-in slide-in-from-top-2">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Current Password</label>
-              <Input 
-                type="password" 
-                required 
-                value={passData.currentPassword}
-                onChange={e => setPassData({...passData, currentPassword: e.target.value})}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">New Password</label>
-              <Input 
-                type="password" 
-                required 
-                value={passData.newPassword}
-                onChange={e => setPassData({...passData, newPassword: e.target.value})}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Confirm New Password</label>
-              <Input 
-                type="password" 
-                required 
-                value={passData.confirmPassword}
-                onChange={e => setPassData({...passData, confirmPassword: e.target.value})}
-              />
-            </div>
-            <div className="pt-2">
-              <Button type="submit" disabled={passLoading}>
-                {passLoading ? 'Saving...' : 'Change Password'}
-              </Button>
-            </div>
-          </form>
-        )}
-      </Card>
-
-      <Card className="p-6">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">Theme Preferences</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <button
-            onClick={() => setTheme('light')}
-            className={`p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors ${
-              theme === 'light' 
-                ? 'bg-blue-50 dark:bg-blue-900/50 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-400' 
-                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
+      <Stack spacing={3} sx={{ maxWidth: 600 }}>
+        <Card sx={{ p: 0, overflow: 'hidden' }}>
+          <Box 
+            onClick={() => setIsPasswordOpen(!isPasswordOpen)}
+            sx={{ 
+              p: 3, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              bgcolor: isPasswordOpen ? 'rgba(15, 23, 42, 0.02)' : 'transparent',
+              '&:hover': { bgcolor: 'rgba(15, 23, 42, 0.02)' }
+            }}
           >
-            <Sun className="w-6 h-6" />
-            <span className="font-medium">Light Mode</span>
-          </button>
-          <button
-            onClick={() => setTheme('dark')}
-            className={`p-4 border rounded-xl flex flex-col items-center justify-center gap-2 transition-colors ${
-              theme === 'dark' 
-                ? 'bg-slate-800 dark:bg-slate-900 border-slate-700 text-white' 
-                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-            }`}
-          >
-            <Moon className="w-6 h-6" />
-            <span className="font-medium">Dark Mode</span>
-          </button>
-        </div>
-      </Card>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ p: 1.5, bgcolor: '#eff6ff', color: '#3b82f6', borderRadius: '12px', display: 'flex' }}>
+                <VpnKey />
+              </Box>
+              <Box>
+                <Typography variant="subtitle1">Change Password</Typography>
+                <Typography variant="body2" color="text.secondary">Update your admin login password</Typography>
+              </Box>
+            </Box>
+            {isPasswordOpen ? <ExpandLess color="action" /> : <ExpandMore color="action" />}
+          </Box>
+          
+          <Collapse in={isPasswordOpen}>
+            <Box component="form" onSubmit={handlePasswordChange} sx={{ p: 3, pt: 0, borderTop: '1px solid', borderColor: 'divider' }}>
+              <Stack spacing={2} sx={{ mt: 3 }}>
+                <TextField
+                  label="Current Password"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  value={passwords.current}
+                  onChange={e => setPasswords({...passwords, current: e.target.value})}
+                  required
+                />
+                <TextField
+                  label="New Password"
+                  type="password"
+                  variant="outlined"
+                  fullWidth
+                  value={passwords.new}
+                  onChange={e => setPasswords({...passwords, new: e.target.value})}
+                  required
+                />
+                <Button 
+                  type="submit" 
+                  variant="contained" 
+                  color="primary"
+                  disabled={loading || !passwords.current || !passwords.new}
+                  sx={{ mt: 2 }}
+                >
+                  {loading ? 'Updating...' : 'Update Password'}
+                </Button>
+              </Stack>
+            </Box>
+          </Collapse>
+        </Card>
 
-      <Card className="p-6">
-        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Logout</h2>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">Securely end your session and log out of the admin panel.</p>
-        <Button variant="danger" onClick={handleLogout}>
-          <LogOut className="w-4 h-4 mr-2" /> Logout
-        </Button>
-      </Card>
-    </div>
+        <Card sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ p: 1.5, bgcolor: '#fef2f2', color: '#ef4444', borderRadius: '12px', display: 'flex' }}>
+                <Logout />
+              </Box>
+              <Box>
+                <Typography variant="subtitle1">Sign Out</Typography>
+                <Typography variant="body2" color="text.secondary">Securely log out of the admin panel</Typography>
+              </Box>
+            </Box>
+            <Button variant="outlined" color="error" onClick={handleLogout} sx={{ borderRadius: '12px' }}>
+              Logout
+            </Button>
+          </Box>
+        </Card>
+      </Stack>
+    </AnimatedPage>
   );
 }

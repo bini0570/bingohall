@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
-import { Card, Button, cn, Skeleton } from '../components/ui';
+import { Card, Box, Typography, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, Stack } from '@mui/material';
+import { Check, Close } from '@mui/icons-material';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
-import { Check, X } from 'lucide-react';
+import AnimatedPage from '../components/AnimatedPage';
 
 const fetcher = url => axios.get(url).then(res => res.data);
 
@@ -30,173 +31,156 @@ export default function Payments() {
 
   const StatusBadge = ({ status }) => {
     const colors = {
-      pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400',
-      approved: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400',
-      rejected: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400'
+      pending: { bg: '#fef3c7', text: '#d97706' },
+      approved: { bg: '#dcfce7', text: '#16a34a' },
+      rejected: { bg: '#fee2e2', text: '#dc2626' }
     };
+    const color = colors[status] || colors.pending;
     return (
-      <span className={cn("px-3 py-1 text-xs font-bold rounded-xl uppercase tracking-wider", colors[status])}>
-        {status}
-      </span>
+      <Chip 
+        label={status.toUpperCase()} 
+        size="small" 
+        sx={{ bgcolor: color.bg, color: color.text, fontWeight: 900, borderRadius: '8px', letterSpacing: '0.05em' }} 
+      />
     );
   };
 
-  const TableHeader = ({ headers }) => (
-    <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">
-      <tr>
-        {headers.map(h => <th key={h} className="px-6 py-4">{h}</th>)}
-      </tr>
-    </thead>
-  );
-
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Payments</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Process deposits and withdrawals</p>
-        </div>
-        <div className="flex bg-slate-200/50 dark:bg-slate-800 p-1.5 rounded-2xl">
-          <button
+    <AnimatedPage>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { sm: 'center' }, mb: 4, gap: 2 }}>
+        <Box>
+          <Typography variant="h3">Payments</Typography>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>Process deposits and withdrawals</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', bgcolor: 'rgba(15, 23, 42, 0.04)', p: 0.5, borderRadius: '16px' }}>
+          <Button 
+            disableElevation
+            variant={tab === 'deposits' ? 'contained' : 'text'}
             onClick={() => setTab('deposits')}
-            className={cn("px-6 py-2 text-sm font-bold rounded-xl transition-all", tab === 'deposits' ? 'bg-white dark:bg-slate-900 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white')}
+            sx={{ borderRadius: '12px', color: tab === 'deposits' ? 'white' : 'text.secondary', fontWeight: 800 }}
           >
             Deposits
-          </button>
-          <button
+          </Button>
+          <Button 
+            disableElevation
+            variant={tab === 'withdrawals' ? 'contained' : 'text'}
             onClick={() => setTab('withdrawals')}
-            className={cn("px-6 py-2 text-sm font-bold rounded-xl transition-all", tab === 'withdrawals' ? 'bg-white dark:bg-slate-900 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white')}
+            sx={{ borderRadius: '12px', color: tab === 'withdrawals' ? 'white' : 'text.secondary', fontWeight: 800 }}
           >
             Withdrawals
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Box>
+      </Box>
 
-      <Card className="overflow-hidden">
-        {isLoading ? (
-          <div className="p-6 space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        ) : (
-          <>
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full whitespace-nowrap">
-                {tab === 'deposits' ? (
-                  <>
-                    <TableHeader headers={['Date', 'User', 'Method', 'Amount', 'Ref / SMS', 'Status', 'Actions']} />
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {deposits?.map(d => (
-                        <tr key={d.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                          <td className="px-6 py-4 text-sm text-slate-500">{format(new Date(d.created_at), 'MMM d, HH:mm')}</td>
-                          <td className="px-6 py-4">
-                            <div className="font-bold text-slate-900 dark:text-white">{d.username}</div>
-                            <div className="text-sm font-medium text-slate-500">{d.phone}</div>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-slate-300">{d.method}</td>
-                          <td className="px-6 py-4 text-sm font-black text-slate-900 dark:text-white">{d.amount} ETB</td>
-                          <td className="px-6 py-4 text-sm text-slate-500 font-mono bg-slate-50 dark:bg-slate-900/50 rounded-lg">{d.receipt_sms || '-'}</td>
-                          <td className="px-6 py-4"><StatusBadge status={d.status} /></td>
-                          <td className="px-6 py-4">
-                            {d.status === 'pending' && (
-                              <div className="flex gap-2">
-                                <Button size="sm" onClick={() => handleAction('deposits', d.id, 'approve')}><Check className="w-4 h-4 mr-1"/> Approve</Button>
-                                <Button size="sm" variant="danger" onClick={() => handleAction('deposits', d.id, 'reject')}><X className="w-4 h-4 mr-1"/> Reject</Button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                      {deposits?.length === 0 && <tr><td colSpan="7" className="px-6 py-12 text-center text-slate-500 font-bold">No deposits found.</td></tr>}
-                    </tbody>
-                  </>
-                ) : (
-                  <>
-                    <TableHeader headers={['Date', 'User', 'Method', 'Account Details', 'Amount', 'Status', 'Actions']} />
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {withdrawals?.map(w => (
-                        <tr key={w.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                          <td className="px-6 py-4 text-sm text-slate-500">{format(new Date(w.created_at), 'MMM d, HH:mm')}</td>
-                          <td className="px-6 py-4">
-                            <div className="font-bold text-slate-900 dark:text-white">{w.username}</div>
-                            <div className="text-sm font-medium text-slate-500">{w.phone}</div>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-slate-300">{w.method}</td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-bold text-slate-900 dark:text-white">{w.account_name || '-'}</div>
-                            <div className="text-sm text-slate-500 font-mono bg-slate-50 dark:bg-slate-900/50 inline-block px-2 py-0.5 rounded-lg mt-1">{w.account_number}</div>
-                          </td>
-                          <td className="px-6 py-4 text-sm font-black text-slate-900 dark:text-white">{w.amount} ETB</td>
-                          <td className="px-6 py-4"><StatusBadge status={w.status} /></td>
-                          <td className="px-6 py-4">
-                            {w.status === 'pending' && (
-                              <div className="flex gap-2">
-                                <Button size="sm" onClick={() => handleAction('withdrawals', w.id, 'approve')}><Check className="w-4 h-4 mr-1"/> Approve</Button>
-                                <Button size="sm" variant="danger" onClick={() => handleAction('withdrawals', w.id, 'reject')}><X className="w-4 h-4 mr-1"/> Reject</Button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                      {withdrawals?.length === 0 && <tr><td colSpan="7" className="px-6 py-12 text-center text-slate-500 font-bold">No withdrawals found.</td></tr>}
-                    </tbody>
-                  </>
-                )}
-              </table>
-            </div>
-
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-              {currentData?.map(item => (
-                <div key={item.id} className="p-5 space-y-4">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-black text-slate-900 dark:text-white text-lg">{item.username}</div>
-                      <div className="text-sm font-medium text-slate-500 mt-0.5">{item.phone}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-black text-slate-900 dark:text-white">{item.amount} ETB</div>
-                      <div className="text-xs font-medium text-slate-500 mt-1">{format(new Date(item.created_at), 'MMM d, HH:mm')}</div>
-                    </div>
-                  </div>
-                  
-                  {tab === 'deposits' ? (
-                    <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl text-sm grid grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-slate-400 font-medium text-xs block mb-1">Method</span>
-                        <span className="font-bold text-slate-900 dark:text-white">{item.method}</span>
-                      </div>
-                      <div>
-                        <span className="text-slate-400 font-medium text-xs block mb-1">Ref / SMS</span>
-                        <span className="font-mono text-slate-700 dark:text-slate-300 block truncate">{item.receipt_sms || '-'}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl text-sm">
-                      <div className="text-slate-400 font-medium text-xs mb-1.5">Account Details ({item.method})</div>
-                      <div className="font-bold text-slate-900 dark:text-white mb-1">{item.account_name || '-'}</div>
-                      <div className="font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 inline-block px-2 py-1 rounded-lg">{item.account_number}</div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-2">
-                    <StatusBadge status={item.status} />
-                    {item.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <Button size="sm" className="px-4 py-2" onClick={() => handleAction(tab, item.id, 'approve')}><Check className="w-5 h-5"/></Button>
-                        <Button size="sm" variant="danger" className="px-4 py-2" onClick={() => handleAction(tab, item.id, 'reject')}><X className="w-5 h-5"/></Button>
-                      </div>
+      <Card sx={{ overflow: 'hidden', p: 0 }}>
+        {/* Desktop Table */}
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <TableContainer>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead sx={{ bgcolor: 'rgba(15, 23, 42, 0.02)' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 800, color: 'text.secondary' }}>DATE</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: 'text.secondary' }}>USER</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: 'text.secondary' }}>METHOD</TableCell>
+                  {tab === 'withdrawals' && <TableCell sx={{ fontWeight: 800, color: 'text.secondary' }}>ACCOUNT</TableCell>}
+                  <TableCell sx={{ fontWeight: 800, color: 'text.secondary' }}>AMOUNT</TableCell>
+                  {tab === 'deposits' && <TableCell sx={{ fontWeight: 800, color: 'text.secondary' }}>REF / SMS</TableCell>}
+                  <TableCell sx={{ fontWeight: 800, color: 'text.secondary' }}>STATUS</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: 'text.secondary' }}>ACTIONS</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {!isLoading && currentData?.map((row) => (
+                  <TableRow key={row.id} hover>
+                    <TableCell>{format(new Date(row.created_at), 'MMM d, HH:mm')}</TableCell>
+                    <TableCell>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{row.username}</Typography>
+                      <Typography variant="caption" color="text.secondary">{row.phone}</Typography>
+                    </TableCell>
+                    <TableCell>{row.method}</TableCell>
+                    {tab === 'withdrawals' && (
+                      <TableCell>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{row.account_name || '-'}</Typography>
+                        <Typography variant="caption" sx={{ fontFamily: 'monospace', bgcolor: 'rgba(15, 23, 42, 0.04)', px: 1, borderRadius: 1 }}>
+                          {row.account_number}
+                        </Typography>
+                      </TableCell>
                     )}
-                  </div>
-                </div>
-              ))}
-              {currentData?.length === 0 && (
-                <div className="p-12 text-center text-slate-500 font-bold">No {tab} found.</div>
-              )}
-            </div>
-          </>
-        )}
+                    <TableCell><Typography variant="subtitle2" sx={{ fontWeight: 900 }}>{row.amount} ETB</Typography></TableCell>
+                    {tab === 'deposits' && (
+                      <TableCell>
+                        <Typography variant="caption" sx={{ fontFamily: 'monospace', bgcolor: 'rgba(15, 23, 42, 0.04)', px: 1, borderRadius: 1 }}>
+                          {row.receipt_sms || '-'}
+                        </Typography>
+                      </TableCell>
+                    )}
+                    <TableCell><StatusBadge status={row.status} /></TableCell>
+                    <TableCell>
+                      {row.status === 'pending' && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button size="small" variant="contained" color="success" onClick={() => handleAction(tab, row.id, 'approve')} sx={{ minWidth: 40, px: 1 }}><Check /></Button>
+                          <Button size="small" variant="contained" color="error" onClick={() => handleAction(tab, row.id, 'reject')} sx={{ minWidth: 40, px: 1 }}><Close /></Button>
+                        </Box>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {currentData?.length === 0 && (
+                  <TableRow><TableCell colSpan={8} align="center" sx={{ py: 6, color: 'text.secondary', fontWeight: 800 }}>No {tab} found.</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+
+        {/* Mobile View */}
+        <Box sx={{ display: { xs: 'block', md: 'none' } }}>
+          {currentData?.map((item) => (
+            <Box key={item.id} sx={{ p: 3, borderBottom: '1px solid', borderColor: 'divider' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                <Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 900 }}>{item.username}</Typography>
+                  <Typography variant="body2" color="text.secondary">{item.phone}</Typography>
+                </Box>
+                <Box sx={{ textAlign: 'right' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 900 }}>{item.amount} ETB</Typography>
+                  <Typography variant="caption" color="text.secondary">{format(new Date(item.created_at), 'MMM d, HH:mm')}</Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ bgcolor: 'rgba(15, 23, 42, 0.02)', p: 2, borderRadius: '16px', mb: 2 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>
+                  {tab === 'deposits' ? 'Method & Ref' : 'Account Details'}
+                </Typography>
+                {tab === 'deposits' ? (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 800 }}>{item.method}</Typography>
+                    <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>{item.receipt_sms || '-'}</Typography>
+                  </Box>
+                ) : (
+                  <Box sx={{ mt: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 800 }}>{item.account_name || '-'}</Typography>
+                    <Typography variant="caption" sx={{ fontFamily: 'monospace' }}>{item.account_number}</Typography>
+                  </Box>
+                )}
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <StatusBadge status={item.status} />
+                {item.status === 'pending' && (
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button size="small" variant="contained" color="success" onClick={() => handleAction(tab, item.id, 'approve')} sx={{ minWidth: 44, height: 44, px: 0, borderRadius: '12px' }}><Check /></Button>
+                    <Button size="small" variant="contained" color="error" onClick={() => handleAction(tab, item.id, 'reject')} sx={{ minWidth: 44, height: 44, px: 0, borderRadius: '12px' }}><Close /></Button>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          ))}
+          {currentData?.length === 0 && (
+            <Box sx={{ py: 6, textAlign: 'center', color: 'text.secondary', fontWeight: 800 }}>No {tab} found.</Box>
+          )}
+        </Box>
       </Card>
-    </div>
+    </AnimatedPage>
   );
 }

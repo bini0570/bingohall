@@ -1,27 +1,29 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
-import { Card, Button, Input, cn, Skeleton } from '../components/ui';
+import { Card, Box, Typography, Button, TextField, Stack, Chip, Grid } from '@mui/material';
+import { Add, Delete, ContentCopy, PowerSettingsNew } from '@mui/icons-material';
 import toast from 'react-hot-toast';
-import { Plus, Trash2, Power, PowerOff, Gift } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import AnimatedPage from '../components/AnimatedPage';
+import { format } from 'date-fns';
 
 const fetcher = url => axios.get(url).then(res => res.data);
 
 export default function Promos() {
   const { data: promos, error, isLoading, mutate } = useSWR('/api/admin/promos', fetcher);
   const [creating, setCreating] = useState(false);
-  const [formData, setFormData] = useState({ code: '', reward: 10, usage_limit: 100 });
+  const [formData, setFormData] = useState({ code: '', reward: '', max_uses: '' });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       await axios.post('/api/admin/promos', formData);
-      toast.success('Promo created successfully');
+      toast.success('Promo code created');
       setCreating(false);
       mutate();
-      setFormData({ code: '', reward: 10, usage_limit: 100 });
     } catch (err) {
-      toast.error('Failed to create promo');
+      toast.error('Failed to create promo code');
     }
   };
 
@@ -51,98 +53,116 @@ export default function Promos() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Promotions</h1>
-          <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">Manage promo codes and rewards</p>
-        </div>
+    <AnimatedPage>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Box>
+          <Typography variant="h3">Promo Codes</Typography>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ mt: 1 }}>Manage bonus codes</Typography>
+        </Box>
         {!creating && (
-          <Button onClick={() => setCreating(true)}><Plus className="w-5 h-5 mr-1" /> Create Promo</Button>
+          <Button variant="contained" startIcon={<Add />} onClick={() => setCreating(true)}>
+            Create Code
+          </Button>
         )}
-      </div>
+      </Box>
 
-      {creating && (
-        <Card className="p-6 md:p-8 border-t-4 border-t-violet-500">
-          <h2 className="text-xl font-black mb-6 text-slate-900 dark:text-white">Create Promo Code</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Promo Code</label>
-              <Input required value={formData.code} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})} placeholder="e.g. VIP2024" />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Reward (ETB)</label>
-              <Input required type="number" min="0" step="0.1" value={formData.reward} onChange={e => setFormData({...formData, reward: e.target.value})} />
-            </div>
-            <div>
-              <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Usage Limit (-1 for unlimited)</label>
-              <Input required type="number" min="-1" value={formData.usage_limit} onChange={e => setFormData({...formData, usage_limit: e.target.value})} />
-            </div>
-            <div className="md:col-span-3 flex justify-end gap-3 mt-4">
-              <Button type="button" variant="ghost" onClick={() => setCreating(false)}>Cancel</Button>
-              <Button type="submit">Create Promo</Button>
-            </div>
-          </form>
-        </Card>
-      )}
-
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => (
-            <Card key={i} className="p-6">
-              <Skeleton className="w-12 h-12 rounded-2xl mb-4" />
-              <Skeleton className="h-8 w-1/2 mb-4" />
-              <Skeleton className="h-4 w-full mb-6" />
-              <div className="flex gap-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-12" /></div>
+      <AnimatePresence>
+        {creating && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
+            <Card sx={{ p: { xs: 3, md: 4 }, mb: 4, borderTop: '4px solid #4f46e5' }}>
+              <Typography variant="h5" sx={{ mb: 4 }}>Create Promo Code</Typography>
+              <Box component="form" onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      fullWidth required label="Promo Code"
+                      value={formData.code} onChange={e => setFormData({...formData, code: e.target.value.toUpperCase()})}
+                      helperText="e.g. WELCOME50"
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      fullWidth required type="number" inputProps={{ min: 0, step: 0.1 }} label="Reward (ETB)"
+                      value={formData.reward} onChange={e => setFormData({...formData, reward: e.target.value})}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <TextField
+                      fullWidth required type="number" inputProps={{ min: 1 }} label="Max Uses"
+                      value={formData.max_uses} onChange={e => setFormData({...formData, max_uses: e.target.value})}
+                    />
+                  </Grid>
+                </Grid>
+                <Box sx={{ mt: 4, display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                  <Button onClick={() => setCreating(false)} color="inherit">Cancel</Button>
+                  <Button type="submit" variant="contained" color="secondary">Create Code</Button>
+                </Box>
+              </Box>
             </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {promos?.map(promo => (
-            <Card key={promo.id} className={cn("p-6 flex flex-col justify-between transition-all", promo.status !== 'active' && 'opacity-60 scale-95')}>
-              <div>
-                <div className="flex justify-between items-start mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-violet-500 to-fuchsia-600 shadow-lg shadow-fuchsia-500/30 text-white flex items-center justify-center">
-                    <Gift className="w-6 h-6" />
-                  </div>
-                  <span className="text-xl font-black text-slate-900 dark:text-white">+{promo.reward} ETB</span>
-                </div>
-                <h3 className="font-mono font-black text-slate-900 dark:text-white text-3xl tracking-widest mb-2 truncate">{promo.code}</h3>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <Grid container spacing={3}>
+        {promos?.map((promo, i) => (
+          <Grid item xs={12} md={6} lg={4} key={promo.id}>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} style={{ height: '100%' }}>
+              <Card sx={{ 
+                p: 3, 
+                height: '100%', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'space-between',
+                opacity: promo.status === 'active' ? 1 : 0.6,
+                transform: promo.status === 'active' ? 'none' : 'scale(0.98)',
+                transition: 'all 0.2s'
+              }}>
+                <Box>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                    <Box sx={{ 
+                      px: 2, py: 1, 
+                      bgcolor: 'rgba(15, 23, 42, 0.04)', 
+                      borderRadius: '12px',
+                      display: 'flex', alignItems: 'center', gap: 1
+                    }}>
+                      <Typography variant="h6" sx={{ fontFamily: 'monospace', fontWeight: 900, letterSpacing: '0.1em' }}>
+                        {promo.code}
+                      </Typography>
+                    </Box>
+                    <Typography variant="h5" color="secondary.main" sx={{ fontWeight: 900 }}>+{promo.reward} ETB</Typography>
+                  </Box>
+
+                  <Grid container spacing={2} sx={{ mb: 4, mt: 2 }}>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Used / Max</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{promo.current_uses} / {promo.max_uses}</Typography>
+                    </Grid>
+                    <Grid item xs={6}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Created</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{format(new Date(promo.created_at), 'MMM d, yyyy')}</Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
                 
-                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-slate-400 font-medium mb-1">Used</p>
-                    <p className="font-bold text-slate-900 dark:text-white">{promo.used_count || 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-slate-400 font-medium mb-1">Limit</p>
-                    <p className="font-bold text-slate-900 dark:text-white">{promo.usage_limit === -1 ? 'Unlimited' : promo.usage_limit}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-6 flex gap-3">
-                <Button 
-                  variant={promo.status === 'active' ? "secondary" : "primary"}
-                  className="flex-1"
-                  onClick={() => handleToggleStatus(promo)}
-                >
-                  {promo.status === 'active' ? <><PowerOff className="w-4 h-4 mr-2"/> Disable</> : <><Power className="w-4 h-4 mr-2"/> Enable</>}
-                </Button>
-                <Button variant="danger" className="px-4" onClick={() => handleDelete(promo.id)}>
-                  <Trash2 className="w-5 h-5" />
-                </Button>
-              </div>
-            </Card>
-          ))}
-          {promos?.length === 0 && !creating && (
-            <div className="col-span-full py-16 text-center text-slate-500 font-bold text-lg">
-              No promo codes created yet.
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Button 
+                    variant={promo.status === 'active' ? 'outlined' : 'contained'} 
+                    color="primary" 
+                    fullWidth 
+                    startIcon={<PowerSettingsNew />}
+                    onClick={() => handleToggleStatus(promo)}
+                  >
+                    {promo.status === 'active' ? 'Disable' : 'Enable'}
+                  </Button>
+                  <Button variant="outlined" color="error" sx={{ minWidth: '48px', px: 0 }} onClick={() => handleDelete(promo.id)}>
+                    <Delete />
+                  </Button>
+                </Box>
+              </Card>
+            </motion.div>
+          </Grid>
+        ))}
+      </Grid>
+    </AnimatedPage>
   );
 }

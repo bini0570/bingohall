@@ -1,55 +1,71 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
-import Sidebar from './components/Sidebar';
-import MobileNav from './components/MobileNav';
+import { ThemeProvider, CssBaseline, Box } from '@mui/material';
+import { theme } from './theme';
+import { AnimatePresence } from 'framer-motion';
 
-// Pages
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
-import Payments from './pages/Payments';
 import Players from './pages/Players';
 import Tasks from './pages/Tasks';
 import Promos from './pages/Promos';
+import Payments from './pages/Payments';
 import Broadcast from './pages/Broadcast';
 import Settings from './pages/Settings';
+import Sidebar from './components/Sidebar';
+import MobileNav from './components/MobileNav';
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
   if (!token) return <Navigate to="/login" replace />;
   return (
-    <div className="flex min-h-[100dvh] bg-slate-50 dark:bg-slate-950 transition-colors">
+    <Box sx={{ display: 'flex', minHeight: '100dvh', bgcolor: 'background.default' }}>
       <Sidebar />
-      <div className="flex-1 flex flex-col min-h-[100dvh] overflow-hidden">
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100dvh', overflow: 'hidden' }}>
         <MobileNav />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 pb-24 md:pb-8">
-          <div className="max-w-6xl mx-auto">
-            {children}
-          </div>
-        </main>
-      </div>
-    </div>
+        <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 4 } }}>
+          {children}
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+const AnimatedRoutes = () => {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/players" element={<Players />} />
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/promos" element={<Promos />} />
+        <Route path="/payments" element={<Payments />} />
+        <Route path="/broadcast" element={<Broadcast />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
   );
 };
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter basename="/">
-        <Toaster position="top-right" />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
-          <Route path="/players" element={<ProtectedRoute><Players /></ProtectedRoute>} />
-          <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-          <Route path="/promos" element={<ProtectedRoute><Promos /></ProtectedRoute>} />
-          <Route path="/broadcast" element={<ProtectedRoute><Broadcast /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <AnimatedRoutes />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

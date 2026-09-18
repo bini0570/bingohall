@@ -1,24 +1,26 @@
 ﻿import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CreditCard, Users, CheckSquare, Gift, Radio, Settings, Menu, X } from 'lucide-react';
-import clsx from 'clsx';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { BottomNavigation, BottomNavigationAction, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box, IconButton, Paper } from '@mui/material';
+import { Dashboard, CreditCard, People, Assignment, CardGiftcard, Campaign, Settings, Menu, Close } from '@mui/icons-material';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const bottomTabs = [
-  { to: '/', label: 'Home', icon: LayoutDashboard },
-  { to: '/payments', label: 'Payments', icon: CreditCard },
-  { to: '/players', label: 'Players', icon: Users },
+  { to: '/', label: 'Home', icon: <Dashboard /> },
+  { to: '/payments', label: 'Payments', icon: <CreditCard /> },
+  { to: '/players', label: 'Players', icon: <People /> },
 ];
 
 const moreItems = [
-  { to: '/tasks', label: 'Tasks', icon: CheckSquare },
-  { to: '/promos', label: 'Promos', icon: Gift },
-  { to: '/broadcast', label: 'Broadcast', icon: Radio },
-  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/tasks', label: 'Tasks', icon: <Assignment /> },
+  { to: '/promos', label: 'Promos', icon: <CardGiftcard /> },
+  { to: '/broadcast', label: 'Broadcast', icon: <Campaign /> },
+  { to: '/settings', label: 'Settings', icon: <Settings /> },
 ];
 
 export default function MobileNav() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const getPageTitle = () => {
     switch (location.pathname) {
@@ -35,66 +37,85 @@ export default function MobileNav() {
 
   return (
     <>
-      <div className="md:hidden flex items-center justify-between p-4 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-xl sticky top-0 z-20 transition-colors">
-        <button onClick={() => setIsOpen(true)} className="p-2 -ml-2 rounded-xl text-slate-500 dark:text-slate-400 active:bg-slate-200 dark:active:bg-slate-800 transition-colors">
-          <Menu className="w-6 h-6" />
-        </button>
-        <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">{getPageTitle()}</span>
-        <div className="w-10"></div>
-      </div>
+      <Box sx={{ 
+        display: { xs: 'flex', md: 'none' }, 
+        alignItems: 'center', 
+        justifyContent: 'space-between', 
+        p: 2, 
+        position: 'sticky', 
+        top: 0, 
+        zIndex: 1100,
+        bgcolor: 'rgba(248, 250, 252, 0.85)',
+        backdropFilter: 'blur(12px)',
+      }}>
+        <IconButton onClick={() => setIsDrawerOpen(true)} edge="start" sx={{ color: 'text.primary' }}>
+          <Menu />
+        </IconButton>
+        <Typography variant="h6">{getPageTitle()}</Typography>
+        <Box sx={{ width: 40 }} />
+      </Box>
 
-      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/50 dark:border-slate-800/50 z-20 transition-colors">
-        <div className="flex items-center justify-around h-20 px-2 pb-4">
-          {bottomTabs.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) => clsx(
-                'flex flex-col items-center justify-center w-full h-full space-y-1 transition-transform active:scale-95',
-                isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
-              )}
-            >
-              <div className={clsx("p-1.5 rounded-xl transition-colors", "isActive && 'bg-indigo-50 dark:bg-indigo-900/30'")}>
-                <item.icon className="w-6 h-6" />
-              </div>
-              <span className="text-[10px] font-bold">{item.label}</span>
-            </NavLink>
+      <Paper 
+        sx={{ 
+          display: { xs: 'block', md: 'none' }, 
+          position: 'fixed', 
+          bottom: 0, 
+          left: 0, 
+          right: 0, 
+          zIndex: 1100,
+          pb: 'env(safe-area-inset-bottom)'
+        }} 
+        elevation={0}
+      >
+        <BottomNavigation value={location.pathname} onChange={(e, val) => navigate(val)}>
+          {bottomTabs.map(tab => (
+            <BottomNavigationAction 
+              key={tab.to} 
+              label={tab.label} 
+              value={tab.to} 
+              icon={tab.icon} 
+              sx={{ 
+                '& .MuiBottomNavigationAction-label': { fontWeight: 700, mt: 0.5 },
+                color: location.pathname === tab.to ? 'primary.main' : 'text.secondary'
+              }}
+            />
           ))}
-        </div>
-      </div>
+        </BottomNavigation>
+      </Paper>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-50 md:hidden flex">
-          <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setIsOpen(false)} />
-          <div className="relative bg-white dark:bg-slate-900 w-72 h-full shadow-2xl animate-in slide-in-from-left transition-colors flex flex-col">
-            <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-              <span className="font-bold text-xl text-slate-900 dark:text-white">Menu</span>
-              <button onClick={() => setIsOpen(false)} className="p-2 -mr-2 bg-slate-100 dark:bg-slate-800 rounded-full text-slate-500 dark:text-slate-400 active:scale-95 transition-transform">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <nav className="p-4 flex flex-col gap-2">
-              {moreItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setIsOpen(false)}
-                  className={({ isActive }) => clsx(
-                    'flex items-center gap-4 px-4 py-4 rounded-2xl text-sm font-bold transition-all active:scale-95',
-                    isActive 
-                      ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' 
-                      : 'text-slate-600 dark:text-slate-400 active:bg-slate-100 dark:active:bg-slate-800'
-                  )}
-                >
-                  <item.icon className="w-6 h-6" />
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-          </div>
-        </div>
-      )}
+      <Drawer
+        anchor="left"
+        open={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        PaperProps={{ sx: { width: 280, p: 2, borderTopRightRadius: 24, borderBottomRightRadius: 24 } }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3, pl: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800 }}>Menu</Typography>
+          <IconButton onClick={() => setIsDrawerOpen(false)} sx={{ bgcolor: 'rgba(15, 23, 42, 0.04)' }}>
+            <Close />
+          </IconButton>
+        </Box>
+        <List>
+          {moreItems.map((item) => (
+            <ListItem key={item.to} disablePadding sx={{ mb: 1 }}>
+              <ListItemButton
+                component={NavLink}
+                to={item.to}
+                onClick={() => setIsDrawerOpen(false)}
+                style={({ isActive }) => ({
+                  borderRadius: '16px',
+                  backgroundColor: isActive ? 'rgba(15, 23, 42, 0.04)' : 'transparent',
+                  color: isActive ? '#0f172a' : '#64748b',
+                })}
+                sx={{ py: 1.5 }}
+              >
+                <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 700 }} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Drawer>
     </>
   );
 }
