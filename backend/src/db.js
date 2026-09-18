@@ -191,7 +191,10 @@ async function get(sql, params = []) {
     if (sql.includes('FROM deposits')) {
       if (sql.includes('WHERE id = ?')) {
         const { data } = await supabase.from('deposits').select('*').eq('id', params[0]).limit(1);
-        return data?.[0] || null;
+        if (!data || !data[0]) return null;
+        const d = data[0];
+        const { data: u } = await supabase.from('users').select('id, username, phone').eq('telegram_id', d.telegram_id).single();
+        return { ...d, user_id: u?.id || null, username: u?.username || 'Unknown', phone: u?.phone || 'Unknown', receipt_sms: d.sms_text };
       }
       if (sql.includes('SUM(amount) as sum')) {
         const { data } = await supabase.from('deposits').select('amount').eq('status', 'approved');
@@ -204,7 +207,10 @@ async function get(sql, params = []) {
     if (sql.includes('FROM withdrawals')) {
       if (sql.includes('WHERE id = ?')) {
         const { data } = await supabase.from('withdrawals').select('*').eq('id', params[0]).limit(1);
-        return data?.[0] || null;
+        if (!data || !data[0]) return null;
+        const d = data[0];
+        const { data: u } = await supabase.from('users').select('id, username, phone').eq('telegram_id', d.telegram_id).single();
+        return { ...d, user_id: u?.id || null, username: u?.username || 'Unknown', phone: u?.phone || 'Unknown' };
       }
       if (sql.includes('SUM(amount) as sum')) {
         const { data } = await supabase.from('withdrawals').select('amount').eq('status', 'approved');
@@ -294,19 +300,32 @@ async function all(sql, params = []) {
 
     // ── DEPOSITS ─────────────────────────────────────────────
     if (sql.includes('FROM deposits')) {
+      let data = [];
       if (sql.includes('WHERE user_id = ?')) {
-        const { data } = await supabase.from('deposits').select('*')
-          .eq('user_id', params[0]).order('id', { ascending: false });
-        return data || [];
+        const { data: u } = await supabase.from('users').select('telegram_id').eq('id', params[0]).single();
+        if (u && u.telegram_id) {
+          const res = await supabase.from('deposits').select('*').eq('telegram_id', u.telegram_id).order('created_at', { ascending: false });
+          data = res.data || [];
+        }
+      } else if (sql.includes("status = 'pending'") || sql.includes('status = \'pending\'')) {
+        const res = await supabase.from('deposits').select('*').eq('status', 'pending').order('created_at', { ascending: false });
+        data = res.data || [];
+      } else {
+        const res = await supabase.from('deposits').select('*').order('created_at', { ascending: false });
+        data = res.data || [];
       }
-      // Admin: filter by status if SQL has WHERE status
-      if (sql.includes("status = 'pending'") || sql.includes('status = \'pending\'')) {
-        const { data } = await supabase.from('deposits').select('*')
-          .eq('status', 'pending').order('created_at', { ascending: false });
-        return data || [];
-      }
-      const { data } = await supabase.from('deposits').select('*').order('created_at', { ascending: false });
-      return (data || []).sort((a, b) => {
+      
+      const { data: users } = await supabase.from('users').select('id, telegram_id, username, phone');
+      const userMap = {};
+      users?.forEach(u => { if (u.telegram_id) userMap[u.telegram_id] = u; });
+
+      return data.map(d => ({
+        ...d,
+        user_id: userMap[d.telegram_id]?.id || null,
+        username: userMap[d.telegram_id]?.username || 'Unknown',
+        phone: userMap[d.telegram_id]?.phone || 'Unknown',
+        receipt_sms: d.sms_text
+      })).sort((a, b) => {
         if (a.status === 'pending' && b.status !== 'pending') return -1;
         if (a.status !== 'pending' && b.status === 'pending') return 1;
         return 0;
@@ -315,18 +334,31 @@ async function all(sql, params = []) {
 
     // ── WITHDRAWALS ──────────────────────────────────────────
     if (sql.includes('FROM withdrawals')) {
+      let data = [];
       if (sql.includes('WHERE user_id = ?')) {
-        const { data } = await supabase.from('withdrawals').select('*')
-          .eq('user_id', params[0]).order('id', { ascending: false });
-        return data || [];
+        const { data: u } = await supabase.from('users').select('telegram_id').eq('id', params[0]).single();
+        if (u && u.telegram_id) {
+          const res = await supabase.from('withdrawals').select('*').eq('telegram_id', u.telegram_id).order('created_at', { ascending: false });
+          data = res.data || [];
+        }
+      } else if (sql.includes("status = 'pending'") || sql.includes('status = \'pending\'')) {
+        const res = await supabase.from('withdrawals').select('*').eq('status', 'pending').order('created_at', { ascending: false });
+        data = res.data || [];
+      } else {
+        const res = await supabase.from('withdrawals').select('*').order('created_at', { ascending: false });
+        data = res.data || [];
       }
-      if (sql.includes("status = 'pending'") || sql.includes('status = \'pending\'')) {
-        const { data } = await supabase.from('withdrawals').select('*')
-          .eq('status', 'pending').order('created_at', { ascending: false });
-        return data || [];
-      }
-      const { data } = await supabase.from('withdrawals').select('*').order('created_at', { ascending: false });
-      return (data || []).sort((a, b) => {
+      
+      const { data: users } = await supabase.from('users').select('id, telegram_id, username, phone');
+      const userMap = {};
+      users?.forEach(u => { if (u.telegram_id) userMap[u.telegram_id] = u; });
+
+      return data.map(d => ({
+        ...d,
+        user_id: userMap[d.telegram_id]?.id || null,
+        username: userMap[d.telegram_id]?.username || 'Unknown',
+        phone: userMap[d.telegram_id]?.phone || 'Unknown'
+      })).sort((a, b) => {
         if (a.status === 'pending' && b.status !== 'pending') return -1;
         if (a.status !== 'pending' && b.status === 'pending') return 1;
         return 0;
@@ -525,11 +557,12 @@ async function run(sql, params = []) {
     // ── INSERT DEPOSIT ───────────────────────────────────────
     if (sql.includes('INSERT INTO deposits')) {
       const [user_id, username, phone, method, amount, proof_image, receipt_sms, status] = params;
+      const { data: u } = await supabase.from('users').select('telegram_id').eq('id', user_id).single();
       const { data, error } = await supabase.from('deposits').insert({
-        user_id, username, phone, method,
+        telegram_id: u?.telegram_id || String(user_id),
+        method,
         amount: parseFloat(amount),
-        proof_image: proof_image || null,
-        receipt_sms,
+        sms_text: receipt_sms,
         status: status || 'pending'
       }).select('id').single();
       if (error) throw new Error(error.message);
@@ -545,8 +578,11 @@ async function run(sql, params = []) {
     // ── INSERT WITHDRAWAL ────────────────────────────────────
     if (sql.includes('INSERT INTO withdrawals')) {
       const [user_id, username, phone, method, account_number, amount, status] = params;
+      const { data: u } = await supabase.from('users').select('telegram_id').eq('id', user_id).single();
       const { data, error } = await supabase.from('withdrawals').insert({
-        user_id, username, phone, method, account_number,
+        telegram_id: u?.telegram_id || String(user_id),
+        method, 
+        account_number,
         amount: parseFloat(amount),
         status: status || 'pending'
       }).select('id').single();
