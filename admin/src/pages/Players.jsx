@@ -68,37 +68,86 @@ export default function Players() {
         </div>
       </Card>
 
-      <Card className="overflow-x-auto">
-        <table className="w-full whitespace-nowrap">
-          <thead className="bg-gray-50 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            <tr>
-              <th className="px-6 py-3">ID</th>
-              <th className="px-6 py-3">Player Info</th>
-              <th className="px-6 py-3">Balance</th>
-              <th className="px-6 py-3">Joined</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredUsers.map(u => (
-              <tr key={u.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm text-gray-500 font-mono">#{u.id}</td>
-                <td className="px-6 py-4">
-                  <div className="font-medium text-gray-900">{u.username} {u.is_admin === 1 && <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Admin</span>}</div>
-                  <div className="text-sm text-gray-500">{u.phone || 'No phone'}</div>
-                </td>
-                <td className="px-6 py-4 text-sm font-bold text-gray-900">{parseFloat(u.balance || 0).toFixed(2)} ETB</td>
-                <td className="px-6 py-4 text-sm text-gray-500">{u.created_at ? format(new Date(u.created_at), 'MMM d, yyyy') : '-'}</td>
-                <td className="px-6 py-4">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full whitespace-nowrap">
+            <thead className="bg-gray-50 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <tr>
+                <th className="px-6 py-3">ID</th>
+                <th className="px-6 py-3">Player Info</th>
+                <th className="px-6 py-3">Balance</th>
+                <th className="px-6 py-3">Joined</th>
+                <th className="px-6 py-3">Status</th>
+                <th className="px-6 py-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredUsers.map(u => (
+                <tr key={u.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm text-gray-500 font-mono">#{u.id}</td>
+                  <td className="px-6 py-4">
+                    <div className="font-medium text-gray-900">{u.username} {u.is_admin === 1 && <span className="ml-2 text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Admin</span>}</div>
+                    <div className="text-sm text-gray-500">{u.phone || 'No phone'}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-bold text-gray-900">{parseFloat(u.balance || 0).toFixed(2)} ETB</td>
+                  <td className="px-6 py-4 text-sm text-gray-500">{u.created_at ? format(new Date(u.created_at), 'MMM d, yyyy') : '-'}</td>
+                  <td className="px-6 py-4">
+                    {u.is_banned ? (
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Banned</span>
+                    ) : (
+                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    {!u.is_admin ? (
+                      <Button 
+                        size="sm" 
+                        variant={u.is_banned ? "primary" : "danger"} 
+                        onClick={() => handleBanToggle(u)}
+                      >
+                        {u.is_banned ? <ShieldCheck className="w-4 h-4 mr-1"/> : <Ban className="w-4 h-4 mr-1"/>}
+                        {u.is_banned ? 'Unban' : 'Ban'}
+                      </Button>
+                    ) : <span className="text-xs text-gray-400">Protected</span>}
+                  </td>
+                </tr>
+              ))}
+              {filteredUsers.length === 0 && (
+                <tr><td colSpan="6" className="px-6 py-8 text-center text-gray-500">No players found matching your search.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden divide-y divide-gray-200">
+          {filteredUsers.map(u => (
+            <div key={u.id} className="p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-medium text-gray-900 flex items-center gap-2">
+                    {u.username}
+                    {u.is_admin === 1 && <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">Admin</span>}
+                  </div>
+                  <div className="text-sm text-gray-500 mt-0.5">{u.phone || 'No phone'}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-gray-900">{parseFloat(u.balance || 0).toFixed(2)} ETB</div>
+                  <div className="text-xs text-gray-500 mt-0.5">#{u.id}</div>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between pt-2">
+                <div>
                   {u.is_banned ? (
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">Banned</span>
                   ) : (
                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">Active</span>
                   )}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  {!u.is_admin ? (
+                </div>
+                <div>
+                  {!u.is_admin && (
                     <Button 
                       size="sm" 
                       variant={u.is_banned ? "primary" : "danger"} 
@@ -107,16 +156,16 @@ export default function Players() {
                       {u.is_banned ? <ShieldCheck className="w-4 h-4 mr-1"/> : <Ban className="w-4 h-4 mr-1"/>}
                       {u.is_banned ? 'Unban' : 'Ban'}
                     </Button>
-                  ) : <span className="text-xs text-gray-400">Protected</span>}
-                </td>
-              </tr>
-            ))}
-            {filteredUsers.length === 0 && (
-              <tr><td colSpan="6" className="px-6 py-8 text-center text-gray-500">No players found matching your search.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </Card>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          {filteredUsers.length === 0 && (
+            <div className="p-8 text-center text-gray-500 text-sm">No players found.</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
