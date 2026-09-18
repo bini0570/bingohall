@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { Card, Box, Typography, Skeleton, Stack, Avatar } from '@mui/material';
@@ -113,8 +113,8 @@ export default function Dashboard() {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   <span style={{ fontWeight: 700 }}>{act.username}</span> 
-                  {act.type === 'deposit' &&  deposited  ETB}
-                  {act.type === 'withdrawal' &&  withdrew  ETB}
+                  {act.type === 'deposit' && ' deposited ' + act.amount + ' ETB'}
+                  {act.type === 'withdrawal' && ' withdrew ' + act.amount + ' ETB'}
                   {act.type === 'registration' && ' joined the platform'}
                 </Typography>
               </Box>
