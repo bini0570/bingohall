@@ -13,7 +13,7 @@ export default function Players() {
   const [query, setQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  const { data: users, error, isLoading, mutate } = useSWR(query ? /api/admin/users?search=+encodeURIComponent(query) : null, fetcher);
+  const { data: users, error, isLoading, mutate } = useSWR(query ? '/api/admin/users?search=' + encodeURIComponent(query) : null, fetcher);
 
   const handleSearch = (e) => {
     e.preventDefault();
