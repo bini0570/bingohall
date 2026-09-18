@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import useSWR from 'swr';
 import axios from 'axios';
 import { Card, Box, Typography, Button, TextField, InputAdornment, Avatar, Chip, Stack } from '@mui/material';
@@ -161,17 +161,17 @@ export default function Players() {
                   }}
                   onClick={() => setSelectedPlayer(user)}
                 >
-                  <Avatar sx={{ width: 56, height: 56, bgcolor: 'background.default', color: 'text.secondary', fontWeight: 800 }}>
+                  <Avatar sx={{ width: { xs: 40, sm: 56 }, height: { xs: 40, sm: 56 }, bgcolor: 'background.default', color: 'text.secondary', fontWeight: 800 }}>
                     {user.username.charAt(0).toUpperCase()}
                   </Avatar>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="h6">{user.username}</Typography>
-                    <Typography variant="body2" color="text.secondary">
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography variant="h6" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' }, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{user.username}</Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                       ID: {user.id} &bull; {user.phone_number}
                     </Typography>
                   </Box>
-                  <Box sx={{ textAlign: 'right' }}>
-                    <Typography variant="h6">{user.balance} ETB</Typography>
+                  <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+                    <Typography variant="h6" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>{user.balance} ETB</Typography>
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase' }}>Balance</Typography>
                   </Box>
                 </Card>

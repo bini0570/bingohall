@@ -53,8 +53,8 @@ export default function Dashboard() {
         </Box>
 
         {/* Deposits and Withdrawals side-by-side */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
-          <Box sx={{ textAlign: 'center', flex: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 3, sm: 0 }, justifyContent: 'space-around', alignItems: 'center' }}>
+          <Box sx={{ textAlign: 'center', flex: 1, width: '100%' }}>
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
               <CreditCard fontSize="small" sx={{ color: '#34d399' }} />
               <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8' }}>TOTAL DEPOSITS</Typography>
@@ -68,9 +68,13 @@ export default function Dashboard() {
             )}
           </Box>
           
-          <Box sx={{ width: '1px', height: '40px', bgcolor: 'rgba(255,255,255,0.1)' }} />
+          <Box sx={{ 
+            width: { xs: '100%', sm: '1px' }, 
+            height: { xs: '1px', sm: '40px' }, 
+            bgcolor: 'rgba(255,255,255,0.1)' 
+          }} />
           
-          <Box sx={{ textAlign: 'center', flex: 1 }}>
+          <Box sx={{ textAlign: 'center', flex: 1, width: '100%' }}>
             <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
               <Timeline fontSize="small" sx={{ color: '#f87171' }} />
               <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8' }}>TOTAL WITHDRAWALS</Typography>

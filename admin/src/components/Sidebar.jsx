@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box } from '@mui/material';
 import { Dashboard, CreditCard, People, Assignment, CardGiftcard, Campaign, Logout } from '@mui/icons-material';
@@ -27,6 +27,8 @@ export default function Sidebar() {
       variant="permanent"
       sx={{
         display: { xs: 'none', md: 'block' },
+        width: { xs: 0, md: 250 },
+        flexShrink: 0,
         '& .MuiDrawer-paper': { 
           position: 'relative',
           width: 250, 
