@@ -43,10 +43,11 @@ export default function Sidebar() {
         display: 'flex',
         flexDirection: 'column',
         height: 'calc(100vh - 32px)',
-        bgcolor: '#ffffff',
+        bgcolor: 'background.paper',
         borderRadius: '24px',
-        boxShadow: '0 12px 40px rgba(15, 23, 42, 0.04)',
-        border: '1px solid rgba(15, 23, 42, 0.04)',
+        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.04)',
+        border: '1px solid',
+        borderColor: 'divider',
         overflow: 'hidden'
       }}>
         <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 1.5 }}>

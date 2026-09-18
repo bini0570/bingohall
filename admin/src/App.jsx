@@ -1,8 +1,9 @@
-import React from 'react';
+﻿import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
-import { ThemeProvider, CssBaseline, Box } from '@mui/material';
-import { theme } from './theme';
+import { CssBaseline, Box, IconButton, useTheme } from '@mui/material';
+import { Brightness4, Brightness7 } from '@mui/icons-material';
+import { ThemeModeProvider, useThemeMode } from './ThemeContext';
 import { AnimatePresence } from 'framer-motion';
 
 import Login from './pages/Login';
@@ -16,6 +17,15 @@ import Settings from './pages/Settings';
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
 
+const ThemeToggle = () => {
+  const { mode, toggleTheme } = useThemeMode();
+  return (
+    <IconButton onClick={toggleTheme} sx={{ color: 'text.primary', bgcolor: 'background.paper', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', ml: 'auto' }}>
+      {mode === 'dark' ? <Brightness7 fontSize="small" /> : <Brightness4 fontSize="small" />}
+    </IconButton>
+  );
+};
+
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
   if (!token) return <Navigate to="/login" replace />;
@@ -24,7 +34,10 @@ const ProtectedRoute = ({ children }) => {
       <Sidebar />
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100dvh', overflow: 'hidden' }}>
         <MobileNav />
-        <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 4 } }}>
+        <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 3 } }}>
+          <Box sx={{ display: { xs: 'none', md: 'flex' }, mb: 2 }}>
+            <ThemeToggle />
+          </Box>
           {children}
         </Box>
       </Box>
@@ -52,7 +65,7 @@ const AnimatedRoutes = () => {
 
 export default function App() {
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeModeProvider>
       <CssBaseline />
       <AuthProvider>
         <BrowserRouter>
@@ -66,6 +79,6 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-    </ThemeProvider>
+    </ThemeModeProvider>
   );
 }
