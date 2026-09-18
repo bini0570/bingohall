@@ -960,7 +960,6 @@ export default function WalletView({ lang, user, token, socket, onBalanceUpdated
   return (
     <div className="wallet-wrapper">
       <main className="wallet-card">
-        <WalletHeader user={user} />
         
         <TotalCard 
           hidden={hidden} 
