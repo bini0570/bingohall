@@ -309,11 +309,10 @@ function initTelegramBot(ioInstance) {
       } else if (data.startsWith('cb_dep_method_')) {
         const method = data.replace('cb_dep_method_', '');
         userStates[chatId] = { action: 'awaiting_deposit_amount', method };
-        bot.sendMessage(
-          chatId,
+        bot.editMessageText(
           `📥 <b>${escapeHTML(method)} Deposit</b>\n\nPlease enter the amount you want to deposit in ETB (e.g. 100):`,
-          { parse_mode: 'HTML' }
-        );
+          { chat_id: chatId, message_id: messageId, parse_mode: 'HTML' }
+        ).catch(() => {});
       } else if (data.startsWith('cb_dep_preset_')) {
         const amt = parseFloat(data.replace('cb_dep_preset_', ''));
         // Verify user is in active deposit step
@@ -328,10 +327,11 @@ function initTelegramBot(ioInstance) {
       } else if (data.startsWith('cb_with_preset_')) {
         const amt = parseFloat(data.replace('cb_with_preset_', ''));
         userStates[chatId] = { action: 'awaiting_withdraw_method', amount: amt };
-        bot.sendMessage(
-          chatId,
+        bot.editMessageText(
           `📤 <b>Withdraw:</b> <code>${amt.toFixed(2)} ETB</code> — Select method:`,
           {
+            chat_id: chatId,
+            message_id: messageId,
             parse_mode: 'HTML',
             reply_markup: {
               inline_keyboard: [
@@ -340,7 +340,7 @@ function initTelegramBot(ioInstance) {
               ]
             }
           }
-        );
+        ).catch(() => {});
       } else if (data.startsWith('cb_with_method_')) {
         const method = data.replace('cb_with_method_', '');
         // Verify user is in active withdrawal step
@@ -351,11 +351,10 @@ function initTelegramBot(ioInstance) {
         }
         const amt = userStates[chatId].amount;
         userStates[chatId] = { action: 'awaiting_withdraw_account', amount: amt, method };
-        bot.sendMessage(
-          chatId,
+        bot.editMessageText(
           `📤 <b>Withdraw ${amt.toFixed(2)} ETB via ${escapeHTML(method)}</b>\nEnter your account or phone number:`,
-          { parse_mode: 'HTML' }
-        );
+          { chat_id: chatId, message_id: messageId, parse_mode: 'HTML' }
+        ).catch(() => {});
       } else if (data === 'cb_referral') {
         delete userStates[chatId];
         sendReferralInfo(chatId, telegramId);
