@@ -895,6 +895,128 @@ app.get('/api/public/settings', async (req, res) => {
   }
 });
 
+app.post('/api/admin/settings', authenticateAdmin, async (req, res) => {
+  try {
+    const settings = req.body;
+    for (const [key, value] of Object.entries(settings)) {
+      await run('INSERT INTO game_settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = EXCLUDED.value', [key, String(value)]);
+    }
+    io.emit('admin_data_changed');
+    io.emit('settings_updated', settings);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// -------------------------------------------------------------
+// ADMIN TASKS API
+// -------------------------------------------------------------
+app.get('/api/admin/tasks', authenticateAdmin, async (req, res) => {
+  try {
+    const { supabase } = require('./db');
+    const { data, error } = await supabase.from('tasks').select('*').order('id', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/tasks', authenticateAdmin, async (req, res) => {
+  try {
+    const { type, title, telegram_link, button_name, reward, target } = req.body;
+    const { supabase } = require('./db');
+    const { data, error } = await supabase.from('tasks').insert({
+      type, title, telegram_link, button_name, reward: parseFloat(reward), target
+    }).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    io.emit('admin_data_changed');
+    res.json({ success: true, task: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/admin/tasks/:id/status', authenticateAdmin, async (req, res) => {
+  try {
+    const { supabase } = require('./db');
+    const { status } = req.body;
+    const { data, error } = await supabase.from('tasks').update({ status }).eq('id', req.params.id).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    io.emit('admin_data_changed');
+    res.json({ success: true, task: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/tasks/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { supabase } = require('./db');
+    const { error } = await supabase.from('tasks').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    io.emit('admin_data_changed');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// -------------------------------------------------------------
+// ADMIN PROMOS API
+// -------------------------------------------------------------
+app.get('/api/admin/promos', authenticateAdmin, async (req, res) => {
+  try {
+    const { supabase } = require('./db');
+    const { data, error } = await supabase.from('promos').select('*').order('id', { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    res.json(data || []);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/admin/promos', authenticateAdmin, async (req, res) => {
+  try {
+    const { code, reward, usage_limit } = req.body;
+    const { supabase } = require('./db');
+    const { data, error } = await supabase.from('promos').insert({
+      code, reward: parseFloat(reward), usage_limit: parseInt(usage_limit) || -1
+    }).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    io.emit('admin_data_changed');
+    res.json({ success: true, promo: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/admin/promos/:id/status', authenticateAdmin, async (req, res) => {
+  try {
+    const { supabase } = require('./db');
+    const { status } = req.body;
+    const { data, error } = await supabase.from('promos').update({ status }).eq('id', req.params.id).select().single();
+    if (error) return res.status(500).json({ error: error.message });
+    io.emit('admin_data_changed');
+    res.json({ success: true, promo: data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/promos/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const { supabase } = require('./db');
+    const { error } = await supabase.from('promos').delete().eq('id', req.params.id);
+    if (error) return res.status(500).json({ error: error.message });
+    io.emit('admin_data_changed');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // Player SPA catch-all — serves index.html for any non-API, non-admin route
 // Must be placed AFTER all API routes

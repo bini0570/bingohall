@@ -1,31 +1,12 @@
-﻿<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bingo X Admin Portal</title>
-    <meta name="description" content="Bingo X Admin Management Portal — restricted access only." />
-    <meta name="robots" content="noindex, nofollow" />
-    <link rel="manifest" href="/admin/manifest.json" />
-    <link rel="apple-touch-icon" href="/admin/icon-192.png" />
-    <meta name="theme-color" content="#090d16" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <title>Bingo X Admin</title>
   </head>
-  <body>
-    <div id="admin-root"></div>
-    <script type="module" src="/AdminApp.jsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/admin/sw.js').then(registration => {
-            console.log('SW registered: ', registration);
-          }).catch(registrationError => {
-            console.log('SW registration failed: ', registrationError);
-          });
-        });
-      }
-    </script>
+  <body class="bg-gray-50 text-gray-900 antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

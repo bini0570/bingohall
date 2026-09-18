@@ -43,6 +43,27 @@ async function initDB() {
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS referred_by TEXT`,
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS telegram_id TEXT`,
       `ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS account_name TEXT`,
+      `CREATE TABLE IF NOT EXISTS tasks (
+        id SERIAL PRIMARY KEY,
+        type TEXT,
+        title TEXT,
+        telegram_link TEXT,
+        button_name TEXT,
+        reward NUMERIC,
+        target TEXT DEFAULT 'All Players',
+        status TEXT DEFAULT 'active',
+        claim_count INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`,
+      `CREATE TABLE IF NOT EXISTS promos (
+        id SERIAL PRIMARY KEY,
+        code TEXT UNIQUE NOT NULL,
+        reward NUMERIC NOT NULL,
+        usage_limit INTEGER DEFAULT -1,
+        used_count INTEGER DEFAULT 0,
+        status TEXT DEFAULT 'active',
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`
     ];
 
     for (const sql of migrations) {
