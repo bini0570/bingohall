@@ -1,79 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import { ClipboardList, CheckCircle2, Gift, Check, Share2, Users, Copy, HelpCircle, ArrowRight } from 'lucide-react';
-import { translations } from '../i18n/i18n';
+﻿import { useState, useEffect } from 'react';
+import { Check, Gift, Copy, ExternalLink, RefreshCw } from 'lucide-react';
 import { apiFetch } from '../api';
-import './WalletView.css';
 
-export default function TasksView({ lang }) {
-  const [streak, setStreak] = useState(() => parseInt(localStorage.getItem('bingo_streak') || '1'));
-  const [cooldownEnd, setCooldownEnd] = useState(() => parseInt(localStorage.getItem('bingo_cooldown') || '0'));
+export default function TasksView({ user }) {
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const end = parseInt(localStorage.getItem('bingo_cooldown') || '0');
-    if (end > 0) {
-      const now = Date.now();
-      if (now < end) {
-        const diff = end - now;
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-      }
-    }
-    return null;
-  });
+  // Daily Reward State
+  const [streak, setStreak] = useState(1);
+  const [cooldownEnd, setCooldownEnd] = useState(0);
+  const [timeLeft, setTimeLeft] = useState('');
+
+  // Referral State
+  const [referrals, setReferrals] = useState([]);
+  const [refLoading, setRefLoading] = useState(false);
+  
+  const [activeTab, setActiveTab] = useState('daily');
 
   useEffect(() => {
-    // Fetch real tasks from backend
-    apiFetch('/api/tasks')
-      .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          const filteredTasks = data.filter(t => {
-            const title = t.title || '';
-            const type = t.type || '';
-            return !title.toLowerCase().includes('telegram') && type.toLowerCase() !== 'telegram';
-          });
-          setTasks(filteredTasks);
-        }
-      })
-      .catch(console.error);
-
-    if (cooldownEnd > 0) {
-      const now = Date.now();
-      if (now > cooldownEnd + (24 * 60 * 60 * 1000)) {
-        setStreak(1);
-        setCooldownEnd(0);
-        localStorage.setItem('bingo_streak', '1');
-        localStorage.setItem('bingo_cooldown', '0');
-        setTimeLeft(null);
-      }
+    // Load state from localStorage on mount
+    const savedStreak = parseInt(localStorage.getItem('bingo_streak') || '1');
+    const savedCooldown = parseInt(localStorage.getItem('bingo_cooldown') || '0');
+    
+    // Check if cooldown expired multiple days ago (reset streak)
+    if (savedCooldown && Date.now() > savedCooldown + (24 * 60 * 60 * 1000)) {
+      setStreak(1);
+      setCooldownEnd(0);
+    } else {
+      setStreak(savedStreak);
+      setCooldownEnd(savedCooldown);
     }
+    fetchTasks();
   }, []);
 
+  const fetchTasks = async () => {
+    try {
+      // Stub - in a real app this comes from backend
+      setTasks([
+        { id: 1, title: 'Join our Official Channel', reward: 50, type: 'social', link: 'https://t.me/bingoXofficial', actionText: 'Join Channel' },
+        { id: 2, title: 'Follow on Twitter', reward: 30, type: 'social', link: '#', actionText: 'Follow' },
+        { id: 3, title: 'Play 5 Games', reward: 100, type: 'in-game', progress: 2, target: 5 },
+      ]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReferrals = async () => {
+    setRefLoading(true);
+    try {
+      const res = await apiFetch('/api/referrals', { headers: { Authorization: \Bearer \\ } });
+      if (res.ok) {
+        const data = await res.json();
+        setReferrals(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRefLoading(false);
+    }
+  };
+
   useEffect(() => {
-    if (!cooldownEnd || cooldownEnd === 0) return;
+    if (activeTab === 'referral') {
+      fetchReferrals();
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (!cooldownEnd || cooldownEnd < Date.now()) {
+      setTimeLeft('');
+      return;
+    }
     
     const tick = () => {
-      const now = Date.now();
-      if (now >= cooldownEnd) {
-        if (now > cooldownEnd + (24 * 60 * 60 * 1000)) {
-          setStreak(1);
-          setCooldownEnd(0);
-          localStorage.setItem('bingo_streak', '1');
-          localStorage.setItem('bingo_cooldown', '0');
-          setTimeLeft(null);
-        } else {
-          setTimeLeft(null);
-        }
-      } else {
-        const diff = cooldownEnd - now;
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+      const diff = cooldownEnd - Date.now();
+      if (diff <= 0) {
+        setTimeLeft('');
+        setCooldownEnd(0);
+        return;
       }
+      
+      const h = Math.floor(diff / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTimeLeft(\\:\:\\);
     };
     
     tick();
@@ -81,10 +94,25 @@ export default function TasksView({ lang }) {
     return () => clearInterval(interval);
   }, [cooldownEnd]);
 
-  const handleClaim = () => {
+  const handleClaim = async () => {
     if (timeLeft) return;
     
     const nextStreak = streak >= 7 ? 1 : streak + 1;
+    const reward = streak === 7 ? 10 : streak;
+    
+    // Call backend to credit wallet
+    try {
+      await apiFetch('/api/user/claim-daily', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: \Bearer \\
+        },
+        body: JSON.stringify({ reward })
+      });
+    } catch (err) {
+      console.error('Failed to claim daily reward', err);
+    }
     
     // Calculate next midnight (local time)
     const now = new Date();
@@ -100,7 +128,16 @@ export default function TasksView({ lang }) {
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
-    setTimeLeft(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+    setTimeLeft(\\:\:\\);
+    
+    // Emit custom event so App.jsx re-fetches profile to update balance
+    window.dispatchEvent(new Event('profileUpdated'));
+  };
+
+  const copyReferralLink = () => {
+    const link = \https://t.me/bingox2019_bot?start=\\;
+    navigator.clipboard.writeText(link);
+    window.Telegram?.WebApp?.showAlert('Referral link copied!');
   };
 
   return (
@@ -142,89 +179,129 @@ export default function TasksView({ lang }) {
           </div>
 
           <button 
+            className="deposit-btn" 
+            style={{ width: '100%', marginTop: '16px', background: timeLeft ? 'rgba(0,0,0,0.2)' : undefined, color: timeLeft ? '#fff' : undefined }}
             onClick={handleClaim}
             disabled={!!timeLeft}
-            style={{ 
-              width: '100%', padding: '10px', borderRadius: '12px', border: 'none',
-              background: timeLeft ? 'rgba(255,255,255,0.2)' : '#fff', 
-              color: timeLeft ? 'rgba(255,255,255,0.7)' : 'var(--brand-1)',
-              fontSize: '14px', fontWeight: '700', cursor: timeLeft ? 'not-allowed' : 'pointer', marginTop: '14px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              transition: 'all 0.2s',
-              boxShadow: timeLeft ? 'none' : '0 4px 10px rgba(0,0,0,0.1)'
-            }}>
-            {timeLeft ? (
-              <>Come back in <span style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: 'bold' }}>{timeLeft}</span></>
-            ) : (
+          >
+            {timeLeft ? 
+              \Next Reward in \\ : 
               'Claim Reward'
-            )}
+            }
           </button>
         </section>
 
-        <div className="section-head" style={{ marginTop: '28px' }}>
-          <h2>Available Tasks</h2>
+        {/* Custom Tabs */}
+        <div style={{ display: 'flex', background: 'var(--surface-color)', padding: '4px', borderRadius: '12px', marginBottom: '16px' }}>
+          <button 
+            onClick={() => setActiveTab('daily')}
+            style={{ 
+              flex: 1, padding: '8px', borderRadius: '8px', border: 'none', 
+              background: activeTab === 'daily' ? 'var(--brand-1)' : 'transparent',
+              color: activeTab === 'daily' ? '#fff' : 'var(--text-secondary)',
+              fontWeight: '700', fontSize: '14px'
+            }}
+          >
+            Daily Tasks
+          </button>
+          <button 
+            onClick={() => setActiveTab('referral')}
+            style={{ 
+              flex: 1, padding: '8px', borderRadius: '8px', border: 'none', 
+              background: activeTab === 'referral' ? 'var(--brand-1)' : 'transparent',
+              color: activeTab === 'referral' ? '#fff' : 'var(--text-secondary)',
+              fontWeight: '700', fontSize: '14px'
+            }}
+          >
+            Referrals
+          </button>
         </div>
 
-        <div className="transactions-wrap" style={{ height: 'auto', paddingBottom: '20px' }}>
-          <ul className="transactions">
-            {tasks.length > 0 ? (
-              tasks.map(t => (
-                <TaskCard 
-                  key={t.id} 
-                  icon={t.type === 'youtube' ? <Gift size={18} /> : t.type === 'tiktok' ? <CheckCircle2 size={18} /> : <Share2 size={18} />} 
-                  title={t.title || `Join our ${t.type || 'social'} channel`} 
-                  reward={`${t.reward || 0} ETB`} 
-                  url={t.url}
-                  button_name={t.button_name}
-                  status="pending" 
-                />
-              ))
+        {/* Tab Content */}
+        {activeTab === 'daily' ? (
+          <section className="transaction-list">
+            <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px' }}>Available Tasks</h3>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>Loading tasks...</div>
+            ) : tasks.map(task => (
+              <div key={task.id} className="transaction-item" style={{ background: 'var(--surface-color)', padding: '16px', borderRadius: '12px', border: 'none' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <div style={{ fontWeight: '700', fontSize: '15px' }}>{task.title}</div>
+                      <div style={{ fontSize: '13px', color: 'var(--brand-1)', fontWeight: '800', marginTop: '4px' }}>+{task.reward} ETB</div>
+                    </div>
+                    {task.type === 'in-game' && task.progress !== undefined && (
+                      <div style={{ fontSize: '12px', fontWeight: '800', background: 'rgba(0,0,0,0.05)', padding: '4px 8px', borderRadius: '20px' }}>
+                        {task.progress}/{task.target}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {task.type === 'social' && (
+                    <button className="action-btn" style={{ width: '100%', background: 'rgba(255, 69, 58, 0.1)', color: 'var(--brand-1)' }} onClick={() => window.open(task.link, '_blank')}>
+                      {task.actionText}
+                      <ExternalLink size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </section>
+        ) : (
+          <section className="transaction-list">
+            <div style={{ background: 'var(--surface-color)', padding: '16px', borderRadius: '12px', textAlign: 'center', marginBottom: '16px' }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '8px' }}>Your Invite Link</div>
+              <div 
+                onClick={copyReferralLink}
+                style={{ 
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', 
+                  background: 'rgba(0,0,0,0.03)', padding: '12px', borderRadius: '8px', 
+                  color: 'var(--brand-1)', fontWeight: '700', fontSize: '14px', cursor: 'pointer'
+                }}
+              >
+                https://t.me/bingo... <Copy size={16} />
+              </div>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '12px' }}>
+                Earn 10 ETB for every friend who joins and plays!
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: '800' }}>Your Referrals</h3>
+              <button onClick={fetchReferrals} style={{ background: 'none', border: 'none', color: 'var(--brand-1)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: '700' }}>
+                <RefreshCw size={14} className={refLoading ? 'spin' : ''} /> Refresh
+              </button>
+            </div>
+
+            {refLoading && referrals.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>Loading...</div>
+            ) : referrals.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '30px 20px', background: 'var(--surface-color)', borderRadius: '12px', color: 'var(--text-secondary)' }}>
+                No referrals yet. Share your link to start earning!
+              </div>
             ) : (
-              <li style={{ padding: '20px', textAlign: 'center', color: '#9CA3AF' }}>No tasks available right now.</li>
+              referrals.map(ref => (
+                <div key={ref.id} className="transaction-item" style={{ background: 'var(--surface-color)', padding: '16px', borderRadius: '12px', border: 'none' }}>
+                  <div>
+                    <div style={{ fontWeight: '700', fontSize: '15px' }}>{ref.username || 'Anonymous User'}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
+                      {new Date(ref.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div style={{ 
+                    fontSize: '12px', fontWeight: '800', padding: '4px 8px', borderRadius: '20px',
+                    background: ref.status === 'qualified' ? 'rgba(52, 199, 89, 0.1)' : 'rgba(255, 149, 0, 0.1)',
+                    color: ref.status === 'qualified' ? 'var(--success-color)' : 'var(--warning-color)'
+                  }}>
+                    {ref.status === 'qualified' ? '+10 ETB Earned' : 'Pending (Needs Deposit)'}
+                  </div>
+                </div>
+              ))
             )}
-          </ul>
-        </div>
+          </section>
+        )}
       </main>
     </div>
-  );
-}
-
-function TaskCard({ icon, title, reward, status, progress, url, button_name }) {
-  const isCompleted = status === 'completed';
-  return (
-    <li className="tx" style={{ padding: '16px 0', borderBottom: '1px solid var(--line)' }}>
-      <span className="tx__avatar" style={{ 
-        background: isCompleted ? 'var(--green-soft)' : '#f6f4ff', 
-        color: isCompleted ? 'var(--green)' : 'var(--brand-1)' 
-      }}>
-        {icon}
-      </span>
-      <div className="tx__body">
-        <p className="tx__name" style={{ fontSize: '15px' }}>{title}</p>
-        <p className="tx__meta" style={{ marginTop: '4px' }}>
-          <span style={{ color: 'var(--amber)', fontWeight: '700' }}>+{reward}</span>
-        </p>
-      </div>
-      <div>
-        {isCompleted ? (
-          <span className="badge badge--ready" style={{ background: 'var(--green-soft)', color: 'var(--green)' }}>
-            Done
-          </span>
-        ) : (
-          <button 
-            onClick={() => {
-              if (url) window.open(url, '_blank');
-            }}
-            style={{ 
-            background: 'var(--brand-1)', border: 'none', color: '#fff',
-            padding: '8px 16px', borderRadius: '12px', fontSize: '13px', fontWeight: '700', cursor: 'pointer',
-            transition: 'all 0.2s',
-            boxShadow: '0 4px 10px rgba(109, 94, 252, 0.2)'
-          }}>
-            {button_name || 'Go'}
-          </button>
-        )}
-      </div>
-    </li>
   );
 }

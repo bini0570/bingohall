@@ -616,7 +616,10 @@ async function processDeposit(chatId, telegramId, amount, smsText, method, ioIns
 
   const depositId = result.lastID;
 
-  if (ioInstance) ioInstance.emit('admin_data_changed');
+  if (ioInstance) {
+    ioInstance.emit('admin_data_changed');
+    ioInstance.emit('admin_notification', { type: 'deposit', message: `New deposit request of ${parseFloat(amount).toFixed(2)} ETB from ${user.username || 'a user'}` });
+  }
 
 
   bot.sendMessage(
@@ -683,9 +686,10 @@ async function processWithdrawal(chatId, telegramId, amount, accountNum, method,
     [user.id, user.username, user.phone, chosenMethod, accountNum, parseFloat(amount)]
   );
 
-  const withdrawalId = result.lastID;
-
-  if (ioInstance) ioInstance.emit('admin_data_changed');
+  if (ioInstance) {
+    ioInstance.emit('admin_data_changed');
+    ioInstance.emit('admin_notification', { type: 'withdrawal', message: `New withdrawal request of ${parseFloat(amount).toFixed(2)} ETB from ${user.username || 'a user'}` });
+  }
 
 
   bot.sendMessage(

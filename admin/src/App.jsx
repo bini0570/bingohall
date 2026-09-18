@@ -1,9 +1,11 @@
-﻿import React from 'react';
+﻿import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import { CssBaseline, Box, IconButton } from '@mui/material';
 import { Brightness4, Brightness7 } from '@mui/icons-material';
 import { ThemeModeProvider, useThemeMode } from './ThemeContext';
+import { Toaster, toast } from 'react-hot-toast';
+import { io } from 'socket.io-client';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -27,6 +29,31 @@ const ThemeToggle = () => {
 
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
+  
+  useEffect(() => {
+    if (!token) return;
+    const socketURL = import.meta.env.VITE_API_URL || '';
+    const socket = io(socketURL);
+    
+    socket.on('admin_notification', (data) => {
+      toast(data.message, {
+        icon: data.type === 'deposit' ? '💰' : data.type === 'withdrawal' ? '💸' : '🔔',
+        style: {
+          borderRadius: '8px',
+          background: '#333',
+          color: '#fff',
+        },
+      });
+      // Optionally play a sound
+      try {
+        const audio = new Audio('/notification.mp3');
+        audio.play().catch(() => {});
+      } catch (e) {}
+    });
+    
+    return () => socket.disconnect();
+  }, [token]);
+
   if (!token) return <Navigate to="/login" replace />;
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -48,6 +75,7 @@ export default function App() {
   return (
     <ThemeModeProvider>
       <CssBaseline />
+      <Toaster position="top-right" />
       <AuthProvider>
         <BrowserRouter>
           <Routes>

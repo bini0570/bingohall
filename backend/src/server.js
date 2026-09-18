@@ -361,6 +361,19 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
+app.post('/api/user/claim-daily', authenticateToken, async (req, res) => {
+  try {
+    const { reward } = req.body;
+    const amount = parseFloat(reward) || 0;
+    if (amount > 0) {
+      await run(`UPDATE users SET balance = balance + ? WHERE id = ?`, [amount, req.user.id]);
+    }
+    res.json({ success: true, reward: amount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // -------------------------------------------------------------
 // WALLET ROUTES (Telebirr & CBE)
 // -------------------------------------------------------------
@@ -1123,7 +1136,7 @@ app.post('/api/admin/tasks', authenticateAdmin, async (req, res) => {
     const { type, title, telegram_link, button_name, reward, target } = req.body;
     const { supabase } = require('./db');
     const { data, error } = await supabase.from('tasks').insert({
-      type, title, telegram_link, button_name, reward: parseFloat(reward), target
+      type, title, url: telegram_link, button_name, reward: parseFloat(reward), target
     }).select().single();
     if (error) return res.status(500).json({ error: error.message });
     io.emit('admin_data_changed');
@@ -1164,9 +1177,16 @@ app.delete('/api/admin/tasks/:id', authenticateAdmin, async (req, res) => {
 app.get('/api/admin/promos', authenticateAdmin, async (req, res) => {
   try {
     const { supabase } = require('./db');
-    const { data, error } = await supabase.from('promos').select('*').order('id', { ascending: false });
+    const { data, error } = await supabase.from('promo_codes').select('*').order('id', { ascending: false });
     if (error) return res.status(500).json({ error: error.message });
-    res.json(data || []);
+    const mapped = (data || []).map(p => ({
+      ...p,
+      reward: p.reward_amount,
+      usage_limit: p.max_uses,
+      uses: p.times_used,
+      status: p.is_active ? 'active' : 'disabled'
+    }));
+    res.json(mapped);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1176,12 +1196,12 @@ app.post('/api/admin/promos', authenticateAdmin, async (req, res) => {
   try {
     const { code, reward, usage_limit } = req.body;
     const { supabase } = require('./db');
-    const { data, error } = await supabase.from('promos').insert({
-      code, reward: parseFloat(reward), usage_limit: parseInt(usage_limit) || -1
+    const { data, error } = await supabase.from('promo_codes').insert({
+      code, reward_amount: parseFloat(reward), max_uses: parseInt(usage_limit) || -1
     }).select().single();
     if (error) return res.status(500).json({ error: error.message });
     io.emit('admin_data_changed');
-    res.json({ success: true, promo: data });
+    res.json({ success: true, promo: { ...data, reward: data.reward_amount, usage_limit: data.max_uses, uses: data.times_used, status: data.is_active ? 'active' : 'disabled' } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1191,10 +1211,10 @@ app.put('/api/admin/promos/:id/status', authenticateAdmin, async (req, res) => {
   try {
     const { supabase } = require('./db');
     const { status } = req.body;
-    const { data, error } = await supabase.from('promos').update({ status }).eq('id', req.params.id).select().single();
+    const { data, error } = await supabase.from('promo_codes').update({ is_active: status === 'active' }).eq('id', req.params.id).select().single();
     if (error) return res.status(500).json({ error: error.message });
     io.emit('admin_data_changed');
-    res.json({ success: true, promo: data });
+    res.json({ success: true, promo: { ...data, reward: data.reward_amount, usage_limit: data.max_uses, uses: data.times_used, status: data.is_active ? 'active' : 'disabled' } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1203,7 +1223,7 @@ app.put('/api/admin/promos/:id/status', authenticateAdmin, async (req, res) => {
 app.delete('/api/admin/promos/:id', authenticateAdmin, async (req, res) => {
   try {
     const { supabase } = require('./db');
-    const { error } = await supabase.from('promos').delete().eq('id', req.params.id);
+    const { error } = await supabase.from('promo_codes').delete().eq('id', req.params.id);
     if (error) return res.status(500).json({ error: error.message });
     io.emit('admin_data_changed');
     res.json({ success: true });
