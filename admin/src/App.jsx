@@ -36,7 +36,7 @@ const ProtectedRoute = ({ children }) => {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter basename="/admin">
+      <BrowserRouter basename="/">
         <Toaster position="top-right" />
         <Routes>
           <Route path="/login" element={<Login />} />
