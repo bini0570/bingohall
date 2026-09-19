@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
 import { CssBaseline, Box, IconButton } from '@mui/material';
@@ -17,6 +17,7 @@ import Broadcast from './pages/Broadcast';
 import Settings from './pages/Settings';
 import Sidebar from './components/Sidebar';
 import MobileNav from './components/MobileNav';
+import TopHeader from './components/TopHeader';
 
 const ThemeToggle = () => {
   const { mode, toggleTheme } = useThemeMode();
@@ -59,11 +60,9 @@ const ProtectedRoute = ({ children }) => {
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       <Sidebar />
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', overflow: 'hidden' }}>
+        <TopHeader />
         <MobileNav />
-        <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 3 } }}>
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, mb: 2 }}>
-            <ThemeToggle />
-          </Box>
+        <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 4 } }}>
           {children}
         </Box>
       </Box>

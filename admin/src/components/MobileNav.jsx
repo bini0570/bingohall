@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { BottomNavigation, BottomNavigationAction, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box, IconButton, Paper, Divider } from '@mui/material';
 import { Dashboard, CreditCard, People, Assignment, CardGiftcard, Campaign, Logout, Menu, Close, Brightness4, Brightness7 } from '@mui/icons-material';
@@ -97,16 +97,26 @@ export default function MobileNav() {
         anchor="left"
         open={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        PaperProps={{ sx: { width: 260 } }}
+        PaperProps={{ sx: { width: 260, bgcolor: '#0B1121', color: '#ffffff' } }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Menu</Typography>
-          <IconButton onClick={() => setIsDrawerOpen(false)}>
+        <Box sx={{ p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ 
+              bgcolor: '#6366f1', color: 'white',
+              width: 36, height: 36, borderRadius: '8px', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 'bold', fontSize: '1.2rem',
+              boxShadow: '0 4px 10px rgba(99, 102, 241, 0.4)'
+            }}>
+              B
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>Bingo X</Typography>
+          </Box>
+          <IconButton onClick={() => setIsDrawerOpen(false)} sx={{ color: '#94a3b8' }}>
             <Close />
           </IconButton>
         </Box>
-        <Divider />
-        <List sx={{ flex: 1, p: 2 }}>
+        <List sx={{ px: 2, flex: 1 }}>
           {moreItems.map((item) => (
             <ListItem key={item.to} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
@@ -114,29 +124,32 @@ export default function MobileNav() {
                 to={item.to}
                 onClick={() => setIsDrawerOpen(false)}
                 sx={{
-                  borderRadius: '8px',
-                  bgcolor: location.pathname === item.to ? 'action.selected' : 'transparent',
-                  color: location.pathname === item.to ? 'primary.main' : 'text.primary',
+                  borderRadius: '10px',
+                  py: 1.2,
+                  bgcolor: location.pathname === item.to ? '#6366f1' : 'transparent',
+                  color: location.pathname === item.to ? '#ffffff' : '#94a3b8',
+                  '&:hover': { bgcolor: location.pathname === item.to ? '#4f46e5' : 'rgba(255,255,255,0.05)', color: '#ffffff' },
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.label} />
+                <ListItemText primary={item.label} primaryTypographyProps={{ fontWeight: 500, fontSize: '0.95rem' }} />
               </ListItemButton>
             </ListItem>
           ))}
         </List>
-        <Divider />
         <Box sx={{ p: 2 }}>
           <ListItem disablePadding>
             <ListItemButton
               onClick={handleLogout}
               sx={{
-                borderRadius: '8px',
-                color: 'error.main',
+                borderRadius: '10px',
+                py: 1.2,
+                color: '#ef4444',
+                '&:hover': { bgcolor: 'rgba(239,68,68,0.1)', color: '#f87171' },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}><Logout /></ListItemIcon>
-              <ListItemText primary="Sign Out" />
+              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}><Logout fontSize="small" /></ListItemIcon>
+              <ListItemText primary="Sign Out" primaryTypographyProps={{ fontWeight: 500, fontSize: '0.95rem' }} />
             </ListItemButton>
           </ListItem>
         </Box>
