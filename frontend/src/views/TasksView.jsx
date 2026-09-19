@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, Gift, Copy, ExternalLink, RefreshCw } from 'lucide-react';
 import { apiFetch } from '../api';
 
@@ -51,7 +51,7 @@ export default function TasksView({ user }) {
   const fetchReferrals = async () => {
     setRefLoading(true);
     try {
-      const res = await apiFetch('/api/referrals', { headers: { Authorization: \Bearer \\ } });
+      const res = await apiFetch('/api/referrals', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
       if (res.ok) {
         const data = await res.json();
         setReferrals(data);
@@ -86,7 +86,7 @@ export default function TasksView({ user }) {
       const h = Math.floor(diff / 3600000);
       const m = Math.floor((diff % 3600000) / 60000);
       const s = Math.floor((diff % 60000) / 1000);
-      setTimeLeft(\\:\:\\);
+      setTimeLeft(`${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`);
     };
     
     tick();
@@ -106,7 +106,7 @@ export default function TasksView({ user }) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: \Bearer \\
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         },
         body: JSON.stringify({ reward })
       });
@@ -128,14 +128,14 @@ export default function TasksView({ user }) {
     const h = Math.floor(diff / 3600000);
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
-    setTimeLeft(\\:\:\\);
+    setTimeLeft(`${h}:${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`);
     
     // Emit custom event so App.jsx re-fetches profile to update balance
     window.dispatchEvent(new Event('profileUpdated'));
   };
 
   const copyReferralLink = () => {
-    const link = \https://t.me/bingox2019_bot?start=\\;
+    const link = `https://t.me/bingox2019_bot?start=${user?.id || ''}`;
     navigator.clipboard.writeText(link);
     window.Telegram?.WebApp?.showAlert('Referral link copied!');
   };
@@ -185,7 +185,7 @@ export default function TasksView({ user }) {
             disabled={!!timeLeft}
           >
             {timeLeft ? 
-              \Next Reward in \\ : 
+              `Next Reward in ${timeLeft}` : 
               'Claim Reward'
             }
           </button>

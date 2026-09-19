@@ -16,7 +16,7 @@ export default function LobbyView({
   const t = translations[lang];
   const [errMsg, setErrMsg] = useState('');
   const [localMyCartellas, setLocalMyCartellas] = useState(null);
-  // Track in-flight purchases to prevent race-condition bypass of the 4-cartella limit
+  // Track in-flight purchases to prevent race-condition bypass of the 2-cartella limit
   const purchasingRef = useRef(new Set());
 
   // Build a map of purchased tickets: { cartellaIndex -> userId }
@@ -92,8 +92,8 @@ export default function LobbyView({
 
     // Max cartellas check — count includes in-flight purchases to prevent race bypass
     const effectiveCount = myCartellas.length + purchasingRef.current.size;
-    if (effectiveCount >= 4) {
-      setErrMsg('Maximum 4 cartellas per round.');
+    if (effectiveCount >= 2) {
+      setErrMsg('Maximum 2 cartellas per round.');
       setTimeout(() => setErrMsg(''), 2500);
       return;
     }

@@ -195,8 +195,8 @@ class BingoEngine {
     }
 
     const myTickets = this.purchasedTickets.filter(t => String(t.userId) === String(userId));
-    if (myTickets.length >= 4) {
-      throw new Error('Maximum 4 cartellas allowed per player in a single round');
+    if (myTickets.length >= 2) {
+      throw new Error('Maximum 2 cartellas allowed per player in a single round');
     }
 
     const user = await get(`SELECT balance, withdrawable_balance FROM users WHERE id = ?`, [userId]);

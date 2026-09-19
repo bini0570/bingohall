@@ -447,7 +447,8 @@ body {
    GAMEPLAY LAYOUT
    ============================================================ */
 .gameplay-view {
-  max-width: 1100px;
+  width: 100%;
+  max-width: none;
   margin: 0 auto;
   padding: 4px 6px 6px;
   height: calc(100dvh - 52px - 68px);
@@ -479,10 +480,9 @@ body {
 }
 
 .gameplay-cartella {
-  flex: 0 0 auto;
-  width: 50%;
+  flex: 1 1 50%;
   min-width: 0;
-  max-width: 320px;
+  max-width: none;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -582,7 +582,6 @@ body {
 
   .gameplay-layout { gap: 4px; }
   .gameplay-masterboard { flex: 1 1 50%; padding: 4px; }
-  .gameplay-cartella { flex: 0 0 auto; width: 48%; max-width: 220px; }
 }
 
 @media (min-width: 769px) {
@@ -592,7 +591,6 @@ body {
     max-height: calc(100dvh - 64px);
   }
   .gameplay-masterboard { flex: 1 1 50%; padding: 8px; }
-  .gameplay-cartella { flex: 0 0 auto; width: 50%; max-width: 300px; }
   .master-board-header { font-size: 11px; }
   .master-board-cell { font-size: 9px; }
   .cartella-card--compact .cartella-cell { font-size: 12px; }

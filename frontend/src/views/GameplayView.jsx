@@ -58,45 +58,9 @@ export default function GameplayView({
   useEffect(() => {
     if (!socket) return;
 
-    const playChime = () => {
-      if (!soundOn) return;
-      try {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (!Ctx) return;
-        const ctx = new Ctx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(660, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.25, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.35);
-      } catch (_) {}
-    };
-
-    const speakBall = (letter, number) => {
-      if (!soundOn) return;
-      playChime();
-      if (window.speechSynthesis) {
-        try {
-          window.speechSynthesis.cancel();
-          const u = new SpeechSynthesisUtterance(`${letter} ${number}`);
-          u.rate = 0.95;
-          u.pitch = 1.1;
-          u.volume = 1.0;
-          window.speechSynthesis.speak(u);
-        } catch (_) {}
-      }
-    };
-
     const onBallDrawn = data => {
       setLastBall({ number: data.number, letter: data.letter });
       setCalledNumbers(data.calledNumbers || []);
-      speakBall(data.letter, data.number);
     };
 
     const onRoundEnded = data => {
@@ -258,25 +222,9 @@ export default function GameplayView({
               <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '800', letterSpacing: '0.8px' }}>
                 CURRENT DRAWING BALL
               </span>
-              <button
-                onClick={() => setSoundOn(s => !s)}
-                style={{
-                  background: soundOn ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.06)',
-                  border: soundOn ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '6px',
-                  padding: '3px 7px',
-                  color: soundOn ? '#818cf8' : '#475569',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '3px',
-                  fontSize: '10px',
-                  fontWeight: '700'
-                }}
-              >
-                {soundOn ? <Volume2 size={12} /> : <VolumeX size={12} />}
-                {soundOn ? 'Sound' : 'Muted'}
-              </button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600' }}>GAME #{gameState?.roundId}</span>
+              </div>
             </div>
 
             {/* Big Ball */}
@@ -352,53 +300,30 @@ export default function GameplayView({
               )}
             </div>
           </div>
-          {userTickets.length > 1 && (
-            <div
-              style={{
-                display: 'flex',
-                gap: '5px',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                flexShrink: 0
-              }}
-            >
-              {userTickets.map(tk => {
-                const isActive = tk.cartellaIndex === currentTicket.cartellaIndex;
-                return (
-                  <button
-                    key={tk.cartellaIndex}
-                    onClick={() => setActiveCartellaIndex(tk.cartellaIndex)}
-                    style={{
-                      background: isActive
-                        ? 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)'
-                        : 'rgba(255,255,255,0.07)',
-                      color: isActive ? '#000' : '#94a3b8',
-                      border: isActive ? '1px solid #38bdf8' : '1px solid rgba(255,255,255,0.10)',
-                      borderRadius: '8px',
-                      padding: '3px 10px',
-                      fontWeight: '900',
-                      fontSize: '11px',
-                      cursor: 'pointer',
-                      boxShadow: isActive ? '0 0 12px rgba(6,182,212,0.5)' : 'none',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    #{tk.cartellaIndex}
-                  </button>
-                );
-              })}
-            </div>
-          )}
 
-          {/* Cartella card */}
-          <div style={{ flex: 1, minHeight: 0 }}>
-            <CartellaCard
-              id={currentTicket.cartellaIndex || 1}
-              grid={currentTicket.grid || []}
-              calledSet={calledSet}
-              price={gameState?.ticketPrice || 10}
-              compact
-            />
+          {/* Cartella cards */}
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', paddingRight: '4px' }}>
+            {userTickets.length > 0 ? (
+              userTickets.map((tk) => (
+                <div key={tk.cartellaIndex} style={{ flexShrink: 0 }}>
+                  <CartellaCard
+                    id={tk.cartellaIndex}
+                    grid={tk.grid}
+                    calledSet={calledSet}
+                    price={gameState?.ticketPrice || 10}
+                    compact
+                  />
+                </div>
+              ))
+            ) : (
+              <CartellaCard
+                id={1}
+                grid={[]}
+                calledSet={calledSet}
+                price={gameState?.ticketPrice || 10}
+                compact
+              />
+            )}
           </div>
         </div>
       </div>
