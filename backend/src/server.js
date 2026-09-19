@@ -436,6 +436,10 @@ app.post('/api/wallet/withdraw', authenticateToken, async (req, res) => {
       });
     }
 
+    // Deduct immediately to prevent double spending
+    await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [withdrawAmount, req.user.id]);
+    await run(`UPDATE users SET withdrawable_balance = withdrawable_balance - ? WHERE id = ?`, [withdrawAmount, req.user.id]);
+
     const result = await run(
       `INSERT INTO withdrawals (user_id, username, phone, method, account_number, amount, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
       [req.user.id, user.username, user.phone, method, accountNumber, withdrawAmount]
@@ -750,16 +754,7 @@ app.post('/api/admin/withdrawals/:id/approve', authenticateAdmin, async (req, re
       return res.status(400).json({ error: 'Withdrawal not found or already processed' });
     }
 
-    // Deduct from both total balance and withdrawable_balance
-    const user = await get(`SELECT * FROM users WHERE id = ?`, [withdrawal.user_id]);
-    const withdrawableBal = parseFloat(user.withdrawable_balance) || 0;
-    if (withdrawableBal < withdrawal.amount) {
-      return res.status(400).json({ error: 'User withdrawable balance is now insufficient for this withdrawal' });
-    }
-
     await run(`UPDATE withdrawals SET status = ? WHERE id = ?`, ['approved', wId]);
-    await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [withdrawal.amount, withdrawal.user_id]);
-    await run(`UPDATE users SET withdrawable_balance = withdrawable_balance - ? WHERE id = ?`, [withdrawal.amount, withdrawal.user_id]);
 
     const updatedUser = await get(`SELECT balance FROM users WHERE id = ?`, [withdrawal.user_id]);
 
@@ -790,6 +785,8 @@ app.post('/api/admin/withdrawals/:id/reject', authenticateAdmin, async (req, res
     }
 
     await run(`UPDATE withdrawals SET status = ? WHERE id = ?`, ['rejected', wId]);
+    await run(`UPDATE users SET balance = balance + ? WHERE id = ?`, [withdrawal.amount, withdrawal.user_id]);
+    await run(`UPDATE users SET withdrawable_balance = withdrawable_balance + ? WHERE id = ?`, [withdrawal.amount, withdrawal.user_id]);
 
     // Notify user with rejection reason
     if (withdrawal) {
@@ -811,14 +808,6 @@ app.post('/api/admin/withdrawals/:id/reject', authenticateAdmin, async (req, res
   }
 });
 
-app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
-  try {
-    const users = await all(`SELECT id, username, phone, balance, referral_code, is_banned, created_at FROM users ORDER BY id DESC`);
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 app.post('/api/admin/users/:id/balance', authenticateAdmin, async (req, res) => {
   try {
@@ -840,18 +829,6 @@ app.post('/api/admin/users/:id/balance', authenticateAdmin, async (req, res) => 
     io.emit('balance_updated', { userId, newBalance: updatedUser?.balance });
 
     res.json({ success: true, message: 'User balance updated', newBalance: updatedUser?.balance });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-app.post('/api/admin/users/:id/ban', authenticateAdmin, async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const user = await get(`SELECT is_banned FROM users WHERE id = ?`, [userId]);
-    const newStatus = user.is_banned ? 0 : 1;
-    await run(`UPDATE users SET is_banned = ? WHERE id = ?`, [newStatus, userId]);
-    res.json({ success: true, isBanned: !!newStatus });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -950,11 +927,15 @@ app.get('/api/admin/dashboard', authenticateAdmin, async (req, res) => {
     const depositsRow = await get("SELECT SUM(amount) as sum FROM deposits WHERE status = 'approved'");
     const withdrawalsRow = await get("SELECT SUM(amount) as sum FROM withdrawals WHERE status = 'approved'");
     
-    const users = await all("SELECT id, username, created_at, 'registration' as type FROM users ORDER BY created_at DESC LIMIT 15");
-    const deposits = await all("SELECT id, username, amount, created_at, 'deposit' as type FROM deposits ORDER BY created_at DESC LIMIT 15");
-    const withdrawals = await all("SELECT id, username, amount, created_at, 'withdrawal' as type FROM withdrawals ORDER BY created_at DESC LIMIT 15");
+    const users = await all("SELECT id, username, created_at FROM users ORDER BY created_at DESC LIMIT 15");
+    const deposits = await all("SELECT id, username, amount, created_at FROM deposits ORDER BY created_at DESC LIMIT 15");
+    const withdrawals = await all("SELECT id, username, amount, created_at FROM withdrawals ORDER BY created_at DESC LIMIT 15");
     
-    const activities = [...users, ...deposits, ...withdrawals].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 15);
+    const mappedUsers = (users || []).slice(0, 15).map(u => ({ ...u, type: 'registration' }));
+    const mappedDeposits = (deposits || []).slice(0, 15).map(d => ({ ...d, type: 'deposit' }));
+    const mappedWithdrawals = (withdrawals || []).slice(0, 15).map(w => ({ ...w, type: 'withdrawal' }));
+
+    const activities = [...mappedUsers, ...mappedDeposits, ...mappedWithdrawals].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 15);
     
     res.json({
       totalPlayers: usersCountRow?.count || 0,

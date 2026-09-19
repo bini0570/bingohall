@@ -184,7 +184,7 @@ function initTelegramBot(ioInstance) {
           const referrer = await get(`SELECT * FROM users WHERE telegram_id = ?`, [savedRefCode]);
           console.log(`[Referral] Referrer lookup result:`, referrer ? `Found: ${referrer.username} (id=${referrer.id})` : 'NOT FOUND');
           if (referrer && referrer.id !== user?.id) {
-            await run(`UPDATE users SET balance = balance + 5 WHERE id = ?`, [referrer.id]);
+            await run(`UPDATE users SET balance = balance + ? WHERE id = ?`, [5, referrer.id]);
             await run(
               `INSERT INTO referrals (referrer_id, referee_id, status, reward_amount) VALUES (?, ?, 'qualified', 5.0)`,
               [referrer.id, user.id]
@@ -681,9 +681,13 @@ async function processWithdrawal(chatId, telegramId, amount, accountNum, method,
 
   const chosenMethod = method || userStates[chatId]?.method || 'Telebirr/CBE';
 
+  // Deduct immediately to prevent double spending
+  await run(`UPDATE users SET balance = balance - ? WHERE id = ?`, [reqAmount, user.id]);
+  await run(`UPDATE users SET withdrawable_balance = withdrawable_balance - ? WHERE id = ?`, [reqAmount, user.id]);
+
   const result = await run(
     `INSERT INTO withdrawals (user_id, username, phone, method, account_number, amount, status) VALUES (?, ?, ?, ?, ?, ?, 'pending')`,
-    [user.id, user.username, user.phone, chosenMethod, accountNum, parseFloat(amount)]
+    [user.id, user.username, user.phone, chosenMethod, accountNum, reqAmount]
   );
 
   if (ioInstance) {

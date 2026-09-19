@@ -15,7 +15,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/admin/login', { username, password });
+      const res = await axios.post('/api/auth/admin-login', { username, password });
       login(res.data.token);
       toast.success('Welcome back!');
       navigate('/');

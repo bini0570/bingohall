@@ -11,12 +11,6 @@ export default function TasksView({ user }) {
   const [cooldownEnd, setCooldownEnd] = useState(0);
   const [timeLeft, setTimeLeft] = useState('');
 
-  // Referral State
-  const [referrals, setReferrals] = useState([]);
-  const [refLoading, setRefLoading] = useState(false);
-  
-  const [activeTab, setActiveTab] = useState('daily');
-
   useEffect(() => {
     // Load state from localStorage on mount
     const savedStreak = parseInt(localStorage.getItem('bingo_streak') || '1');
@@ -35,39 +29,20 @@ export default function TasksView({ user }) {
 
   const fetchTasks = async () => {
     try {
-      // Stub - in a real app this comes from backend
-      setTasks([
-        { id: 1, title: 'Join our Official Channel', reward: 50, type: 'social', link: 'https://t.me/bingoXofficial', actionText: 'Join Channel' },
-        { id: 2, title: 'Follow on Twitter', reward: 30, type: 'social', link: '#', actionText: 'Follow' },
-        { id: 3, title: 'Play 5 Games', reward: 100, type: 'in-game', progress: 2, target: 5 },
-      ]);
+      const res = await apiFetch('/api/tasks', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      if (res.ok) {
+        const data = await res.json();
+        // Filter out any task related to invites if the backend returns them, though we just display admin tasks.
+        // Wait, the prompt says "Only tasks actually created from the Admin Panel are displayed."
+        // We will just set tasks directly from the API.
+        setTasks(data);
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
-
-  const fetchReferrals = async () => {
-    setRefLoading(true);
-    try {
-      const res = await apiFetch('/api/referrals', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
-      if (res.ok) {
-        const data = await res.json();
-        setReferrals(data);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setRefLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (activeTab === 'referral') {
-      fetchReferrals();
-    }
-  }, [activeTab]);
 
   useEffect(() => {
     if (!cooldownEnd || cooldownEnd < Date.now()) {
@@ -133,13 +108,6 @@ export default function TasksView({ user }) {
     // Emit custom event so App.jsx re-fetches profile to update balance
     window.dispatchEvent(new Event('profileUpdated'));
   };
-
-  const copyReferralLink = () => {
-    const link = `https://t.me/bingox2019_bot?start=${user?.id || ''}`;
-    navigator.clipboard.writeText(link);
-    window.Telegram?.WebApp?.showAlert('Referral link copied!');
-  };
-
   return (
     <div className="wallet-wrapper">
       <main className="wallet-card">
@@ -191,116 +159,39 @@ export default function TasksView({ user }) {
           </button>
         </section>
 
-        {/* Custom Tabs */}
-        <div style={{ display: 'flex', background: 'var(--surface-color)', padding: '4px', borderRadius: '12px', marginBottom: '16px' }}>
-          <button 
-            onClick={() => setActiveTab('daily')}
-            style={{ 
-              flex: 1, padding: '8px', borderRadius: '8px', border: 'none', 
-              background: activeTab === 'daily' ? 'var(--brand-1)' : 'transparent',
-              color: activeTab === 'daily' ? '#fff' : 'var(--text-secondary)',
-              fontWeight: '700', fontSize: '14px'
-            }}
-          >
-            Daily Tasks
-          </button>
-          <button 
-            onClick={() => setActiveTab('referral')}
-            style={{ 
-              flex: 1, padding: '8px', borderRadius: '8px', border: 'none', 
-              background: activeTab === 'referral' ? 'var(--brand-1)' : 'transparent',
-              color: activeTab === 'referral' ? '#fff' : 'var(--text-secondary)',
-              fontWeight: '700', fontSize: '14px'
-            }}
-          >
-            Referrals
-          </button>
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'daily' ? (
-          <section className="transaction-list">
-            <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px' }}>Available Tasks</h3>
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>Loading tasks...</div>
-            ) : tasks.map(task => (
-              <div key={task.id} className="transaction-item" style={{ background: 'var(--surface-color)', padding: '16px', borderRadius: '12px', border: 'none' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <div style={{ fontWeight: '700', fontSize: '15px' }}>{task.title}</div>
-                      <div style={{ fontSize: '13px', color: 'var(--brand-1)', fontWeight: '800', marginTop: '4px' }}>+{task.reward} ETB</div>
-                    </div>
-                    {task.type === 'in-game' && task.progress !== undefined && (
-                      <div style={{ fontSize: '12px', fontWeight: '800', background: 'rgba(0,0,0,0.05)', padding: '4px 8px', borderRadius: '20px' }}>
-                        {task.progress}/{task.target}
-                      </div>
-                    )}
+        <section className="transaction-list" style={{ marginTop: '16px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: '800', marginBottom: '16px' }}>Available Tasks</h3>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>Loading tasks...</div>
+          ) : tasks.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '30px 20px', background: 'var(--surface-color)', borderRadius: '12px', color: 'var(--text-secondary)' }}>
+              No active tasks available right now.
+            </div>
+          ) : tasks.map(task => (
+            <div key={task.id} className="transaction-item" style={{ background: 'var(--surface-color)', padding: '16px', borderRadius: '12px', border: 'none' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontWeight: '700', fontSize: '15px' }}>{task.title}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--brand-1)', fontWeight: '800', marginTop: '4px' }}>+{task.reward} ETB</div>
                   </div>
-                  
-                  {task.type === 'social' && (
-                    <button className="action-btn" style={{ width: '100%', background: 'rgba(255, 69, 58, 0.1)', color: 'var(--brand-1)' }} onClick={() => window.open(task.link, '_blank')}>
-                      {task.actionText}
-                      <ExternalLink size={16} />
-                    </button>
+                  {task.type === 'in-game' && task.progress !== undefined && (
+                    <div style={{ fontSize: '12px', fontWeight: '800', background: 'rgba(0,0,0,0.05)', padding: '4px 8px', borderRadius: '20px' }}>
+                      {task.progress}/{task.target}
+                    </div>
                   )}
                 </div>
-              </div>
-            ))}
-          </section>
-        ) : (
-          <section className="transaction-list">
-            <div style={{ background: 'var(--surface-color)', padding: '16px', borderRadius: '12px', textAlign: 'center', marginBottom: '16px' }}>
-              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600', marginBottom: '8px' }}>Your Invite Link</div>
-              <div 
-                onClick={copyReferralLink}
-                style={{ 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', 
-                  background: 'rgba(0,0,0,0.03)', padding: '12px', borderRadius: '8px', 
-                  color: 'var(--brand-1)', fontWeight: '700', fontSize: '14px', cursor: 'pointer'
-                }}
-              >
-                https://t.me/bingo... <Copy size={16} />
-              </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '12px' }}>
-                Earn 10 ETB for every friend who joins and plays!
+                
+                {task.type === 'social' && (
+                  <button className="action-btn" style={{ width: '100%', background: 'rgba(255, 69, 58, 0.1)', color: 'var(--brand-1)' }} onClick={() => window.open(task.link, '_blank')}>
+                    {task.actionText || 'Complete Task'}
+                    <ExternalLink size={16} />
+                  </button>
+                )}
               </div>
             </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '16px', fontWeight: '800' }}>Your Referrals</h3>
-              <button onClick={fetchReferrals} style={{ background: 'none', border: 'none', color: 'var(--brand-1)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', fontWeight: '700' }}>
-                <RefreshCw size={14} className={refLoading ? 'spin' : ''} /> Refresh
-              </button>
-            </div>
-
-            {refLoading && referrals.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-secondary)' }}>Loading...</div>
-            ) : referrals.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '30px 20px', background: 'var(--surface-color)', borderRadius: '12px', color: 'var(--text-secondary)' }}>
-                No referrals yet. Share your link to start earning!
-              </div>
-            ) : (
-              referrals.map(ref => (
-                <div key={ref.id} className="transaction-item" style={{ background: 'var(--surface-color)', padding: '16px', borderRadius: '12px', border: 'none' }}>
-                  <div>
-                    <div style={{ fontWeight: '700', fontSize: '15px' }}>{ref.username || 'Anonymous User'}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                      {new Date(ref.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <div style={{ 
-                    fontSize: '12px', fontWeight: '800', padding: '4px 8px', borderRadius: '20px',
-                    background: ref.status === 'qualified' ? 'rgba(52, 199, 89, 0.1)' : 'rgba(255, 149, 0, 0.1)',
-                    color: ref.status === 'qualified' ? 'var(--success-color)' : 'var(--warning-color)'
-                  }}>
-                    {ref.status === 'qualified' ? '+10 ETB Earned' : 'Pending (Needs Deposit)'}
-                  </div>
-                </div>
-              ))
-            )}
-          </section>
-        )}
+          ))}
+        </section>
       </main>
     </div>
   );

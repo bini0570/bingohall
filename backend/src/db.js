@@ -474,6 +474,12 @@ async function run(sql, params = []) {
       return { changes: 1 };
     }
 
+    // ── UPDATE PASSWORD ──────────────────────────────────────
+    if (sql.includes('UPDATE users SET password_hash = ? WHERE id = ?')) {
+      await supabase.from('users').update({ password_hash: String(params[0]) }).eq('id', params[1]);
+      return { changes: 1 };
+    }
+
     // ── BALANCE ADD ──────────────────────────────────────────
     if (sql.includes('UPDATE users SET balance = balance + ? WHERE id = ?')) {
       const { data: u } = await supabase.from('users').select('balance').eq('id', params[1]).single();
@@ -491,6 +497,11 @@ async function run(sql, params = []) {
     }
 
     // ── BALANCE SET ──────────────────────────────────────────
+    if (sql.includes('UPDATE users SET balance = ?, withdrawable_balance = ? WHERE id = ?')) {
+      await supabase.from('users').update({ balance: parseFloat(params[0]), withdrawable_balance: parseFloat(params[1]) }).eq('id', params[2]);
+      return { changes: 1 };
+    }
+    
     if (sql.includes('UPDATE users SET balance = ? WHERE id = ?')) {
       await supabase.from('users').update({ balance: parseFloat(params[0]) }).eq('id', params[1]);
       return { changes: 1 };
@@ -672,6 +683,11 @@ async function run(sql, params = []) {
     // ── UPDATE REFERRAL STATUS ───────────────────────────────
     if (sql.includes("UPDATE referrals SET status = 'qualified' WHERE id = ?")) {
       await supabase.from('referrals').update({ status: 'qualified' }).eq('id', params[0]);
+      return { changes: 1 };
+    }
+    
+    if (sql.includes("UPDATE referrals SET status = 'completed' WHERE referrer_id = ? AND referee_id = ?")) {
+      await supabase.from('referrals').update({ status: 'completed' }).eq('referrer_id', params[0]).eq('referee_id', params[1]);
       return { changes: 1 };
     }
 

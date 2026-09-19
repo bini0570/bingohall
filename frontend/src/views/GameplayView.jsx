@@ -275,7 +275,7 @@ export default function GameplayView({
             )}
 
             {/* ── RECENT CALLED NUMBERS ROW ── */}
-            <div style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '4px', overflowX: 'auto', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ width: '100%', height: '24px', display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
               <span style={{ fontSize: '8px', color: '#64748b', fontWeight: '800', flexShrink: 0, marginRight: '2px' }}>RECENT:</span>
               {calledNumbers.length === 0 ? (
                 <span style={{ fontSize: '9px', color: '#475569', fontWeight: '600' }}>Waiting for first ball...</span>

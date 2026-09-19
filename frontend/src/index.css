@@ -91,6 +91,14 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ── Standard Card Panel ── */
 .glass-panel {
   background: var(--bg-card);
@@ -288,6 +296,8 @@ body {
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  aspect-ratio: 1;
+  width: 100%;
 }
 
 .cartella-cell {
@@ -302,7 +312,8 @@ body {
   border: 1px solid var(--border-subtle);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 4px rgba(0,0,0,0.2);
-  aspect-ratio: 1;
+  width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
   overflow: hidden;
@@ -359,9 +370,9 @@ body {
 .cartella-card--compact .cartella-cell {
   font-size: clamp(9px, 2vw, 12px);
   border-radius: 4px;
-  aspect-ratio: 1;
+  width: 100%;
+  height: 100%;
   min-height: 0;
-  height: auto;
 }
 
 .cartella-card--compact .cartella-cell.free {
@@ -462,14 +473,16 @@ body {
 
 .gameplay-layout {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 6px;
   flex: 1;
   min-height: 0;
+  height: 100%;
+  width: 100%;
 }
 
 .gameplay-masterboard {
-  flex: 1 1 50%;
+  flex: 1 1 0%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -478,15 +491,17 @@ body {
   overflow: hidden;
   background: rgba(8, 14, 28, 0.9);
   border: 1px solid var(--border-subtle);
+  height: 100%;
 }
 
 .gameplay-cartella {
-  flex: 1 1 50%;
+  flex: 1 1 0%;
   min-width: 0;
-  max-width: none;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* ============================================================
@@ -582,7 +597,7 @@ body {
   .mobile-bottom-nav { display: flex; }
 
   .gameplay-layout { gap: 4px; }
-  .gameplay-masterboard { flex: 1 1 50%; padding: 4px; }
+  .gameplay-masterboard { padding: 4px; }
 }
 
 @media (min-width: 769px) {
@@ -594,7 +609,7 @@ body {
   .gameplay-layout {
     flex-direction: row;
   }
-  .gameplay-masterboard { flex: 1 1 50%; padding: 8px; }
+  .gameplay-masterboard { padding: 8px; }
   .master-board-header { font-size: 11px; }
   .master-board-cell { font-size: 9px; }
   .cartella-card--compact .cartella-cell { font-size: 12px; }
