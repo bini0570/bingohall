@@ -110,6 +110,7 @@ export default function GameplayView({
   return (
     <div
       style={{
+        width: '100%',
         maxWidth: '1100px',
         margin: '0 auto',
         padding: '90px 6px 4px',
@@ -143,7 +144,7 @@ export default function GameplayView({
         }}
       >
         {/* Prize */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px 4px', borderRadius: '6px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', gap: '1px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden', padding: '4px 4px', borderRadius: '6px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', gap: '1px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <Trophy size={11} color="#f59e0b" />
             <span style={{ fontSize: '8px', color: '#f59e0b', fontWeight: '700', letterSpacing: '0.4px' }}>PRIZE</span>
@@ -154,7 +155,7 @@ export default function GameplayView({
         </div>
 
         {/* Players */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px 4px', borderRadius: '6px', background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.2)', gap: '1px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden', padding: '4px 4px', borderRadius: '6px', background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.2)', gap: '1px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <span style={{ fontSize: '9px' }}>👥</span>
             <span style={{ fontSize: '8px', color: '#38bdf8', fontWeight: '700', letterSpacing: '0.4px' }}>PLAYERS</span>
@@ -165,7 +166,7 @@ export default function GameplayView({
         </div>
 
         {/* Stake */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px 4px', borderRadius: '6px', background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', gap: '1px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden', padding: '4px 4px', borderRadius: '6px', background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.2)', gap: '1px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <span style={{ fontSize: '9px' }}>⚡</span>
             <span style={{ fontSize: '8px', color: '#a78bfa', fontWeight: '700', letterSpacing: '0.4px' }}>STAKE</span>
@@ -176,7 +177,7 @@ export default function GameplayView({
         </div>
 
         {/* Called Count */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4px 4px', borderRadius: '6px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', gap: '1px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden', padding: '4px 4px', borderRadius: '6px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', gap: '1px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
             <span style={{ fontSize: '9px' }}>🎱</span>
             <span style={{ fontSize: '8px', color: '#10b981', fontWeight: '700', letterSpacing: '0.4px' }}>CALLED</span>
@@ -203,21 +204,24 @@ export default function GameplayView({
 
         {/* RIGHT: Cartella display + switcher */}
         <div className="gameplay-cartella">
-          {/* ── BIG DRAWING BALL + RECENT NUMBERS CONTAINER ── */}
-          <div
-            style={{
-              background: 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(8,14,28,0.98) 100%)',
-              border: '1px solid rgba(255,255,255,0.10)',
-              borderRadius: '12px',
-              padding: '8px 12px',
-              marginBottom: '6px',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
-              flexShrink: 0
-            }}
-          >
+            {/* 🎲 BIG DRAWING BALL + RECENT NUMBERS CONTAINER 🎲 */}
+            <div
+              style={{
+                width: '100%',
+                minWidth: 0,
+                background: 'linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(8,14,28,0.98) 100%)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                borderRadius: '12px',
+                padding: '8px 12px',
+                marginBottom: '6px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+                flexShrink: 0,
+                boxSizing: 'border-box'
+              }}
+            >
             <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
               <span style={{ fontSize: '9px', color: '#94a3b8', fontWeight: '800', letterSpacing: '0.8px' }}>
                 CURRENT DRAWING BALL

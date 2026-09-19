@@ -462,7 +462,7 @@ body {
 
 .gameplay-layout {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 6px;
   flex: 1;
   min-height: 0;
@@ -590,6 +590,9 @@ body {
     padding: 6px 12px 12px;
     height: calc(100dvh - 64px);
     max-height: calc(100dvh - 64px);
+  }
+  .gameplay-layout {
+    flex-direction: row;
   }
   .gameplay-masterboard { flex: 1 1 50%; padding: 8px; }
   .master-board-header { font-size: 11px; }
