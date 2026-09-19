@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { useApp, useReady } from './AppContext';
+import useSWR from 'swr';
+import { useApp, useReady, fetcher } from './AppContext';
 import { PageHead, Sk, Badge, Avatar, Seg, Empty, Info, Sheet, Confirm, Chart } from './components';
-import { Icon, cx, fmt, fmtPhone, cap, BASE, actFor, TYPES, TARGETS, matchPlayer } from './data';
+import { Icon, cx, fmt, fmtPhone, cap, TYPES, TARGETS } from './data';
 
 const ACT_ICON = { play: 'play', tasks: 'tasks', down: 'down', up: 'up' };
 
@@ -10,7 +11,7 @@ export function Dashboard() {
   const [range, setRange] = useState('7D');
   const ready = useReady('dashboard');
   
-  if (!ready) {
+  if (!ready || !metrics) {
     return (
       <div className="dash">
         <div className="wide"><PageHead title="Dashboard" /></div>
@@ -22,9 +23,9 @@ export function Dashboard() {
     );
   }
   
-  const td = BASE.dep + adj.dep, tw = BASE.wd + adj.wd, profit = td - tw;
-  const pd = deposits.filter((r) => r.status === 'pending').length;
-  const pw = withdrawals.filter((r) => r.status === 'pending').length;
+  const td = metrics.totalDeposits || 0, tw = metrics.totalWithdrawals || 0, profit = td - tw;
+  const pd = metrics.pendingDeposits || 0;
+  const pw = metrics.pendingWithdrawals || 0;
   
   const tile = (kind, count) => (
     <button className="tile" onClick={() => nav('payments', { tab: kind })}>
@@ -65,15 +66,15 @@ export function Dashboard() {
       <section className="stats">
         <div className="card stat">
           <span className="lbl">Total players</span>
-          <span className="n">{fmt(BASE.players)}</span>
+          <span className="n">{fmt(metrics.totalUsers)}</span>
         </div>
         <div className="card stat">
           <span className="lbl">Today registered</span>
-          <span className="n">{fmt(BASE.today)}<span className="up" aria-label="up"><Icon name="up" size={16} /></span></span>
+          <span className="n">{fmt(metrics.todayUsers)}<span className="up" aria-label="up"><Icon name="up" size={16} /></span></span>
         </div>
         <div className="card stat">
           <span className="lbl">Online players</span>
-          <span className="n">{fmt(BASE.online)}<i className="live" aria-label="live" /></span>
+          <span className="n">{fmt(metrics.onlineUsers)}<i className="live" aria-label="live" /></span>
         </div>
       </section>
       
@@ -97,24 +98,24 @@ export function Dashboard() {
 }
 
 function ReqCard({ r, kind }) {
-  const { players, nav, decideConfirm } = useApp();
-  const p = players.find((x) => x.id === r.pid);
+  const { nav, decideConfirm } = useApp();
   const isDep = kind === 'deposit';
+  const pName = r.username || 'Player ' + r.user_id;
   
   return (
     <article className="card req">
       <div className="req-top">
-        <button className="who" onClick={() => nav('players', { profile: p.id })}>
-          <Avatar p={p} />
-          <span className="pname"><strong>{p.name}</strong><span className="muted sm">ID {p.id}</span></span>
+        <button className="who" onClick={() => nav('players', { profile: r.user_id })}>
+          <Avatar p={{ id: r.user_id, name: pName }} />
+          <span className="pname"><strong>{pName}</strong><span className="muted sm">ID {r.user_id}</span></span>
         </button>
         <div className="amt"><b>{fmt(r.amount)}</b><small>ETB</small></div>
       </div>
       
       <div className="req-meta">
-        <span className="mchip">{r.method}</span>
+        <span className="mchip">{r.method || (isDep ? 'Deposit' : 'Withdraw')}</span>
         <span className="mono">{isDep ? r.ref : r.account}</span>
-        <span className="muted sm time">{r.doneAt || r.time}</span>
+        <span className="muted sm time">{r.doneAt || new Date(r.created_at).toLocaleDateString()}</span>
       </div>
       
       {r.status === 'pending' ? (
@@ -189,8 +190,8 @@ function PlayerCard({ p }) {
     <article className="card pcard">
       <button className="pcard-head" onClick={() => nav('players', { profile: p.id })}>
         <Avatar p={p} />
-        <span className="pname"><strong>{p.name}</strong><span className="muted sm">@{p.username}</span></span>
-        <Badge s={p.status} />
+        <span className="pname"><strong>{p.username || 'Player ' + p.id}</strong></span>
+        <Badge s={p.is_banned ? 'banned' : 'active'} />
         <span className="chev"><Icon name="chev" size={18} /></span>
       </button>
       
@@ -198,9 +199,7 @@ function PlayerCard({ p }) {
         <Info k="Player ID" v={p.id} />
         <Info k="Phone" v={fmtPhone(p.phone)} />
         <Info k="Balance" v={fmt(p.balance) + ' ETB'} />
-        <Info k="Withdrawable" v={fmt(p.withdrawable) + ' ETB'} />
-        <Info k="Deposit status" v={<Badge s={p.dep} />} />
-        <Info k="Registered" v={p.joined} />
+        <Info k="Registered" v={new Date(p.created_at).toLocaleDateString()} />
       </div>
     </article>
   );
@@ -208,7 +207,6 @@ function PlayerCard({ p }) {
 
 function PlayerSearch() {
   const { query, setQuery, players } = useApp();
-  const results = useMemo(() => players.filter((p) => matchPlayer(p, query)), [players, query]);
   const q = query.trim();
   
   return (
@@ -230,11 +228,11 @@ function PlayerSearch() {
       
       {!q ? (
         <Empty icon="search" title="Find a player" text="Enter a player ID, phone number, name or username. Try “abel” or “10482”." />
-      ) : results.length ? (
+      ) : players.length ? (
         <div>
-          <p className="result-count">{results.length + (results.length === 1 ? ' player found' : ' players found')}</p>
+          <p className="result-count">{players.length + (players.length === 1 ? ' player found' : ' players found')}</p>
           <div className="grid-list">
-            {results.map((p) => <PlayerCard key={p.id} p={p} />)}
+            {players.map((p) => <PlayerCard key={p.id} p={p} />)}
           </div>
         </div>
       ) : (
@@ -246,28 +244,32 @@ function PlayerSearch() {
 
 function Profile({ id }) {
   const { players, nav, banConfirm } = useApp();
-  const p = players.find((x) => x.id === id);
+  // Try to find in current search results, otherwise fetch
+  const found = players.find((x) => x.id === id);
+  const { data: fetched } = useSWR(!found ? `/api/admin/users?search=${id}` : null, fetcher);
+  
   const back = (
     <button className="back" onClick={() => nav('players')}>
       <Icon name="back" size={18} />Players
     </button>
   );
   
-  if (!p) return <div>{back}<Empty icon="user" title="Player not found" /></div>;
+  const p = found || (fetched && fetched[0]);
+  if (!p) return <div>{back}<Sk height={200} /></div>;
   
-  const banned = p.status === 'banned';
+  const banned = p.is_banned;
   
   return (
     <div>
       {back}
       <div className="stack">
         <section className="card prof-head">
-          <Avatar p={p} size="lg" />
+          <Avatar p={{ id: p.id, name: p.username || 'Player' }} size="lg" />
           <div>
-            <h1>{p.name}</h1>
+            <h1>{p.username || 'Player ' + p.id}</h1>
             <div className="row">
               <span className="idchip">ID {p.id}</span>
-              <Badge s={p.status} />
+              <Badge s={p.is_banned ? 'banned' : 'active'} />
             </div>
           </div>
         </section>
@@ -286,14 +288,6 @@ function Profile({ id }) {
                 <span className="lbl">Balance</span>
                 <div className="v">{fmt(p.balance)}<small>ETB</small></div>
               </div>
-              <div className="bal">
-                <span className="lbl">Withdrawable</span>
-                <div className="v">{fmt(p.withdrawable)}<small>ETB</small></div>
-              </div>
-            </div>
-            <div className="kv" style={{ marginTop: 8 }}>
-              <div><span>Total deposited</span><span>{fmt(p.totDep)} ETB</span></div>
-              <div><span>Total withdrawn</span><span>{fmt(p.totWd)} ETB</span></div>
             </div>
           </section>
           
@@ -302,21 +296,7 @@ function Profile({ id }) {
             <div className="kv">
               <div><span>Username</span><span>@{p.username}</span></div>
               <div><span>Phone</span><span>{fmtPhone(p.phone)}</span></div>
-              <div><span>Deposit status</span><Badge s={p.dep} /></div>
-              <div><span>Registered</span><span>{p.joined}</span></div>
-              <div><span>Last active</span><span>{p.last}</span></div>
-            </div>
-          </section>
-          
-          <section className="card wide">
-            <h2 className="sec-title">Recent activity</h2>
-            <div className="act">
-              {actFor(p).map((a, i) => (
-                <div key={i}>
-                  <span className="ai"><Icon name={ACT_ICON[a[0]]} size={17} /></span>
-                  <span className="at"><b style={{ fontWeight: 600 }}>{a[1]}</b><span>{a[2]}</span></span>
-                </div>
-              ))}
+              <div><span>Registered</span><span>{new Date(p.created_at).toLocaleDateString()}</span></div>
             </div>
           </section>
         </div>
@@ -359,8 +339,8 @@ function TaskForm({ onClose, onCreate }) {
     if (Object.keys(e).length) return;
     
     onCreate({ 
-      id: Date.now(), type, title: title.trim(), button: btn.trim() || tp.btn, 
-      reward: Number(reward), target, link: link.trim(), claims: [0, 0, 0], on: true 
+      type, title: title.trim(), button_name: btn.trim() || tp.btn, 
+      reward: Number(reward), target, telegram_link: link.trim()
     });
   };
   
@@ -421,17 +401,18 @@ function TaskForm({ onClose, onCreate }) {
 
 function TaskCard({ t }) {
   const { toggleTask, deleteTaskConfirm } = useApp();
-  const tp = TYPES.find((x) => x.v === t.type);
+  const tp = TYPES.find((x) => x.v === t.type) || TYPES[0];
+  const isActive = t.status === 'active';
   
   return (
-    <article className={cx('card task', !t.on && 'off')}>
+    <article className={cx('card task', !isActive && 'off')}>
       <div className="task-top">
         <div style={{ minWidth: 0 }}>
           <h3>{t.title}</h3>
           <div className="tags">
             <span className="mchip"><Icon name={tp.icon} size={13} />&nbsp;{t.type}</span>
             <span className="muted sm">{t.target}</span>
-            {!t.on && <Badge s="disabled" />}
+            {!isActive && <Badge s="disabled" />}
           </div>
         </div>
         <div className="reward">{fmt(t.reward)}<small>ETB reward</small></div>
@@ -441,13 +422,13 @@ function TaskCard({ t }) {
         {['Total', 'Today', '7 days'].map((l, i) => (
           <React.Fragment key={l}>
             {i > 0 && <i>/</i>}
-            <div><b>{fmt(t.claims[i])}</b><span>{l}</span></div>
+            <div><b>{fmt(i === 0 ? (t.claim_count || 0) : 0)}</b><span>{l}</span></div>
           </React.Fragment>
         ))}
       </div>
       
       <div className="task-actions">
-        <button className="btn btn-ghost btn-sm" onClick={() => toggleTask(t.id)}>{t.on ? 'Disable' : 'Enable'}</button>
+        <button className="btn btn-ghost btn-sm" onClick={() => toggleTask(t.id, t.status)}>{t.status === 'active' ? 'Disable' : 'Enable'}</button>
         <button className="btn btn-danger btn-sm" aria-label="Delete task" onClick={() => deleteTaskConfirm(t)}>
           <Icon name="trash" size={17} />Delete
         </button>
@@ -504,7 +485,7 @@ export function Promo() {
     setErr(e); 
     if (Object.keys(e).length) return;
     
-    addPromo({ id: Date.now(), code: c, reward: Number(reward), limit: parseInt(limit, 10) });
+    addPromo({ code: c, reward: Number(reward), usage_limit: parseInt(limit, 10) });
     reset(); 
     setOpen(false);
   };
@@ -563,7 +544,7 @@ export function Promo() {
             <div className="prow" key={p.id}>
               <span className="code">{p.code}</span>
               <span className="n">{fmt(p.reward)} ETB</span>
-              <span className="n">{fmt(p.limit)}</span>
+              <span className="n">{fmt(p.usage_limit)}</span>
               <button className="trash" aria-label={'Delete ' + p.code} onClick={() => deletePromoConfirm(p)}>
                 <Icon name="trash" size={18} />
               </button>
@@ -591,7 +572,7 @@ export function Broadcast() {
           <textarea id="bc" className="input" maxLength={MAX} placeholder="Write your message…" value={msg} onChange={(e) => setMsg(e.target.value)} />
         </div>
         <div className="counter"><span>Plain text</span><span>{msg.length} / {MAX}</span></div>
-        <button className="btn btn-primary btn-block" disabled={!msg.trim()} onClick={() => sendBroadcast(() => setMsg(''))}>
+        <button className="btn btn-primary btn-block" disabled={!msg.trim()} onClick={() => sendBroadcast(msg, () => setMsg(''))}>
           <Icon name="send" size={18} />Send to all players
         </button>
       </section>
@@ -600,22 +581,22 @@ export function Broadcast() {
 }
 
 function PasswordSheet({ onClose }) {
-  const { pwd, setPwd, toast } = useApp();
+  const { changePassword } = useApp();
   const [cur, setCur] = useState(''); 
   const [nw, setNw] = useState(''); 
   const [cf, setCf] = useState(''); 
   const [err, setErr] = useState({});
   
-  const submit = () => {
+  const submit = async () => {
     const e = {};
-    if (cur !== pwd) e.cur = 'Current password is incorrect.';
+    if (!cur) e.cur = 'Current password is required.';
     if (nw.length < 8) e.nw = 'Use at least 8 characters.';
     if (cf !== nw) e.cf = 'Passwords don’t match.';
     setErr(e); 
     if (Object.keys(e).length) return;
-    setPwd(nw); 
-    onClose(); 
-    toast('Password updated');
+    
+    const success = await changePassword(cur, nw);
+    if (success) onClose();
   };
   
   const f = (id, label, val, set, k) => (
