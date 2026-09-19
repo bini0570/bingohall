@@ -204,6 +204,7 @@ body {
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .cartella-grid-item:hover:not(.disabled):not(.taken) {

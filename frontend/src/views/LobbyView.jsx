@@ -60,8 +60,10 @@ export default function LobbyView({
 
     // UNSELECT
     if (isMine) {
-      const updated = myCartellas.filter(i => i !== index);
-      setLocalMyCartellas(updated);
+      setLocalMyCartellas(prev => {
+        const current = prev !== null ? prev : serverMyCartellas;
+        return current.filter(i => i !== index);
+      });
       if (onTicketPurchased) onTicketPurchased(balance + price);
 
       try {
@@ -75,7 +77,10 @@ export default function LobbyView({
         if (onTicketPurchased && data.newBalance !== undefined) onTicketPurchased(data.newBalance);
       } catch (err) {
         setErrMsg(err.message);
-        setLocalMyCartellas(myCartellas); // rollback
+        setLocalMyCartellas(prev => {
+          const current = prev !== null ? prev : serverMyCartellas;
+          return [...current, index]; // rollback by adding it back
+        });
       }
       return;
     }
@@ -107,8 +112,10 @@ export default function LobbyView({
 
     // SELECT — mark as in-flight immediately before any await
     purchasingRef.current.add(index);
-    const updated = [...myCartellas, index];
-    setLocalMyCartellas(updated);
+    setLocalMyCartellas(prev => {
+      const current = prev !== null ? prev : serverMyCartellas;
+      return [...current, index];
+    });
     if (onTicketPurchased) onTicketPurchased(Math.max(0, balance - price));
 
     try {
@@ -122,7 +129,10 @@ export default function LobbyView({
       if (onTicketPurchased && data.newBalance !== undefined) onTicketPurchased(data.newBalance);
     } catch (err) {
       setErrMsg(err.message);
-      setLocalMyCartellas(myCartellas); // rollback
+      setLocalMyCartellas(prev => {
+        const current = prev !== null ? prev : serverMyCartellas;
+        return current.filter(i => i !== index); // rollback by removing it
+      });
     } finally {
       purchasingRef.current.delete(index); // always release the lock
     }
