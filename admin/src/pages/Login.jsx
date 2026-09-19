@@ -32,20 +32,21 @@ export default function Login() {
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         style={{ width: '100%', maxWidth: 400 }}
       >
-        <Card sx={{ p: { xs: 3, sm: 4 }, borderRadius: '32px' }}>
+        <Card sx={{ p: { xs: 3, sm: 4 }, borderRadius: '24px' }}>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Box sx={{ 
               width: 56, height: 56, 
-              background: 'linear-gradient(135deg, #0f172a 0%, #334155 100%)',
+              background: '#5B5CE2',
               borderRadius: '16px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: 'white', fontWeight: 900, fontSize: '1.5rem',
-              mx: 'auto', mb: 2
+              mx: 'auto', mb: 2,
+              boxShadow: '0 8px 16px rgba(91,92,226,0.3)'
             }}>
               B
             </Box>
-            <Typography variant="h4" sx={{ fontWeight: 900 }}>Admin Login</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>Sign in to manage the platform</Typography>
+            <Typography variant="h2" sx={{ mb: 1 }}>Bingo X</Typography>
+            <Typography variant="body1" color="text.secondary">Admin Control Center</Typography>
           </Box>
 
           <form onSubmit={handleSubmit}>

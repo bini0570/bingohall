@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './AuthContext';
-import { CssBaseline, Box, IconButton } from '@mui/material';
-import { Brightness4, Brightness7 } from '@mui/icons-material';
+import { CssBaseline, Box, Fab } from '@mui/material';
 import { ThemeModeProvider, useThemeMode } from './ThemeContext';
 import { Toaster, toast } from 'react-hot-toast';
 import { io } from 'socket.io-client';
+import { DarkMode, LightMode } from '@mui/icons-material';
 
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -15,16 +15,25 @@ import Promos from './pages/Promos';
 import Payments from './pages/Payments';
 import Broadcast from './pages/Broadcast';
 import Settings from './pages/Settings';
-import Sidebar from './components/Sidebar';
-import MobileNav from './components/MobileNav';
-import TopHeader from './components/TopHeader';
+import FloatingNav from './components/FloatingNav';
+import MobileHeader from './components/MobileHeader';
 
-const ThemeToggle = () => {
+const ThemeToggleFab = () => {
   const { mode, toggleTheme } = useThemeMode();
   return (
-    <IconButton onClick={toggleTheme} sx={{ color: 'text.primary', ml: 'auto' }}>
-      {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
-    </IconButton>
+    <Fab 
+      onClick={toggleTheme} 
+      size="small"
+      sx={{ 
+        position: 'fixed', bottom: 20, right: 20, zIndex: 1200, 
+        bgcolor: mode === 'light' ? '#FFFFFF' : '#17181D',
+        color: 'text.primary',
+        border: mode === 'light' ? '1px solid #E4E5EA' : '1px solid #2A2C33',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+      }}
+    >
+      {mode === 'dark' ? <LightMode fontSize="small" /> : <DarkMode fontSize="small" />}
+    </Fab>
   );
 };
 
@@ -40,12 +49,12 @@ const ProtectedRoute = ({ children }) => {
       toast(data.message, {
         icon: data.type === 'deposit' ? '💰' : data.type === 'withdrawal' ? '💸' : '🔔',
         style: {
-          borderRadius: '8px',
-          background: '#333',
-          color: '#fff',
+          borderRadius: '12px',
+          background: '#17181D',
+          color: '#F5F6F8',
+          border: '1px solid #2A2C33'
         },
       });
-      // Optionally play a sound
       try {
         const audio = new Audio('/notification.mp3');
         audio.play().catch(() => {});
@@ -56,16 +65,15 @@ const ProtectedRoute = ({ children }) => {
   }, [token]);
 
   if (!token) return <Navigate to="/login" replace />;
+
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Sidebar />
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', overflow: 'hidden' }}>
-        <TopHeader />
-        <MobileNav />
-        <Box component="main" sx={{ flex: 1, overflowY: 'auto', p: { xs: 2, md: 4 } }}>
-          {children}
-        </Box>
+    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.default', pb: 12 }}>
+      <MobileHeader />
+      <Box component="main" sx={{ px: { xs: 2, md: 4 } }}>
+        {children}
       </Box>
+      <FloatingNav />
+      <ThemeToggleFab />
     </Box>
   );
 };
@@ -74,7 +82,7 @@ export default function App() {
   return (
     <ThemeModeProvider>
       <CssBaseline />
-      <Toaster position="top-right" />
+      <Toaster position="top-center" />
       <AuthProvider>
         <BrowserRouter>
           <Routes>
