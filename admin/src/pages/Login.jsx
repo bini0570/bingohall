@@ -9,14 +9,14 @@ import { motion } from 'framer-motion';
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { setToken } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await axios.post('/api/admin/login', { username, password });
-      setToken(res.data.token);
+      login(res.data.token);
       toast.success('Welcome back!');
       navigate('/');
     } catch (err) {

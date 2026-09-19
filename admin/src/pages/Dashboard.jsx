@@ -14,7 +14,11 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend 
 } from 'recharts';
 
-const fetcher = (url) => fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }).then(r => r.json());
+const fetcher = async (url) => {
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } });
+  if (!res.ok) throw new Error('Failed to fetch');
+  return res.json();
+};
 
 const mockChartData = [
   { name: 'Mon', deposits: 4000, withdrawals: 2400, revenue: 1600 },

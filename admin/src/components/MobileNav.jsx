@@ -21,7 +21,7 @@ export default function MobileNav() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { setToken } = useAuth();
+  const { logout } = useAuth();
   const { mode, toggleTheme } = useThemeMode();
 
   const getPageTitle = () => {
@@ -39,7 +39,7 @@ export default function MobileNav() {
   const handleLogout = () => {
     setIsDrawerOpen(false);
     if (window.confirm('Are you sure you want to sign out?')) {
-      setToken(null);
+      logout();
     }
   };
 

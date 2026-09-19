@@ -14,11 +14,11 @@ const menuItems = [
 
 export default function Sidebar() {
   const location = useLocation();
-  const { setToken } = useAuth();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to sign out?')) {
-      setToken(null);
+      logout();
     }
   };
 
