@@ -500,12 +500,15 @@ export default function App() {
   // ─────────────────────────────────────────────────────────────
   // MAIN GAME UI
   // ─────────────────────────────────────────────────────────────
+  const isDrawing = gameState?.status === 'DRAWING';
+
   return (
     <div style={{ 
       height: '100dvh',
+      width: '100vw',
       display: 'flex',
       flexDirection: 'column',
-      background: '#090d16', 
+      background: '#0a0f1e', 
       color: '#fff',
       overflow: 'hidden'
     }}>
@@ -516,6 +519,7 @@ export default function App() {
         currentView={currentView}
         setCurrentView={setCurrentView}
         onLogout={handleLogout}
+        isDrawing={isDrawing}
       />
 
       <div style={{

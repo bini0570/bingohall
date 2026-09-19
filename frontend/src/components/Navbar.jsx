@@ -8,7 +8,8 @@ export default function Navbar({
   user,
   currentView,
   setCurrentView,
-  onLogout
+  onLogout,
+  isDrawing
 }) {
   const [showHelpModal, setShowHelpModal] = useState(false);
 
@@ -74,12 +75,19 @@ export default function Navbar({
       >
         {/* Brand Block */}
         <div
-          onClick={() => setCurrentView('lobby')}
+          onClick={() => {
+            if (isDrawing) {
+              window.Telegram?.WebApp?.showAlert('Navigation is locked during live draw.');
+              return;
+            }
+            setCurrentView('lobby');
+          }}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '10px',
-            cursor: 'pointer',
+            cursor: isDrawing ? 'not-allowed' : 'pointer',
+            opacity: isDrawing ? 0.7 : 1,
           }}
         >
           <div
@@ -276,7 +284,13 @@ export default function Navbar({
             return (
               <button
                 key={id}
-                onClick={() => setCurrentView(id)}
+                onClick={() => {
+                  if (isDrawing && id !== 'lobby') {
+                    window.Telegram?.WebApp?.showAlert('Navigation is locked during live draw.');
+                    return;
+                  }
+                  setCurrentView(id);
+                }}
                 style={{
                   flex: 1,
                   display: 'flex',
@@ -286,7 +300,8 @@ export default function Navbar({
                   gap: '3px',
                   background: 'transparent',
                   border: 'none',
-                  cursor: 'pointer',
+                  cursor: isDrawing && id !== 'lobby' ? 'not-allowed' : 'pointer',
+                  opacity: isDrawing && id !== 'lobby' ? 0.4 : 1,
                   position: 'relative',
                   transition: 'all 0.2s ease',
                   paddingBottom: '2px'
