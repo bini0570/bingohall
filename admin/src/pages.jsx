@@ -7,7 +7,7 @@ import { Icon, cx, fmt, fmtPhone, cap, TYPES, TARGETS } from './data';
 const ACT_ICON = { play: 'play', tasks: 'tasks', down: 'down', up: 'up' };
 
 export function Dashboard() {
-  const { deposits, withdrawals, adj, nav } = useApp();
+  const { deposits, withdrawals, metrics, nav } = useApp();
   const [range, setRange] = useState('7D');
   const ready = useReady('dashboard');
   
